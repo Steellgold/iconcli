@@ -19,12 +19,12 @@ Transform SVG icons into beautiful React, Vue, or Svelte components with zero co
 ## 📦 Installation
 
 ```bash
-# Using npx (recommended - no installation needed)
-npx @steellgold/mkicon
-
-# Or install globally
+# Install globally (recommended)
 npm install -g @steellgold/mkicon
 pnpm add -g @steellgold/mkicon
+
+# Then use the short command
+mkicon
 ```
 
 ## 🚀 Quick Start
@@ -35,7 +35,7 @@ Run mkicon in your project directory:
 
 ```bash
 cd my-project
-npx @steellgold/mkicon
+mkicon
 ```
 
 Follow the interactive prompts to configure:
@@ -52,7 +52,7 @@ A `.mkicon.json` file will be created - commit it to your repo!
 After setup, paste your SVG when prompted:
 
 ```bash
-npx @steellgold/mkicon
+mkicon
 
 # Paste SVG, enter icon name, done! ✨
 ```
@@ -62,7 +62,7 @@ npx @steellgold/mkicon
 ### Interactive Mode (Default)
 
 ```bash
-npx @steellgold/mkicon
+mkicon
 ```
 
 Prompts you through:
@@ -76,19 +76,19 @@ Skip the source selection and jump straight to input:
 
 ```bash
 # Paste mode - prompts for SVG and name
-npx @steellgold/mkicon paste
+mkicon paste
 # or shorthand:
-npx @steellgold/mkicon p
+mkicon p
 
 # URL mode - prompts for URL and name
-npx @steellgold/mkicon url
+mkicon url
 # or shorthand:
-npx @steellgold/mkicon u
+mkicon u
 
 # File mode - prompts for file path and name
-npx @steellgold/mkicon file
+mkicon file
 # or shorthand:
-npx @steellgold/mkicon f
+mkicon f
 ```
 
 This is the **fastest way** to create icons - no source selection needed!
@@ -99,16 +99,16 @@ Provide all arguments for fully automated icon creation:
 
 ```bash
 # From SVG code
-npx @steellgold/mkicon -n UserPlus -p '<svg>...</svg>'
+mkicon -n UserPlus -p '<svg>...</svg>'
 
 # From URL
-npx @steellgold/mkicon -n Arrow -u https://example.com/icon.svg
+mkicon -n Arrow -u https://example.com/icon.svg
 
 # From file
-npx @steellgold/mkicon -n Home -f ./icons/home.svg
+mkicon -n Home -f ./icons/home.svg
 
 # Legacy syntax (still supported)
-npx @steellgold/mkicon --name UserPlus --svg '<svg>...</svg>'
+mkicon --name UserPlus --svg '<svg>...</svg>'
 ```
 
 ### Batch Mode
@@ -116,9 +116,9 @@ npx @steellgold/mkicon --name UserPlus --svg '<svg>...</svg>'
 Convert multiple SVG files at once:
 
 ```bash
-npx @steellgold/mkicon --batch ./svg-icons
+mkicon --batch ./svg-icons
 # or shorthand:
-npx @steellgold/mkicon -b ./svg-icons
+mkicon -b ./svg-icons
 ```
 
 This will:
@@ -132,10 +132,10 @@ This will:
 
 ```bash
 # Interactive config menu
-npx @steellgold/mkicon config
+mkicon config
 
 # Show current config
-npx @steellgold/mkicon config --show
+mkicon config --show
 ```
 
 ## ⚙️ Configuration
@@ -275,7 +275,7 @@ withDefaults(defineProps<{
 ### Using with Heroicons
 
 ```bash
-npx @steellgold/mkicon \
+mkicon \
   --name ChevronRight \
   --url https://raw.githubusercontent.com/tailwindlabs/heroicons/master/optimized/24/outline/chevron-right.svg
 ```
@@ -283,7 +283,7 @@ npx @steellgold/mkicon \
 ### Using with Lucide
 
 ```bash
-npx @steellgold/mkicon \
+mkicon \
   --name User \
   --url https://lucide.dev/api/icons/user
 ```
@@ -291,7 +291,7 @@ npx @steellgold/mkicon \
 ### Custom SVG
 
 ```bash
-npx @steellgold/mkicon --name Logo --svg '
+mkicon --name Logo --svg '
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
   <circle cx="50" cy="50" r="40" fill="blue"/>
 </svg>
@@ -302,7 +302,7 @@ npx @steellgold/mkicon --name Logo --svg '
 
 ```bash
 # Export icons from Figma to ./figma-icons/
-npx @steellgold/mkicon --batch ./figma-icons
+mkicon --batch ./figma-icons
 ```
 
 ## 🔧 Auto-Generated Index
@@ -355,7 +355,7 @@ mkicon is smart about naming:
 Don't want the "Icon" suffix?
 
 ```bash
-npx @steellgold/mkicon config
+mkicon config
 # → Select "Naming configuration"
 # → Disable suffix
 ```
