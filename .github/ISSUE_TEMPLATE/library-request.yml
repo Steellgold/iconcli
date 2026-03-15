@@ -1,76 +1,78 @@
 name: Library Request
 description: Suggest a new icon library to integrate with mkicon
-title: "[Library Request] "
-labels: ["enhancement", "library-request"]
+title: "[Library Request]: "
+labels:
+  - enhancement
+  - library-request
 body:
   - type: markdown
     attributes:
       value: |
-        Thank you for suggesting a new icon library! Please fill out the information below.
+        Thanks for suggesting a new icon library.
+        Please complete the fields below.
 
   - type: input
-    id: library-name
+    id: library_name
     attributes:
-      label: Library Name
+      label: Library name
       description: What is the name of the icon library?
-      placeholder: e.g., Heroicons, Feather Icons, Font Awesome, Material Icons
+      placeholder: Heroicons
     validations:
       required: true
 
   - type: input
-    id: library-url
+    id: library_url
     attributes:
-      label: Library Website
-      description: Official website or documentation URL
-      placeholder: e.g., https://heroicons.com
+      label: Library website
+      description: Official website or documentation URL.
+      placeholder: https://heroicons.com
     validations:
       required: true
 
   - type: dropdown
-    id: open-source
+    id: is_open_source
     attributes:
-      label: Is it Open Source?
-      description: Is this library available under an open-source license?
+      label: Is it open source?
       options:
-        - Yes
-        - No
+        - "Yes"
+        - "No"
     validations:
       required: true
 
   - type: input
-    id: license
+    id: license_name
     attributes:
       label: License
-      description: What license does this library use? (if open source)
-      placeholder: e.g., MIT, Apache 2.0, ISC, CC BY 4.0
+      description: License used by the library, if available.
+      placeholder: MIT
 
   - type: input
-    id: icon-count
+    id: icon_count
     attributes:
-      label: Number of Icons
-      description: Approximately how many icons are in this library?
-      placeholder: e.g., 500+, 2000+
+      label: Number of icons
+      description: Approximate number of available icons.
+      placeholder: 500+
 
   - type: input
-    id: api-url
+    id: api_or_index_url
     attributes:
-      label: API or Icon List URL (Optional)
-      description: URL to an API endpoint or JSON file containing the icon list
-      placeholder: e.g., https://unpkg.com/heroicons@latest/tags.json
+      label: API or icon index URL (optional)
+      description: URL to an endpoint or file listing icons.
+      placeholder: https://unpkg.com/heroicons@latest/tags.json
 
   - type: input
-    id: cdn-url
+    id: icon_url_pattern
     attributes:
-      label: CDN or Raw Icon URL Pattern (Optional)
-      description: URL pattern to fetch individual SVG icons
-      placeholder: e.g., https://unpkg.com/heroicons@latest/24/outline/{icon-name}.svg
+      label: Icon URL pattern (optional)
+      description: URL pattern used to fetch individual SVG files.
+      placeholder: https://cdn.example.com/icons/<icon-name>.svg
 
   - type: textarea
-    id: additional-info
+    id: additional_info
     attributes:
-      label: Additional Information
-      description: Any other relevant information about this library
+      label: Additional information
+      description: Any extra details to help evaluate this integration.
       placeholder: |
-        - Special features (e.g., multiple styles, sizes)
+        - Multiple styles or sizes
         - Attribution requirements
-        - Why this library would be useful
+        - Why this library is useful
