@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 
-import { findProjectRoot } from '@/core/project.js';
-import { loadConfig, configExists } from '@/config/manager.js';
-import { runSetup } from '@/cli/setup.js';
+import { createProgram, processBatchFromArgs, processIconFromArgs } from '@/cli/args.js';
+import { runInit } from '@/cli/init.js';
 import { runInteractive } from '@/cli/interactive.js';
+import { runLibraryBrowser } from '@/cli/library.js';
 import { runSemiInteractive } from '@/cli/semi-interactive.js';
-import { createProgram, processIconFromArgs, processBatchFromArgs } from '@/cli/args.js';
+import { runSetup } from '@/cli/setup.js';
 import { runConfigMenu, showConfig } from '@/config/commands.js';
+import { configExists, loadConfig } from '@/config/manager.js';
+import { findProjectRoot } from '@/core/project.js';
 import { logger } from '@/utils/logger.js';
 
 const main = async () => {
@@ -14,6 +16,8 @@ const main = async () => {
     // Check for subcommands
     const subcommand = process.argv[2];
     const isConfigCommand = subcommand === 'config';
+    const isInitCommand = subcommand === 'init';
+    const isLibraryCommand = subcommand === 'library' || subcommand === 'browse';
     const isSemiInteractiveCommand = ['paste', 'p', 'url', 'u', 'file', 'f'].includes(subcommand);
     const showConfigFlag = process.argv.includes('--show');
     const hasAnyArgs = process.argv.length > 2;
@@ -55,6 +59,18 @@ const main = async () => {
       logger.newline();
     }
     
+    // Handle init command
+    if (isInitCommand) {
+      if (configExists(projectRoot)) {
+        logger.warning('Configuration already exists (.mkicon.json)');
+        logger.info('Use `mkicon config` to modify settings');
+        process.exit(1);
+      }
+      
+      await runInit(projectRoot);
+      return;
+    }
+    
     // Handle config command
     if (isConfigCommand) {
       if (showConfigFlag) {
@@ -69,6 +85,24 @@ const main = async () => {
         await runConfigMenu(projectRoot);
         return;
       }
+    }
+    
+    // Handle library command
+    if (isLibraryCommand) {
+      // Check if config exists
+      if (!configExists(projectRoot)) {
+        logger.error('No configuration found. Please run `mkicon` first to set up the project.');
+        process.exit(1);
+      }
+      
+      const config = loadConfig(projectRoot);
+      if (!config) {
+        logger.error('Failed to load configuration');
+        process.exit(1);
+      }
+      
+      await runLibraryBrowser({ projectRoot, config });
+      return;
     }
     
     // Check if config exists

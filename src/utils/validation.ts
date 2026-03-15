@@ -4,14 +4,18 @@
 export const isValidSVG = (content: string): boolean => {
   const trimmed = content.trim();
   
-  // Basic validation: must start with <svg and end with </svg>
-  if (!trimmed.startsWith('<svg') || !trimmed.endsWith('</svg>')) {
+  // Check for svg tag with proper structure (allow comments before)
+  const svgTagPattern = /<svg[^>]*>[\s\S]*<\/svg>/i;
+  if (!svgTagPattern.test(trimmed)) {
     return false;
   }
   
-  // Check for svg tag with proper structure
-  const svgTagPattern = /<svg[^>]*>[\s\S]*<\/svg>/i;
-  return svgTagPattern.test(trimmed);
+  // Must contain <svg and </svg>
+  if (!trimmed.includes('<svg') || !trimmed.includes('</svg>')) {
+    return false;
+  }
+  
+  return true;
 };
 
 /**

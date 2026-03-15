@@ -7,13 +7,15 @@ Transform SVG icons into beautiful React, Vue, or Svelte components with zero co
 
 ## ✨ Features
 
-- 🚀 **Zero Config** - Get started instantly with interactive setup
+- 🚀 **Zero Config** - Get started instantly with `mkicon init`
+- 📚 **Icon Libraries** - Browse and import from Lucide Icons (1700+ icons)
 - 🎨 **Multi-Framework** - Support for React, Vue 3, and Svelte
 - 📦 **Batch Processing** - Convert multiple SVG files at once
 - 🔧 **Fully Customizable** - Control props, naming, and file formats
 - ⚡ **Auto-Optimization** - Built-in SVGO integration
 - 📝 **Auto-Index** - Maintains index.ts for easy imports
 - 🌐 **URL Support** - Fetch icons directly from URLs
+- 🔍 **Smart Suggestions** - Auto-detect icon names from URLs
 - 💾 **Persistent Config** - Set it once, use it forever
 
 ## 📦 Installation
@@ -29,17 +31,34 @@ mkicon
 
 ## 🚀 Quick Start
 
-### First Time Setup
+### Option 1: Instant Setup (Recommended)
 
-Run mkicon in your project directory:
+Initialize with best practice defaults:
 
 ```bash
 cd my-project
+mkicon init
+```
+
+This creates `.mkicon.json` with:
+- Framework: React (TypeScript)
+- Folder: `src/components/icons/`
+- Optimization: Enabled
+- Props: size, color, className
+- Auto-index: Enabled
+
+Customize later with `mkicon config` if needed.
+
+### Option 2: Interactive Setup
+
+Run mkicon and follow the prompts:
+
+```bash
 mkicon
 ```
 
-Follow the interactive prompts to configure:
-- Where to create icons (e.g., `src/components`)
+Configure:
+- Where to create icons
 - Framework (React, Vue, or Svelte)
 - Optimization preferences
 - Props configuration

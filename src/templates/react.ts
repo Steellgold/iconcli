@@ -50,7 +50,12 @@ export const generateReactComponent = (options: ReactTemplateOptions): string =>
     
     propsInterface = `export interface ${componentName}Props extends SVGProps<SVGSVGElement> {\n${propsFields.join('\n')}\n}\n\n`;
     
-    propsSignature = `{ \n${defaultProps.join(',\n')},${props.className || props.style ? '\n  className,\n  style,' : ''}\n  ...props \n}: ${componentName}Props`;
+    const tsxProps: string[] = [...defaultProps];
+    if (props.className) tsxProps.push('className');
+    if (props.style) tsxProps.push('style');
+    tsxProps.push('...props');
+    
+    propsSignature = `{ ${tsxProps.join(',\n')} }: ${componentName}Props`;
   } else {
     const defaultProps: string[] = [];
     

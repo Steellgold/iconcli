@@ -1,6 +1,6 @@
-import path from 'path';
-import fs from 'fs/promises';
 import { existsSync } from 'fs';
+import fs from 'fs/promises';
+import path from 'path';
 
 /**
  * Create a directory recursively if it doesn't exist

@@ -1,16 +1,16 @@
-import { Command } from 'commander';
+import { processBatchIcons } from '@/batch/processor.js';
 import { Config } from '@/config/schema.js';
-import { generateIconName } from '@/utils/naming.js';
-import { isValidSVG } from '@/utils/validation.js';
-import { fetchSVGFromURL } from '@/core/url-fetcher.js';
-import { optimizeSVG } from '@/core/svg-processor.js';
 import { generateComponent } from '@/core/component-generator.js';
 import { writeComponentFile } from '@/core/file-writer.js';
 import { updateIndexFile } from '@/core/index-maintainer.js';
-import { processBatchIcons } from '@/batch/processor.js';
+import { optimizeSVG } from '@/core/svg-processor.js';
+import { fetchSVGFromURL } from '@/core/url-fetcher.js';
 import { logger, spinner } from '@/utils/logger.js';
-import path from 'path';
+import { generateIconName } from '@/utils/naming.js';
+import { isValidSVG } from '@/utils/validation.js';
+import { Command } from 'commander';
 import fs from 'fs/promises';
+import path from 'path';
 
 export interface CLIOptions {
   name?: string;
@@ -32,7 +32,7 @@ export const createProgram = (): Command => {
   program
     .name('mkicon')
     .description('Transform SVG icons into beautiful React, Vue, or Svelte components')
-    .version('0.1.3')
+    .version('0.2.0')
     .allowUnknownOption(false)
     .helpOption('-h, --help', 'Display help')
     .addHelpCommand(false);
@@ -75,6 +75,21 @@ export const createProgram = (): Command => {
     .command('config')
     .description('Manage mkicon configuration')
     .option('--show', 'Show current configuration')
+    .action(() => {
+      // Handled in main index.ts
+    });
+  
+  program
+    .command('library')
+    .alias('browse')
+    .description('Browse and import icons from Lucide Icons')
+    .action(() => {
+      // Handled in main index.ts
+    });
+  
+  program
+    .command('init')
+    .description('Initialize mkicon with default configuration')
     .action(() => {
       // Handled in main index.ts
     });
