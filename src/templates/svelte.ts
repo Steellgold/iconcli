@@ -9,7 +9,7 @@ interface SvelteTemplateOptions {
 }
 
 export const generateSvelteComponent = (options: SvelteTemplateOptions): string => {
-  const { componentName, svgContent, viewBox, typescript, props } = options;
+  const { svgContent, viewBox, typescript, props } = options;
   
   // Extract the inner content of the SVG
   const svgInnerContent = svgContent
