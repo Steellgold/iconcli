@@ -1,6 +1,9 @@
 import { Config } from '../config/schema.js';
 import { generateReactComponent, getReactFileExtension } from '../templates/react.js';
+import { generateVueComponent, getVueFileExtension } from '../templates/vue.js';
+import { generateSvelteComponent, getSvelteFileExtension } from '../templates/svelte.js';
 import { cleanSVGAttributes } from './svg-processor.js';
+import { generateFileName } from '../utils/naming.js';
 
 export interface GenerateComponentOptions {
   componentName: string;
@@ -39,12 +42,26 @@ export const generateComponent = (options: GenerateComponentOptions): GeneratedC
       break;
       
     case 'vue':
-      // TODO: Implement Vue template
-      throw new Error('Vue template not implemented yet');
+      content = generateVueComponent({
+        componentName,
+        svgContent: cleanedSVG,
+        viewBox,
+        typescript: config.typescript,
+        props: config.props,
+      });
+      extension = getVueFileExtension();
+      break;
       
     case 'svelte':
-      // TODO: Implement Svelte template
-      throw new Error('Svelte template not implemented yet');
+      content = generateSvelteComponent({
+        componentName,
+        svgContent: cleanedSVG,
+        viewBox,
+        typescript: config.typescript,
+        props: config.props,
+      });
+      extension = getSvelteFileExtension();
+      break;
       
     default:
       throw new Error(`Unsupported framework: ${config.framework}`);
