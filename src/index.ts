@@ -16,10 +16,16 @@ const main = async () => {
     const isConfigCommand = subcommand === 'config';
     const isSemiInteractiveCommand = ['paste', 'p', 'url', 'u', 'file', 'f'].includes(subcommand);
     const showConfigFlag = process.argv.includes('--show');
+    const hasAnyArgs = process.argv.length > 2;
     
     // Parse CLI arguments
     const program = createProgram();
-    program.parse(process.argv);
+    
+    // Only parse if we have arguments, otherwise skip to avoid help display
+    if (hasAnyArgs) {
+      program.parse(process.argv);
+    }
+    
     const options = program.opts();
     
     // Find project root
