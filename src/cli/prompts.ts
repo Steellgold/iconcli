@@ -13,6 +13,8 @@ export const promptSetupConfig = async (): Promise<Partial<Config>> => {
     typescript: boolean;
     optimize: boolean;
     props: string[];
+    suffixEnabled: boolean;
+    fileCase: 'PascalCase' | 'kebab-case' | 'camelCase';
   }>([
     {
       type: 'input',
@@ -47,6 +49,22 @@ export const promptSetupConfig = async (): Promise<Partial<Config>> => {
         { name: 'style', message: 'style (inline style props)', enabled: false },
       ],
     },
+    {
+      type: 'confirm',
+      name: 'suffixEnabled',
+      message: 'Add "Icon" suffix to component names? (e.g., UserPlus → UserPlusIcon)',
+      initial: true,
+    },
+    {
+      type: 'select',
+      name: 'fileCase',
+      message: 'File naming format?',
+      choices: [
+        { name: 'PascalCase', message: 'PascalCase (UserPlusIcon.tsx)' },
+        { name: 'kebab-case', message: 'kebab-case (user-plus-icon.tsx)' },
+        { name: 'camelCase', message: 'camelCase (userPlusIcon.tsx)' },
+      ],
+    },
   ]);
   
   // Determine typescript based on framework choice (for now, default to true for React)
@@ -67,7 +85,9 @@ export const promptSetupConfig = async (): Promise<Partial<Config>> => {
     },
     naming: {
       suffix: 'Icon',
-      case: 'PascalCase',
+      suffixEnabled: answers.suffixEnabled,
+      componentCase: 'PascalCase',
+      fileCase: answers.fileCase,
     },
   };
 };

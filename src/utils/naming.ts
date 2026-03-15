@@ -1,7 +1,13 @@
 /**
  * Convert a string to PascalCase
+ * Preserves existing PascalCase/camelCase structure
  */
 export const toPascalCase = (str: string): string => {
+  // If already in PascalCase or camelCase, preserve it
+  if (/^[A-Z][a-zA-Z0-9]*$/.test(str) || /^[a-z][a-zA-Z0-9]*$/.test(str)) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+  
   return str
     .replace(/[^a-zA-Z0-9]/g, ' ')
     .split(' ')
@@ -31,7 +37,42 @@ export const toKebabCase = (str: string): string => {
 };
 
 /**
- * Generate icon component name with suffix
+ * Generate icon component name (for internal use)
+ */
+export const generateComponentName = (
+  input: string,
+  suffix: string = 'Icon',
+  suffixEnabled: boolean = true
+): string => {
+  let baseName = toPascalCase(input);
+  
+  // Add suffix if enabled and not already present
+  if (suffixEnabled && !baseName.endsWith(suffix)) {
+    baseName = `${baseName}${suffix}`;
+  }
+  
+  return baseName;
+};
+
+/**
+ * Generate icon file name
+ */
+export const generateFileName = (
+  componentName: string,
+  fileCase: 'PascalCase' | 'camelCase' | 'kebab-case' = 'PascalCase'
+): string => {
+  switch (fileCase) {
+    case 'PascalCase':
+      return componentName;
+    case 'camelCase':
+      return toCamelCase(componentName);
+    case 'kebab-case':
+      return toKebabCase(componentName);
+  }
+};
+
+/**
+ * Generate icon component name with suffix (legacy - kept for compatibility)
  */
 export const generateIconName = (
   input: string,

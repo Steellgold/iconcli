@@ -21,10 +21,14 @@ export const ConfigSchema = z.object({
   }),
   naming: z.object({
     suffix: z.string().default('Icon'),
-    case: z.enum(['PascalCase', 'camelCase', 'kebab-case']).default('PascalCase'),
+    suffixEnabled: z.boolean().default(true),
+    componentCase: z.enum(['PascalCase', 'camelCase']).default('PascalCase'),
+    fileCase: z.enum(['PascalCase', 'kebab-case', 'camelCase']).default('PascalCase'),
   }).default({
     suffix: 'Icon',
-    case: 'PascalCase',
+    suffixEnabled: true,
+    componentCase: 'PascalCase',
+    fileCase: 'PascalCase',
   }),
   svgo: z.object({
     plugins: z.array(z.string()).optional(),

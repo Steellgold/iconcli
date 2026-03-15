@@ -68,10 +68,21 @@
           "description": "Suffix to add to icon names",
           "default": "Icon"
         },
-        "case": {
+        "suffixEnabled": {
+          "type": "boolean",
+          "description": "Whether to add suffix to icon names",
+          "default": true
+        },
+        "componentCase": {
           "type": "string",
-          "enum": ["PascalCase", "camelCase", "kebab-case"],
-          "description": "Case format for component names",
+          "enum": ["PascalCase", "camelCase"],
+          "description": "Case format for component names (internal)",
+          "default": "PascalCase"
+        },
+        "fileCase": {
+          "type": "string",
+          "enum": ["PascalCase", "kebab-case", "camelCase"],
+          "description": "Case format for file names",
           "default": "PascalCase"
         }
       }
