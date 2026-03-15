@@ -10,7 +10,7 @@ import { generateIconName } from '@/utils/naming.js';
 import enquirer from 'enquirer';
 import path from 'path';
 
-const { prompt, MultiSelect } = enquirer as any;
+const { prompt, AutoComplete } = enquirer as any;
 
 export interface LibraryOptions {
   projectRoot: string;
@@ -51,72 +51,109 @@ export const runLibraryBrowser = async (options: LibraryOptions): Promise<void> 
     
     logger.newline();
     
-    // Multi-select with search
-    const selectedIcons = await promptMultiIconSelection(icons);
+    // Search and select icon
+    const iconName = await promptIconSearchAndSelect(icons);
     
-    if (!selectedIcons || selectedIcons.length === 0) {
-      logger.info('No icons selected');
+    if (!iconName) {
+      logger.info('No icon selected');
       return;
     }
     
     logger.newline();
-    logger.info(`Processing ${selectedIcons.length} icons...`);
-    logger.newline();
     
-    // Process each icon
-    for (const iconName of selectedIcons) {
-      const { svgContent, metadata } = await fetchLucideIcon(iconName);
-      
-      // Process SVG
-      const processed = await optimizeSVG(svgContent, config.optimize);
-      
-      // Generate component name
-      const componentName = generateIconName(
-        iconName,
-        config.naming.suffix,
-        config.naming.componentCase
-      );
-      
-      // Generate component
-      const component = generateComponent({
-        componentName,
-        svgContent: processed.content,
-        viewBox: processed.viewBox,
-        config,
-      });
-      
-      // Add copyright header
-      const copyright = generateLucideCopyright(metadata.iconName);
-      const contentWithCopyright = `${copyright}\n\n${component.content}`;
-      
-      // Write file
-      await writeComponentFile({
-        projectRoot,
-        baseDir: config.baseDir,
-        iconsFolder: config.iconsFolder,
-        filename: component.filename,
-        content: contentWithCopyright,
-      });
-      
-      logger.success(`${component.filename} created`);
+    // Fetch selected icon
+    const { svgContent, metadata } = await fetchLucideIcon(iconName);
+    
+    // Ask for component name
+    const nameAnswer = await prompt({
+      type: 'confirm',
+      name: 'useOriginalName',
+      message: `Use '${iconName}' as component name?`,
+      initial: true,
+    }) as { useOriginalName: boolean };
+    
+    let componentBaseName: string;
+    if (nameAnswer.useOriginalName) {
+      componentBaseName = iconName;
+    } else {
+      const customAnswer = await prompt({
+        type: 'input',
+        name: 'customName',
+        message: 'Enter custom component name:',
+        initial: iconName,
+      }) as { customName: string };
+      componentBaseName = customAnswer.customName;
     }
     
-    // Update index once for all icons
+    const componentName = generateIconName(
+      componentBaseName,
+      config.naming.suffix,
+      config.naming.componentCase
+    );
+    
+    logger.separator();
+    logger.newline();
+    
+    // Process SVG
+    const processSpinner = spinner.start('Processing SVG...');
+    const processed = await optimizeSVG(svgContent, config.optimize);
+    
+    if (config.optimize && processed.optimizedSize < processed.originalSize) {
+      processSpinner.succeed(
+        `SVG optimized (${processed.originalSize} bytes → ${processed.optimizedSize} bytes)`
+      );
+    } else {
+      processSpinner.succeed('SVG processed');
+    }
+    
+    logger.success(`ViewBox detected: ${processed.viewBox}`);
+    
+    // Generate component with copyright header
+    logger.newline();
+    const genSpinner = spinner.start('Generating component...');
+    const component = generateComponent({
+      componentName,
+      svgContent: processed.content,
+      viewBox: processed.viewBox,
+      config,
+    });
+    
+    // Add copyright header
+    const copyright = generateLucideCopyright(metadata.iconName);
+    const contentWithCopyright = `${copyright}\n\n${component.content}`;
+    
+    genSpinner.succeed(`${component.filename} generated`);
+    
+    // Write file
+    const iconsDir = path.join(projectRoot, config.baseDir, config.iconsFolder);
+    const filePath = await writeComponentFile({
+      projectRoot,
+      baseDir: config.baseDir,
+      iconsFolder: config.iconsFolder,
+      filename: component.filename,
+      content: contentWithCopyright,
+    });
+    
+    logger.success(`${component.filename} created`);
+    
+    // Update index
     if (config.maintainIndex) {
-      const iconsDir = path.join(projectRoot, config.baseDir, config.iconsFolder);
-      const tempComponent = generateComponent({
-        componentName: 'temp',
-        svgContent: '',
-        viewBox: '0 0 24 24',
-        config,
-      });
-      await updateIndexFile(iconsDir, tempComponent.extension);
+      await updateIndexFile(iconsDir, component.extension);
       logger.success('index.ts updated');
     }
     
     logger.separator();
     logger.newline();
-    logger.title(`${selectedIcons.length} icons imported successfully! 🎉`);
+    logger.title('Icon imported successfully! 🎉');
+    logger.newline();
+    console.log(`📁 ${path.relative(projectRoot, filePath)}`);
+    console.log(`📚 From: Lucide Icons (${metadata.library.website})`);
+    logger.newline();
+    console.log('Import:');
+    console.log(`  import { ${componentName} } from '@/components/icons';`);
+    logger.newline();
+    console.log('Usage:');
+    console.log(`  <${componentName} size={24} color="blue" />`);
     logger.separator();
     logger.newline();
     
@@ -154,9 +191,9 @@ const promptLibrarySelection = async (): Promise<string | null> => {
 };
 
 /**
- * Prompt user to select multiple icons
+ * Prompt user to search and select a single icon
  */
-const promptMultiIconSelection = async (icons: IconMetadata[]): Promise<string[] | null> => {
+const promptIconSearchAndSelect = async (icons: IconMetadata[]): Promise<string | null> => {
   const iconChoices = icons.map(icon => ({
     name: icon.name,
     message: `${icon.name} ${icon.tags.length > 0 ? `(${icon.tags.slice(0, 3).join(', ')})` : ''}`,
@@ -164,18 +201,31 @@ const promptMultiIconSelection = async (icons: IconMetadata[]): Promise<string[]
   }));
   
   try {
-    const multiselect = new MultiSelect({
-      name: 'icons',
-      message: 'Select icons (Space to select, Enter to confirm):',
-      limit: 10,
+    const autocomplete = new AutoComplete({
+      name: 'icon',
+      message: 'Search for an icon:',
+      limit: 15,
       choices: iconChoices,
-      result(names: string[]) {
-        return names;
+      suggest(input: string, choices: any[]) {
+        if (!input) return choices.slice(0, 15);
+        
+        const lowerInput = input.toLowerCase();
+        
+        const matchingIcons = icons.filter(icon => {
+          if (icon.name.toLowerCase().includes(lowerInput)) return true;
+          return icon.tags.some((tag: string) => tag.toLowerCase().includes(lowerInput));
+        });
+        
+        return matchingIcons.slice(0, 15).map(icon => ({
+          name: icon.name,
+          message: `${icon.name} ${icon.tags.length > 0 ? `(${icon.tags.slice(0, 3).join(', ')})` : ''}`,
+          value: icon.name,
+        }));
       },
     });
     
-    const selected = await multiselect.run();
-    return selected as string[];
+    const selected = await autocomplete.run();
+    return selected as string;
     
   } catch (error) {
     // User cancelled
