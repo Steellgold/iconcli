@@ -83,7 +83,7 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
       const componentName = generateIconName(
         iconName,
         config.naming.suffix,
-        config.naming.case
+        config.naming.componentCase
       );
       
       logger.separator();
@@ -137,7 +137,7 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
       
       logger.separator();
       logger.newline();
-      logger.title('🎉 Icon created successfully!');
+      logger.title('Icon created successfully! 🎉');
       logger.newline();
       console.log(`📁 ${path.relative(projectRoot, filePath)}`);
       logger.newline();
@@ -167,5 +167,5 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
     }
   }
   
-  logger.info('👋 Goodbye!');
+  logger.info('Goodbye! 👋');
 };

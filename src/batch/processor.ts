@@ -95,7 +95,7 @@ export const processBatchIcons = async (options: BatchProcessOptions): Promise<v
       const componentName = generateIconName(
         baseName,
         config.naming.suffix,
-        config.naming.case
+        config.naming.componentCase
       );
       
       // Process SVG
@@ -157,5 +157,5 @@ export const processBatchIcons = async (options: BatchProcessOptions): Promise<v
     logger.newline();
   }
   
-  logger.title(`🎉 ${results.success} icon(s) created successfully!`);
+  logger.title(`${results.success} icon(s) created successfully! 🎉`);
 };

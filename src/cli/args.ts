@@ -42,6 +42,14 @@ export const createProgram = (): Command => {
     .option('--framework <framework>', 'Override framework (react, vue, svelte)')
     .option('--output <dir>', 'Override output directory');
   
+  program
+    .command('config')
+    .description('Manage mkicon configuration')
+    .option('--show', 'Show current configuration')
+    .action(() => {
+      // Handled in main index.ts
+    });
+  
   return program;
 };
 
@@ -95,7 +103,7 @@ export const processIconFromArgs = async (
     const componentName = generateIconName(
       options.name,
       config.naming.suffix,
-      config.naming.case
+      config.naming.componentCase
     );
     
     // Process SVG
@@ -144,7 +152,7 @@ export const processIconFromArgs = async (
     }
     
     logger.newline();
-    logger.title('🎉 Icon created successfully!');
+    logger.title('Icon created successfully! 🎉');
     logger.newline();
     console.log(`📁 ${path.relative(projectRoot, filePath)}`);
     

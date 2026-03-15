@@ -5,10 +5,15 @@ import { loadConfig, configExists } from './config/manager.js';
 import { runSetup } from './cli/setup.js';
 import { runInteractive } from './cli/interactive.js';
 import { createProgram, processIconFromArgs, processBatchFromArgs } from './cli/args.js';
+import { runConfigMenu, showConfig } from './config/commands.js';
 import { logger } from './utils/logger.js';
 
 const main = async () => {
   try {
+    // Check if config command
+    const isConfigCommand = process.argv[2] === 'config';
+    const showConfigFlag = process.argv.includes('--show');
+    
     // Parse CLI arguments
     const program = createProgram();
     program.parse(process.argv);
@@ -29,6 +34,22 @@ const main = async () => {
     if (!hasCliArgs) {
       logger.info(`✓ Project detected: ${projectRoot}`);
       logger.newline();
+    }
+    
+    // Handle config command
+    if (isConfigCommand) {
+      if (showConfigFlag) {
+        const config = loadConfig(projectRoot);
+        if (!config) {
+          logger.error('No configuration found. Please run `mkicon` first to set up the project.');
+          process.exit(1);
+        }
+        showConfig(config);
+        return;
+      } else {
+        await runConfigMenu(projectRoot);
+        return;
+      }
     }
     
     // Check if config exists
@@ -52,7 +73,7 @@ const main = async () => {
       }
       
       if (!hasCliArgs) {
-        logger.title('mkicon');
+        logger.title('🎨 mkicon');
         logger.success(`Configuration loaded: .mkicon.json`);
         logger.success(`Folder: ${config.baseDir}/${config.iconsFolder}/`);
         logger.separator();

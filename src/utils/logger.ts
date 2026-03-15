@@ -19,7 +19,7 @@ export const logger = {
   },
   
   title: (message: string) => {
-    console.log(chalk.bold.cyan(`\n🎨 ${message}\n`));
+    console.log(chalk.bold.cyan(`\n${message}\n`));
   },
   
   separator: () => {

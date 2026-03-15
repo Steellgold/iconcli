@@ -9,7 +9,7 @@ import { Config } from '../config/schema.js';
  * Run initial setup for the project
  */
 export const runSetup = async (projectRoot: string): Promise<Config> => {
-  logger.title('Welcome to mkicon!');
+  logger.title('🎨 Welcome to mkicon!');
   logger.newline();
   console.log('No configuration found in this project.');
   console.log('Let\'s set up mkicon together.');
