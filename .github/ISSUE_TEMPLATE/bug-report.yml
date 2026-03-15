@@ -1,0 +1,80 @@
+name: Bug Report
+description: Report a reproducible problem in mkicon
+title: "[Bug]: "
+labels:
+  - bug
+  - triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug.
+        Please provide enough detail so we can reproduce and fix it quickly.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the bug and what you expected instead.
+      placeholder: A clear and concise description of the problem.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Provide exact steps so we can reproduce the issue.
+      placeholder: |
+        1. Run `mkicon ...`
+        2. Use config `...`
+        3. See error `...`
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or output
+      description: Paste error messages or command output.
+      render: shell
+    validations:
+      required: false
+
+  - type: input
+    id: mkicon_version
+    attributes:
+      label: mkicon version
+      description: Which version are you using?
+      placeholder: 0.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: node_version
+    attributes:
+      label: Node.js version
+      description: Output of `node -v`.
+      placeholder: v22.0.0
+    validations:
+      required: false
+
+  - type: dropdown
+    id: operating_system
+    attributes:
+      label: Operating system
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      description: Add any extra details, screenshots, or related links.
+    validations:
+      required: false

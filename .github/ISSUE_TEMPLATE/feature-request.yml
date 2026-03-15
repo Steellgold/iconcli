@@ -1,0 +1,69 @@
+name: Feature Request
+description: Suggest an improvement or new capability for mkicon
+title: "[Feature]: "
+labels:
+  - enhancement
+  - triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for sharing an idea.
+        Please explain the problem and the value of this feature.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What problem are you trying to solve?
+      placeholder: It is hard to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed solution
+      description: Describe your preferred solution.
+      placeholder: mkicon could add...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Describe other solutions or workarounds you tried.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of mkicon would this affect?
+      options:
+        - CLI
+        - Library integrations
+        - Templates (React/Vue/Svelte)
+        - Config and validation
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples or references
+      description: Links, screenshots, or examples from other tools.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues to avoid duplicates.
+          required: true
