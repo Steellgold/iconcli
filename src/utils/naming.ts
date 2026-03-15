@@ -131,3 +131,34 @@ export const extractIconNameFromURL = (url: string): string | null => {
     return null;
   }
 };
+
+/**
+ * Extract Lucide icon name from URL.
+ * Supports:
+ * - https://lucide.dev/icons/arrow-down-wide-narrow
+ * - https://lucide.dev/icons/arrow-down-wide-narrow.svg
+ */
+export const extractLucideIconNameFromURL = (url: string): string | null => {
+  try {
+    const urlObj = new URL(url);
+    const host = urlObj.hostname.toLowerCase();
+
+    if (!host.includes('lucide.dev')) {
+      return null;
+    }
+
+    const match = urlObj.pathname.match(/^\/icons\/([^/]+)\/?$/);
+    if (!match) {
+      return null;
+    }
+
+    const iconName = match[1].replace(/\.svg$/i, '').toLowerCase();
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(iconName)) {
+      return null;
+    }
+
+    return iconName;
+  } catch {
+    return null;
+  }
+};

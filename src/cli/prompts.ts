@@ -1,5 +1,5 @@
-import enquirer from 'enquirer';
 import { Config } from '@/config/schema.js';
+import enquirer from 'enquirer';
 
 const { prompt } = enquirer;
 
@@ -208,4 +208,44 @@ export const promptCreateAnother = async (): Promise<boolean> => {
   });
   
   return answer.another;
+};
+
+/**
+ * Prompt for multiple URLs (finish with empty input)
+ */
+export const promptMultipleURLs = async (): Promise<string[]> => {
+  const urls: string[] = [];
+  let index = 1;
+
+  while (true) {
+    const answer = await prompt<{ url: string }>({
+      type: 'input',
+      name: 'url',
+      message: index === 1
+        ? 'Enter icon URL (press Enter without URL when done):'
+        : `Enter icon URL ${index} (press Enter without URL when done):`,
+      validate: (input: string) => {
+        const trimmed = input.trim();
+        if (!trimmed) {
+          return true;
+        }
+        try {
+          new URL(trimmed);
+          return true;
+        } catch {
+          return 'Invalid URL format';
+        }
+      },
+    });
+
+    const value = answer.url.trim();
+    if (!value) {
+      break;
+    }
+
+    urls.push(value);
+    index += 1;
+  }
+
+  return urls;
 };
