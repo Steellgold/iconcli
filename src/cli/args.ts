@@ -87,6 +87,13 @@ export const createProgram = (): Command => {
       // Handled in main index.ts
     });
   
+  program
+    .command('init')
+    .description('Initialize mkicon with default configuration')
+    .action(() => {
+      // Handled in main index.ts
+    });
+  
   return program;
 };
 

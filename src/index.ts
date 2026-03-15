@@ -3,6 +3,7 @@
 import { findProjectRoot } from '@/core/project.js';
 import { loadConfig, configExists } from '@/config/manager.js';
 import { runSetup } from '@/cli/setup.js';
+import { runInit } from '@/cli/init.js';
 import { runInteractive } from '@/cli/interactive.js';
 import { runSemiInteractive } from '@/cli/semi-interactive.js';
 import { createProgram, processIconFromArgs, processBatchFromArgs } from '@/cli/args.js';
@@ -15,6 +16,7 @@ const main = async () => {
     // Check for subcommands
     const subcommand = process.argv[2];
     const isConfigCommand = subcommand === 'config';
+    const isInitCommand = subcommand === 'init';
     const isLibraryCommand = subcommand === 'library' || subcommand === 'browse';
     const isSemiInteractiveCommand = ['paste', 'p', 'url', 'u', 'file', 'f'].includes(subcommand);
     const showConfigFlag = process.argv.includes('--show');
@@ -55,6 +57,18 @@ const main = async () => {
     if (!hasCliArgs && !isSemiInteractive) {
       logger.info(`✓ Project detected: ${projectRoot}`);
       logger.newline();
+    }
+    
+    // Handle init command
+    if (isInitCommand) {
+      if (configExists(projectRoot)) {
+        logger.warning('Configuration already exists (.mkicon.json)');
+        logger.info('Use `mkicon config` to modify settings');
+        process.exit(1);
+      }
+      
+      await runInit(projectRoot);
+      return;
     }
     
     // Handle config command
