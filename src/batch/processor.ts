@@ -1,15 +1,15 @@
-import fs from 'fs/promises';
-import path from 'path';
-import enquirer from 'enquirer';
 import { Config } from '@/config/schema.js';
-import { getFilesWithExtension } from '@/utils/paths.js';
-import { extractIconNameFromFilename, generateIconName } from '@/utils/naming.js';
-import { isValidSVG } from '@/utils/validation.js';
-import { optimizeSVG } from '@/core/svg-processor.js';
 import { generateComponent } from '@/core/component-generator.js';
 import { writeComponentFile } from '@/core/file-writer.js';
 import { updateIndexFile } from '@/core/index-maintainer.js';
+import { optimizeSVG } from '@/core/svg-processor.js';
 import { logger, spinner } from '@/utils/logger.js';
+import { extractIconNameFromFilename, generateIconName } from '@/utils/naming.js';
+import { getFilesWithExtension } from '@/utils/paths.js';
+import { isValidSVG } from '@/utils/validation.js';
+import enquirer from 'enquirer';
+import fs from 'fs/promises';
+import path from 'path';
 
 const { prompt } = enquirer;
 

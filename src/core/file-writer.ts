@@ -1,7 +1,7 @@
+import enquirer from 'enquirer';
+import { existsSync } from 'fs';
 import fs from 'fs/promises';
 import path from 'path';
-import { existsSync } from 'fs';
-import enquirer from 'enquirer';
 
 const { prompt } = enquirer;
 

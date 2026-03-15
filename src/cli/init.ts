@@ -1,8 +1,8 @@
-import path from 'path';
 import { createConfig } from '@/config/manager.js';
-import { ensureDir } from '@/utils/paths.js';
-import { logger } from '@/utils/logger.js';
 import { Config } from '@/config/schema.js';
+import { logger } from '@/utils/logger.js';
+import { ensureDir } from '@/utils/paths.js';
+import path from 'path';
 
 /**
  * Default configuration with best practices

@@ -1,9 +1,8 @@
 import { Config } from '@/config/schema.js';
 import { generateReactComponent, getReactFileExtension } from '@/templates/react.js';
-import { generateVueComponent, getVueFileExtension } from '@/templates/vue.js';
 import { generateSvelteComponent, getSvelteFileExtension } from '@/templates/svelte.js';
+import { generateVueComponent, getVueFileExtension } from '@/templates/vue.js';
 import { cleanSVGAttributes } from './svg-processor.js';
-import { generateFileName } from '@/utils/naming.js';
 
 export interface GenerateComponentOptions {
   componentName: string;

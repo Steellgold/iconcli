@@ -1,6 +1,6 @@
+import { getFilesWithExtension } from '@/utils/paths.js';
 import fs from 'fs/promises';
 import path from 'path';
-import { getFilesWithExtension } from '@/utils/paths.js';
 
 /**
  * Update the index file with all icon exports

@@ -1,5 +1,5 @@
-import path from 'path';
 import { existsSync } from 'fs';
+import path from 'path';
 
 /**
  * Find the project root by looking for package.json
