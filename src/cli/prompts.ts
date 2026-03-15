@@ -103,9 +103,9 @@ export const promptSVGSource = async (): Promise<{
     name: 'source',
     message: 'How do you want to provide the SVG?',
     choices: [
-      { name: 'library', message: '📚 From library (Lucide Icons)' },
       { name: 'paste', message: 'Paste SVG code' },
       { name: 'url', message: 'From URL' },
+      { name: 'library', message: 'From a library' },
       { name: 'file', message: 'From local file' },
     ],
   });
