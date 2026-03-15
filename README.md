@@ -163,7 +163,7 @@ The `.mkicon.json` file in your project root:
 
 ```json
 {
-  "$schema": "https://unpkg.com/mkicon/schema.json",
+  "$schema": "https://unpkg.com/@steellgold/mkicon/schema.json",
   "version": "1.0.0",
   "baseDir": "src/components",
   "iconsFolder": "icons",
