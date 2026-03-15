@@ -30,3 +30,6 @@ coverage/
 *.log
 .temp/
 .cache/
+
+# User config
+.mkicon.json
