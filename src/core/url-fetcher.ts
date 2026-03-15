@@ -1,4 +1,4 @@
-import { isValidSVG } from '../utils/validation.js';
+import { isValidSVG } from '@/utils/validation.js';
 
 /**
  * Fetch SVG content from URL

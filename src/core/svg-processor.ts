@@ -1,5 +1,5 @@
 import { optimize } from 'svgo';
-import { extractViewBox } from '../utils/validation.js';
+import { extractViewBox } from '@/utils/validation.js';
 
 export interface ProcessedSVG {
   content: string;

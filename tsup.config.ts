@@ -11,4 +11,9 @@ export default defineConfig({
   minify: false,
   sourcemap: false,
   target: 'node18',
+  esbuildOptions(options) {
+    options.alias = {
+      '@': './src',
+    };
+  },
 });

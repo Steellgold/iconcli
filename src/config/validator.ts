@@ -1,8 +1,8 @@
 import path from 'path';
-import { dirExists, ensureDir } from '../utils/paths.js';
+import { dirExists, ensureDir } from '@/utils/paths.js';
 import { Config } from './schema.js';
 import enquirer from 'enquirer';
-import { logger } from '../utils/logger.js';
+import { logger } from '@/utils/logger.js';
 
 const { prompt } = enquirer;
 

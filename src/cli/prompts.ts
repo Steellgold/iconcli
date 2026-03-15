@@ -1,5 +1,5 @@
 import enquirer from 'enquirer';
-import { Config } from '../config/schema.js';
+import { Config } from '@/config/schema.js';
 
 const { prompt } = enquirer;
 

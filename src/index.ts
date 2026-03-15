@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-import { findProjectRoot } from './core/project.js';
-import { loadConfig, configExists } from './config/manager.js';
-import { runSetup } from './cli/setup.js';
-import { runInteractive } from './cli/interactive.js';
-import { runSemiInteractive } from './cli/semi-interactive.js';
-import { createProgram, processIconFromArgs, processBatchFromArgs } from './cli/args.js';
-import { runConfigMenu, showConfig } from './config/commands.js';
-import { logger } from './utils/logger.js';
+import { findProjectRoot } from '@/core/project.js';
+import { loadConfig, configExists } from '@/config/manager.js';
+import { runSetup } from '@/cli/setup.js';
+import { runInteractive } from '@/cli/interactive.js';
+import { runSemiInteractive } from '@/cli/semi-interactive.js';
+import { createProgram, processIconFromArgs, processBatchFromArgs } from '@/cli/args.js';
+import { runConfigMenu, showConfig } from '@/config/commands.js';
+import { logger } from '@/utils/logger.js';
 
 const main = async () => {
   try {

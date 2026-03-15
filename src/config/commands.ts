@@ -1,7 +1,7 @@
 import enquirer from 'enquirer';
 import { Config } from './schema.js';
 import { loadConfig, updateConfig } from './manager.js';
-import { logger } from '../utils/logger.js';
+import { logger } from '@/utils/logger.js';
 
 const { prompt } = enquirer;
 

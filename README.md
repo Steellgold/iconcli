@@ -2,7 +2,7 @@
 
 Transform SVG icons into beautiful React, Vue, or Svelte components with zero config.
 
-[![npm version](https://badge.fury.io/js/mkicon.svg)](https://www.npmjs.com/package/mkicon)
+[![npm version](https://badge.fury.io/js/%40steellgold%2Fmkicon.svg)](https://www.npmjs.com/package/@steellgold/mkicon)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## ✨ Features
@@ -20,11 +20,11 @@ Transform SVG icons into beautiful React, Vue, or Svelte components with zero co
 
 ```bash
 # Using npx (recommended - no installation needed)
-npx mkicon
+npx @steellgold/mkicon
 
 # Or install globally
-npm install -g mkicon
-pnpm add -g mkicon
+npm install -g @steellgold/mkicon
+pnpm add -g @steellgold/mkicon
 ```
 
 ## 🚀 Quick Start
@@ -35,7 +35,7 @@ Run mkicon in your project directory:
 
 ```bash
 cd my-project
-npx mkicon
+npx @steellgold/mkicon
 ```
 
 Follow the interactive prompts to configure:
@@ -52,7 +52,7 @@ A `.mkicon.json` file will be created - commit it to your repo!
 After setup, paste your SVG when prompted:
 
 ```bash
-npx mkicon
+npx @steellgold/mkicon
 
 # Paste SVG, enter icon name, done! ✨
 ```
@@ -62,7 +62,7 @@ npx mkicon
 ### Interactive Mode (Default)
 
 ```bash
-npx mkicon
+npx @steellgold/mkicon
 ```
 
 Prompts you through:
@@ -76,19 +76,19 @@ Skip the source selection and jump straight to input:
 
 ```bash
 # Paste mode - prompts for SVG and name
-npx mkicon paste
+npx @steellgold/mkicon paste
 # or shorthand:
-npx mkicon p
+npx @steellgold/mkicon p
 
 # URL mode - prompts for URL and name
-npx mkicon url
+npx @steellgold/mkicon url
 # or shorthand:
-npx mkicon u
+npx @steellgold/mkicon u
 
 # File mode - prompts for file path and name
-npx mkicon file
+npx @steellgold/mkicon file
 # or shorthand:
-npx mkicon f
+npx @steellgold/mkicon f
 ```
 
 This is the **fastest way** to create icons - no source selection needed!
@@ -99,16 +99,16 @@ Provide all arguments for fully automated icon creation:
 
 ```bash
 # From SVG code
-npx mkicon -n UserPlus -p '<svg>...</svg>'
+npx @steellgold/mkicon -n UserPlus -p '<svg>...</svg>'
 
 # From URL
-npx mkicon -n Arrow -u https://example.com/icon.svg
+npx @steellgold/mkicon -n Arrow -u https://example.com/icon.svg
 
 # From file
-npx mkicon -n Home -f ./icons/home.svg
+npx @steellgold/mkicon -n Home -f ./icons/home.svg
 
 # Legacy syntax (still supported)
-npx mkicon --name UserPlus --svg '<svg>...</svg>'
+npx @steellgold/mkicon --name UserPlus --svg '<svg>...</svg>'
 ```
 
 ### Batch Mode
@@ -116,9 +116,9 @@ npx mkicon --name UserPlus --svg '<svg>...</svg>'
 Convert multiple SVG files at once:
 
 ```bash
-npx mkicon --batch ./svg-icons
+npx @steellgold/mkicon --batch ./svg-icons
 # or shorthand:
-npx mkicon -b ./svg-icons
+npx @steellgold/mkicon -b ./svg-icons
 ```
 
 This will:
@@ -132,10 +132,10 @@ This will:
 
 ```bash
 # Interactive config menu
-npx mkicon config
+npx @steellgold/mkicon config
 
 # Show current config
-npx mkicon config --show
+npx @steellgold/mkicon config --show
 ```
 
 ## ⚙️ Configuration
@@ -275,7 +275,7 @@ withDefaults(defineProps<{
 ### Using with Heroicons
 
 ```bash
-npx mkicon \
+npx @steellgold/mkicon \
   --name ChevronRight \
   --url https://raw.githubusercontent.com/tailwindlabs/heroicons/master/optimized/24/outline/chevron-right.svg
 ```
@@ -283,7 +283,7 @@ npx mkicon \
 ### Using with Lucide
 
 ```bash
-npx mkicon \
+npx @steellgold/mkicon \
   --name User \
   --url https://lucide.dev/api/icons/user
 ```
@@ -291,7 +291,7 @@ npx mkicon \
 ### Custom SVG
 
 ```bash
-npx mkicon --name Logo --svg '
+npx @steellgold/mkicon --name Logo --svg '
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
   <circle cx="50" cy="50" r="40" fill="blue"/>
 </svg>
@@ -302,7 +302,7 @@ npx mkicon --name Logo --svg '
 
 ```bash
 # Export icons from Figma to ./figma-icons/
-npx mkicon --batch ./figma-icons
+npx @steellgold/mkicon --batch ./figma-icons
 ```
 
 ## 🔧 Auto-Generated Index
@@ -355,7 +355,7 @@ mkicon is smart about naming:
 Don't want the "Icon" suffix?
 
 ```bash
-npx mkicon config
+npx @steellgold/mkicon config
 # → Select "Naming configuration"
 # → Disable suffix
 ```
@@ -373,7 +373,7 @@ MIT © Gaëtan H
 ## 🔗 Links
 
 - [GitHub Repository](https://github.com/Steellgold/mkicon)
-- [NPM Package](https://www.npmjs.com/package/mkicon)
+- [NPM Package](https://www.npmjs.com/package/@steellgold/mkicon)
 - [Report Issues](https://github.com/Steellgold/mkicon/issues)
 
 ---

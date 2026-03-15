@@ -1,14 +1,14 @@
 import { Command } from 'commander';
-import { Config } from '../config/schema.js';
-import { generateIconName } from '../utils/naming.js';
-import { isValidSVG } from '../utils/validation.js';
-import { fetchSVGFromURL } from '../core/url-fetcher.js';
-import { optimizeSVG } from '../core/svg-processor.js';
-import { generateComponent } from '../core/component-generator.js';
-import { writeComponentFile } from '../core/file-writer.js';
-import { updateIndexFile } from '../core/index-maintainer.js';
-import { processBatchIcons } from '../batch/processor.js';
-import { logger, spinner } from '../utils/logger.js';
+import { Config } from '@/config/schema.js';
+import { generateIconName } from '@/utils/naming.js';
+import { isValidSVG } from '@/utils/validation.js';
+import { fetchSVGFromURL } from '@/core/url-fetcher.js';
+import { optimizeSVG } from '@/core/svg-processor.js';
+import { generateComponent } from '@/core/component-generator.js';
+import { writeComponentFile } from '@/core/file-writer.js';
+import { updateIndexFile } from '@/core/index-maintainer.js';
+import { processBatchIcons } from '@/batch/processor.js';
+import { logger, spinner } from '@/utils/logger.js';
 import path from 'path';
 import fs from 'fs/promises';
 
