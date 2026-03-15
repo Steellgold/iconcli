@@ -25,8 +25,17 @@ export const runSetup = async (projectRoot: string): Promise<Config> => {
   logger.newline();
   
   // Create config file
-  await createConfig(projectRoot, config);
-  logger.success('Configuration created: .mkicon.json');
+  try {
+    await createConfig(projectRoot, config);
+    logger.success('Configuration created: .mkicon.json');
+    logger.success(`Config file location: ${projectRoot}/.mkicon.json`);
+  } catch (error) {
+    logger.error('Failed to create configuration file');
+    if (error instanceof Error) {
+      logger.error(error.message);
+    }
+    throw error;
+  }
   
   // Create icons directory
   const iconsDir = path.join(projectRoot, config.baseDir!, config.iconsFolder!);

@@ -11,7 +11,8 @@ const CONFIG_FILENAME = '.mkicon.json';
  */
 export const loadConfig = (projectRoot: string): Config | null => {
   try {
-    const result = explorer.search(projectRoot);
+    const configPath = path.join(projectRoot, CONFIG_FILENAME);
+    const result = explorer.load(configPath);
     
     if (!result || !result.config) {
       return null;
@@ -86,6 +87,11 @@ export const updateConfig = async (
  * Check if config file exists
  */
 export const configExists = (projectRoot: string): boolean => {
-  const result = explorer.search(projectRoot);
-  return result !== null;
+  try {
+    const configPath = path.join(projectRoot, CONFIG_FILENAME);
+    const result = explorer.load(configPath);
+    return result !== null;
+  } catch {
+    return false;
+  }
 };
