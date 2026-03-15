@@ -7,6 +7,7 @@ import { runInteractive } from '@/cli/interactive.js';
 import { runSemiInteractive } from '@/cli/semi-interactive.js';
 import { createProgram, processIconFromArgs, processBatchFromArgs } from '@/cli/args.js';
 import { runConfigMenu, showConfig } from '@/config/commands.js';
+import { runLibraryBrowser } from '@/cli/library.js';
 import { logger } from '@/utils/logger.js';
 
 const main = async () => {
@@ -14,6 +15,7 @@ const main = async () => {
     // Check for subcommands
     const subcommand = process.argv[2];
     const isConfigCommand = subcommand === 'config';
+    const isLibraryCommand = subcommand === 'library' || subcommand === 'browse';
     const isSemiInteractiveCommand = ['paste', 'p', 'url', 'u', 'file', 'f'].includes(subcommand);
     const showConfigFlag = process.argv.includes('--show');
     const hasAnyArgs = process.argv.length > 2;
@@ -69,6 +71,24 @@ const main = async () => {
         await runConfigMenu(projectRoot);
         return;
       }
+    }
+    
+    // Handle library command
+    if (isLibraryCommand) {
+      // Check if config exists
+      if (!configExists(projectRoot)) {
+        logger.error('No configuration found. Please run `mkicon` first to set up the project.');
+        process.exit(1);
+      }
+      
+      const config = loadConfig(projectRoot);
+      if (!config) {
+        logger.error('Failed to load configuration');
+        process.exit(1);
+      }
+      
+      await runLibraryBrowser({ projectRoot, config });
+      return;
     }
     
     // Check if config exists

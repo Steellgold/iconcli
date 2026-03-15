@@ -79,6 +79,14 @@ export const createProgram = (): Command => {
       // Handled in main index.ts
     });
   
+  program
+    .command('library')
+    .alias('browse')
+    .description('Browse and import icons from Lucide Icons')
+    .action(() => {
+      // Handled in main index.ts
+    });
+  
   return program;
 };
 
