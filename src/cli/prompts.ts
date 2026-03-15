@@ -96,13 +96,14 @@ export const promptSetupConfig = async (): Promise<Partial<Config>> => {
  * Prompt for SVG source
  */
 export const promptSVGSource = async (): Promise<{
-  source: 'paste' | 'url' | 'file';
+  source: 'paste' | 'url' | 'file' | 'library';
 }> => {
-  const answer = await prompt<{ source: 'paste' | 'url' | 'file' }>({
+  const answer = await prompt<{ source: 'paste' | 'url' | 'file' | 'library' }>({
     type: 'select',
     name: 'source',
     message: 'How do you want to provide the SVG?',
     choices: [
+      { name: 'library', message: '📚 From library (Lucide Icons)' },
       { name: 'paste', message: 'Paste SVG code' },
       { name: 'url', message: 'From URL' },
       { name: 'file', message: 'From local file' },
