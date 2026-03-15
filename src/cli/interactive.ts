@@ -136,9 +136,7 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
           
           // Process each icon
           for (const iconName of selectedIcons) {
-            const loadSpinner = spinner.start(`Fetching ${iconName}...`);
             const { svgContent: libSvg, metadata } = await fetchLucideIcon(iconName);
-            loadSpinner.succeed(`${iconName} fetched`);
             
             const copyrightHeader = generateLucideCopyright(metadata.iconName);
             

@@ -77,9 +77,7 @@ export const runLibraryBrowser = async (options: LibraryOptions): Promise<void> 
       
       // Process each icon
       for (const iconName of selectedIcons) {
-        const loadSpinner = spinner.start(`Fetching ${iconName}...`);
         const { svgContent, metadata } = await fetchLucideIcon(iconName);
-        loadSpinner.succeed(`${iconName} fetched`);
         
         // Process SVG
         const processed = await optimizeSVG(svgContent, config.optimize);
