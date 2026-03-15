@@ -32,7 +32,7 @@ export const createProgram = (): Command => {
   program
     .name('mkicon')
     .description('Transform SVG icons into beautiful React, Vue, or Svelte components')
-    .version('0.1.1')
+    .version('0.1.2')
     .allowUnknownOption(false)
     .helpOption('-h, --help', 'Display help')
     .addHelpCommand(false);
