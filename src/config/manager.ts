@@ -42,7 +42,7 @@ export const createConfig = async (
   await fs.writeFile(
     configPath,
     JSON.stringify({
-      $schema: 'https://unpkg.com/mkicon/schema.json',
+      $schema: 'https://unpkg.com/@steellgold/mkicon/schema.json',
       ...fullConfig,
     }, null, 2),
     'utf-8'
@@ -76,7 +76,7 @@ export const updateConfig = async (
   await fs.writeFile(
     configPath,
     JSON.stringify({
-      $schema: 'https://unpkg.com/mkicon/schema.json',
+      $schema: 'https://unpkg.com/@steellgold/mkicon/schema.json',
       ...validConfig,
     }, null, 2),
     'utf-8'
