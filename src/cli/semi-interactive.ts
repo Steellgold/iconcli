@@ -4,14 +4,15 @@ import { Config } from '@/config/schema.js';
 import { 
   promptSVGContent, 
   promptSVGURL, 
-  promptIconName 
+  promptIconName,
+  promptConfirmIconName
 } from './prompts.js';
 import { fetchSVGFromURL } from '@/core/url-fetcher.js';
 import { optimizeSVG } from '@/core/svg-processor.js';
 import { generateComponent } from '@/core/component-generator.js';
 import { writeComponentFile } from '@/core/file-writer.js';
 import { updateIndexFile } from '@/core/index-maintainer.js';
-import { generateIconName } from '@/utils/naming.js';
+import { generateIconName, extractIconNameFromURL } from '@/utils/naming.js';
 import { isValidSVG } from '@/utils/validation.js';
 import { logger, spinner } from '@/utils/logger.js';
 
@@ -31,6 +32,7 @@ export const runSemiInteractive = async (options: SemiInteractiveOptions): Promi
   try {
     // Get SVG content based on mode
     let svgContent: string;
+    let suggestedName: string | null = null;
     
     if (mode === 'paste') {
       if (value) {
@@ -40,6 +42,10 @@ export const runSemiInteractive = async (options: SemiInteractiveOptions): Promi
       }
     } else if (mode === 'url') {
       const url = value || await promptSVGURL();
+      
+      // Extract suggested name from URL
+      suggestedName = extractIconNameFromURL(url);
+      
       const loadSpinner = spinner.start('Fetching SVG from URL...');
       
       try {
@@ -61,8 +67,19 @@ export const runSemiInteractive = async (options: SemiInteractiveOptions): Promi
       process.exit(1);
     }
     
-    // Ask for icon name
-    const iconName = await promptIconName();
+    // Ask for icon name (with suggestion if available)
+    let iconName: string;
+    
+    if (suggestedName) {
+      const useSuggested = await promptConfirmIconName(suggestedName);
+      if (useSuggested) {
+        iconName = suggestedName;
+      } else {
+        iconName = await promptIconName();
+      }
+    } else {
+      iconName = await promptIconName();
+    }
     const componentName = generateIconName(
       iconName,
       config.naming.suffix,

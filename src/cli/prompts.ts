@@ -182,6 +182,20 @@ export const promptIconName = async (defaultName?: string): Promise<string> => {
 };
 
 /**
+ * Prompt to confirm suggested icon name
+ */
+export const promptConfirmIconName = async (suggestedName: string): Promise<boolean> => {
+  const answer = await prompt<{ confirm: boolean }>({
+    type: 'confirm',
+    name: 'confirm',
+    message: `Use '${suggestedName}' as icon name?`,
+    initial: true,
+  });
+  
+  return answer.confirm;
+};
+
+/**
  * Prompt to create another icon
  */
 export const promptCreateAnother = async (): Promise<boolean> => {

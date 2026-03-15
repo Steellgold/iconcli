@@ -112,3 +112,22 @@ export const extractIconNameFromFilename = (filename: string): string => {
     .replace(/\.svg$/i, '')
     .replace(/[-_]/g, ' ');
 };
+
+/**
+ * Extract icon name from URL
+ */
+export const extractIconNameFromURL = (url: string): string | null => {
+  try {
+    const urlObj = new URL(url);
+    const pathname = urlObj.pathname;
+    const filename = pathname.split('/').pop();
+    
+    if (!filename || !filename.endsWith('.svg')) {
+      return null;
+    }
+    
+    return extractIconNameFromFilename(filename);
+  } catch {
+    return null;
+  }
+};
