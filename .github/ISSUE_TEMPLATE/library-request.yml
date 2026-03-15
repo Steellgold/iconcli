@@ -1,0 +1,76 @@
+name: Library Request
+description: Suggest a new icon library to integrate with mkicon
+title: "[Library Request] "
+labels: ["enhancement", "library-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting a new icon library! Please fill out the information below.
+
+  - type: input
+    id: library-name
+    attributes:
+      label: Library Name
+      description: What is the name of the icon library?
+      placeholder: e.g., Heroicons, Feather Icons, Font Awesome, Material Icons
+    validations:
+      required: true
+
+  - type: input
+    id: library-url
+    attributes:
+      label: Library Website
+      description: Official website or documentation URL
+      placeholder: e.g., https://heroicons.com
+    validations:
+      required: true
+
+  - type: dropdown
+    id: open-source
+    attributes:
+      label: Is it Open Source?
+      description: Is this library available under an open-source license?
+      options:
+        - Yes
+        - No
+    validations:
+      required: true
+
+  - type: input
+    id: license
+    attributes:
+      label: License
+      description: What license does this library use? (if open source)
+      placeholder: e.g., MIT, Apache 2.0, ISC, CC BY 4.0
+
+  - type: input
+    id: icon-count
+    attributes:
+      label: Number of Icons
+      description: Approximately how many icons are in this library?
+      placeholder: e.g., 500+, 2000+
+
+  - type: input
+    id: api-url
+    attributes:
+      label: API or Icon List URL (Optional)
+      description: URL to an API endpoint or JSON file containing the icon list
+      placeholder: e.g., https://unpkg.com/heroicons@latest/tags.json
+
+  - type: input
+    id: cdn-url
+    attributes:
+      label: CDN or Raw Icon URL Pattern (Optional)
+      description: URL pattern to fetch individual SVG icons
+      placeholder: e.g., https://unpkg.com/heroicons@latest/24/outline/{icon-name}.svg
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: Additional Information
+      description: Any other relevant information about this library
+      placeholder: |
+        - Special features (e.g., multiple styles, sizes)
+        - Attribution requirements
+        - Why this library would be useful

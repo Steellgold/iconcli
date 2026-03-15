@@ -24,6 +24,26 @@ export const runLibraryBrowser = async (options: LibraryOptions): Promise<void> 
   const { projectRoot, config } = options;
   
   try {
+    // Select library
+    const library = await promptLibrarySelection();
+    
+    if (library === 'request') {
+      // Open GitHub issue for library request
+      const issueUrl = 'https://github.com/Steellgold/mkicon/issues/new?template=library-request.yml';
+      logger.info('Opening GitHub to request a new library...');
+      logger.newline();
+      console.log(`Please open this URL in your browser:`);
+      console.log(issueUrl);
+      logger.newline();
+      logger.info('Thank you for your suggestion! 🙏');
+      return;
+    }
+    
+    if (!library) {
+      logger.info('No library selected');
+      return;
+    }
+    
     // Fetch all icons
     const fetchSpinner = spinner.start('Loading Lucide Icons...');
     const icons = await fetchLucideIcons();
@@ -146,6 +166,29 @@ export const runLibraryBrowser = async (options: LibraryOptions): Promise<void> 
       logger.error('An error occurred');
     }
     process.exit(1);
+  }
+};
+
+/**
+ * Prompt user to select a library
+ */
+const promptLibrarySelection = async (): Promise<string | null> => {
+  try {
+    const answer = await prompt({
+      type: 'select',
+      name: 'library',
+      message: 'Select an icon library:',
+      choices: [
+        { name: 'lucide', message: 'Lucide Icons (1700+ icons)', value: 'lucide' },
+        { name: 'separator', role: 'separator' },
+        { name: 'request', message: '💡 Request a new library', value: 'request' },
+      ],
+    }) as { library: string };
+    
+    return answer.library;
+  } catch (error) {
+    // User cancelled
+    return null;
   }
 };
 
