@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Configuration version"
+    },
+    "baseDir": {
+      "type": "string",
+      "description": "Base directory where icons folder will be created (relative to project root)"
+    },
+    "iconsFolder": {
+      "type": "string",
+      "description": "Name of the icons subfolder",
+      "default": "icons"
+    },
+    "framework": {
+      "type": "string",
+      "enum": ["react", "vue", "svelte"],
+      "description": "Target framework for component generation"
+    },
+    "typescript": {
+      "type": "boolean",
+      "description": "Generate TypeScript components",
+      "default": true
+    },
+    "optimize": {
+      "type": "boolean",
+      "description": "Automatically optimize SVG with SVGO",
+      "default": true
+    },
+    "maintainIndex": {
+      "type": "boolean",
+      "description": "Automatically maintain an index file with all icon exports",
+      "default": true
+    },
+    "props": {
+      "type": "object",
+      "properties": {
+        "size": {
+          "type": "boolean",
+          "description": "Include size prop",
+          "default": true
+        },
+        "color": {
+          "type": "boolean",
+          "description": "Include color prop",
+          "default": true
+        },
+        "className": {
+          "type": "boolean",
+          "description": "Include className prop",
+          "default": true
+        },
+        "style": {
+          "type": "boolean",
+          "description": "Include style prop",
+          "default": false
+        }
+      }
+    },
+    "naming": {
+      "type": "object",
+      "properties": {
+        "suffix": {
+          "type": "string",
+          "description": "Suffix to add to icon names",
+          "default": "Icon"
+        },
+        "case": {
+          "type": "string",
+          "enum": ["PascalCase", "camelCase", "kebab-case"],
+          "description": "Case format for component names",
+          "default": "PascalCase"
+        }
+      }
+    },
+    "svgo": {
+      "type": "object",
+      "description": "SVGO optimization plugins configuration"
+    }
+  },
+  "required": ["baseDir", "framework"]
+}
