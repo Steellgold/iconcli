@@ -4,14 +4,17 @@ import { findProjectRoot } from './core/project.js';
 import { loadConfig, configExists } from './config/manager.js';
 import { runSetup } from './cli/setup.js';
 import { runInteractive } from './cli/interactive.js';
+import { runSemiInteractive } from './cli/semi-interactive.js';
 import { createProgram, processIconFromArgs, processBatchFromArgs } from './cli/args.js';
 import { runConfigMenu, showConfig } from './config/commands.js';
 import { logger } from './utils/logger.js';
 
 const main = async () => {
   try {
-    // Check if config command
-    const isConfigCommand = process.argv[2] === 'config';
+    // Check for subcommands
+    const subcommand = process.argv[2];
+    const isConfigCommand = subcommand === 'config';
+    const isSemiInteractiveCommand = ['paste', 'p', 'url', 'u', 'file', 'f'].includes(subcommand);
     const showConfigFlag = process.argv.includes('--show');
     
     // Parse CLI arguments
@@ -28,10 +31,20 @@ const main = async () => {
       process.exit(1);
     }
     
-    // Check if in CLI mode (has arguments)
-    const hasCliArgs = options.name || options.svg || options.url || options.file || options.batch;
+    // Use subcommand detection instead
+    const isSemiInteractive = isSemiInteractiveCommand;
     
-    if (!hasCliArgs) {
+    // Check if in CLI mode (has arguments with values)
+    const hasCliArgs = (
+      options.name || 
+      (typeof options.paste === 'string') || 
+      options.svg || 
+      (typeof options.url === 'string') || 
+      (typeof options.file === 'string') || 
+      options.batch
+    );
+    
+    if (!hasCliArgs && !isSemiInteractive) {
       logger.info(`✓ Project detected: ${projectRoot}`);
       logger.newline();
     }
@@ -56,7 +69,7 @@ const main = async () => {
     let config;
     
     if (!configExists(projectRoot)) {
-      if (hasCliArgs) {
+      if (hasCliArgs || isSemiInteractive) {
         logger.error('No configuration found. Please run `mkicon` first to set up the project.');
         process.exit(1);
       }
@@ -72,7 +85,7 @@ const main = async () => {
         process.exit(1);
       }
       
-      if (!hasCliArgs) {
+      if (!hasCliArgs && !isSemiInteractive) {
         logger.title('🎨 mkicon');
         logger.success(`Configuration loaded: .mkicon.json`);
         logger.success(`Folder: ${config.baseDir}/${config.iconsFolder}/`);
@@ -81,14 +94,31 @@ const main = async () => {
       }
     }
     
-    // Run CLI mode or interactive mode
-    if (hasCliArgs) {
+    // Run appropriate mode
+    if (isSemiInteractive) {
+      // Semi-interactive mode (subcommand)
+      let mode: 'paste' | 'url' | 'file';
+      
+      if (subcommand === 'paste' || subcommand === 'p') {
+        mode = 'paste';
+      } else if (subcommand === 'url' || subcommand === 'u') {
+        mode = 'url';
+      } else if (subcommand === 'file' || subcommand === 'f') {
+        mode = 'file';
+      } else {
+        mode = 'paste'; // fallback
+      }
+      
+      await runSemiInteractive({ projectRoot, config, mode });
+    } else if (hasCliArgs) {
+      // Full CLI mode (all arguments provided)
       if (options.batch) {
         await processBatchFromArgs(options.batch, config, projectRoot);
       } else {
         await processIconFromArgs(options, config, projectRoot);
       }
     } else {
+      // Full interactive mode
       await runInteractive({ projectRoot, config });
     }
     

@@ -14,6 +14,7 @@ import fs from 'fs/promises';
 
 export interface CLIOptions {
   name?: string;
+  paste?: string;
   svg?: string;
   url?: string;
   file?: string;
@@ -34,13 +35,38 @@ export const createProgram = (): Command => {
     .version('0.1.0');
   
   program
-    .option('--name <name>', 'Icon name')
-    .option('--svg <svg>', 'SVG code')
-    .option('--url <url>', 'SVG URL')
-    .option('--file <path>', 'SVG file path')
-    .option('--batch <dir>', 'Batch process directory')
+    .option('-n, --name <name>', 'Icon name')
+    .option('-p, --paste [svg]', 'Paste SVG code (interactive if no value)')
+    .option('-u, --url [url]', 'Fetch SVG from URL (interactive if no value)')
+    .option('-f, --file [path]', 'Load SVG from file (interactive if no value)')
+    .option('-b, --batch <dir>', 'Batch process directory')
+    .option('--svg <svg>', 'SVG code (non-interactive)')
     .option('--framework <framework>', 'Override framework (react, vue, svelte)')
     .option('--output <dir>', 'Override output directory');
+  
+  program
+    .command('paste')
+    .alias('p')
+    .description('Create icon from pasted SVG (interactive)')
+    .action(() => {
+      // Handled in main index.ts
+    });
+  
+  program
+    .command('url')
+    .alias('u')
+    .description('Create icon from URL (interactive)')
+    .action(() => {
+      // Handled in main index.ts
+    });
+  
+  program
+    .command('file')
+    .alias('f')
+    .description('Create icon from file (interactive)')
+    .action(() => {
+      // Handled in main index.ts
+    });
   
   program
     .command('config')
@@ -63,12 +89,15 @@ export const processIconFromArgs = async (
 ): Promise<void> => {
   // Validate required options
   if (!options.name) {
-    logger.error('--name is required');
+    logger.error('-n or --name is required');
     process.exit(1);
   }
   
-  if (!options.svg && !options.url && !options.file) {
-    logger.error('One of --svg, --url, or --file is required');
+  // Support both --paste/-p and --svg
+  const pasteContent = options.paste || options.svg;
+  
+  if (!pasteContent && !options.url && !options.file) {
+    logger.error('One of -p/--paste, -u/--url, or -f/--file is required');
     process.exit(1);
   }
   
@@ -76,8 +105,8 @@ export const processIconFromArgs = async (
     // Get SVG content
     let svgContent: string;
     
-    if (options.svg) {
-      svgContent = options.svg;
+    if (pasteContent) {
+      svgContent = pasteContent;
     } else if (options.url) {
       const loadSpinner = spinner.start('Fetching SVG from URL...');
       try {
