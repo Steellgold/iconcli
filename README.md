@@ -96,18 +96,12 @@ Skip the source selection and jump straight to input:
 ```bash
 # Paste mode - prompts for SVG and name
 mkicon paste
-# or shorthand:
-mkicon p
 
 # URL mode - prompts for URL and name
 mkicon url
-# or shorthand:
-mkicon u
 
 # File mode - prompts for file path and name
 mkicon file
-# or shorthand:
-mkicon f
 ```
 
 This is the **fastest way** to create icons - no source selection needed!
