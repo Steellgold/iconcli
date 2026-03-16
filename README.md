@@ -2,8 +2,8 @@
 
 Transform SVG icons into beautiful React, Vue, or Svelte components with zero config.
 
-[![npm version](https://badge.fury.io/js/%40steellgold%2Fmkicon.svg)](https://www.npmjs.com/package/@steellgold/mkicon)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[npm version](https://www.npmjs.com/package/@steellgold/mkicon)
+[License: MIT](https://opensource.org/licenses/MIT)
 
 ## ✨ Features
 
@@ -41,6 +41,7 @@ mkicon init
 ```
 
 This creates `.mkicon.json` with:
+
 - Framework: React (TypeScript)
 - Folder: `src/components/icons/`
 - Optimization: Enabled
@@ -58,6 +59,7 @@ mkicon
 ```
 
 Configure:
+
 - Where to create icons
 - Framework (React, Vue, or Svelte)
 - Optimization preferences
@@ -85,6 +87,7 @@ mkicon
 ```
 
 Prompts you through:
+
 1. How to provide SVG (paste/URL/file)
 2. Icon name
 3. Creates component automatically
@@ -135,6 +138,7 @@ mkicon -b ./svg-icons
 ```
 
 This will:
+
 - Scan the folder for all `.svg` files
 - Show a preview of found files
 - Ask for confirmation
@@ -152,6 +156,7 @@ mkicon browse
 ```
 
 This will:
+
 - Open an interactive browser
 - Search through 1700+ Lucide icons
 - Preview icon details
@@ -198,22 +203,24 @@ The `.mkicon.json` file in your project root:
 
 ### Configuration Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `baseDir` | `string` | - | Base directory for icons |
-| `iconsFolder` | `string` | `"icons"` | Subfolder name |
-| `framework` | `"react" \| "vue" \| "svelte"` | `"react"` | Target framework |
-| `typescript` | `boolean` | `true` | Generate TypeScript files |
-| `optimize` | `boolean` | `true` | Optimize SVG with SVGO |
-| `maintainIndex` | `boolean` | `true` | Auto-maintain index.ts |
-| `props.size` | `boolean` | `true` | Enable size prop |
-| `props.color` | `boolean` | `true` | Enable color prop |
-| `props.className` | `boolean` | `true` | Enable className prop |
-| `props.style` | `boolean` | `false` | Enable style prop |
-| `naming.suffix` | `string` | `"Icon"` | Component name suffix |
-| `naming.suffixEnabled` | `boolean` | `true` | Add suffix to names |
-| `naming.componentCase` | `"PascalCase" \| "camelCase"` | `"PascalCase"` | Component name format |
-| `naming.fileCase` | `"PascalCase" \| "kebab-case" \| "camelCase"` | `"PascalCase"` | File name format |
+
+| Option                 | Type                                        | Default        | Description               |
+| ---------------------- | ------------------------------------------- | -------------- | ------------------------- |
+| `baseDir`              | `string`                                    | -              | Base directory for icons  |
+| `iconsFolder`          | `string`                                    | `"icons"`      | Subfolder name            |
+| `framework`            | `"react" | "vue" | "svelte"`                | `"react"`      | Target framework          |
+| `typescript`           | `boolean`                                   | `true`         | Generate TypeScript files |
+| `optimize`             | `boolean`                                   | `true`         | Optimize SVG with SVGO    |
+| `maintainIndex`        | `boolean`                                   | `true`         | Auto-maintain index.ts    |
+| `props.size`           | `boolean`                                   | `true`         | Enable size prop          |
+| `props.color`          | `boolean`                                   | `true`         | Enable color prop         |
+| `props.className`      | `boolean`                                   | `true`         | Enable className prop     |
+| `props.style`          | `boolean`                                   | `false`        | Enable style prop         |
+| `naming.suffix`        | `string`                                    | `"Icon"`       | Component name suffix     |
+| `naming.suffixEnabled` | `boolean`                                   | `true`         | Add suffix to names       |
+| `naming.componentCase` | `"PascalCase" | "camelCase"`                | `"PascalCase"` | Component name format     |
+| `naming.fileCase`      | `"PascalCase" | "kebab-case" | "camelCase"` | `"PascalCase"` | File name format          |
+
 
 ## 🎨 Generated Components
 
@@ -390,6 +397,83 @@ mkicon config
 ```
 
 Now `UserPlus` becomes just `UserPlus.tsx` instead of `UserPlusIcon.tsx`.
+
+## 🚀 Roadmap & TODO
+
+### 🎨 Themes & Icon Variants
+
+Support for multiple style variants of the same icon:
+
+- **Multiple style support** - outline, solid, duotone variants
+- **Theme system** - Group coherent styles together
+- **Variant-specific generation**
+  ```bash
+  mkicon --name User --variant solid,outline
+  # Generates: UserIcon (default), UserSolidIcon, UserOutlineIcon
+  ```
+
+### 🎭 Multi-Variant Icons
+
+Support for icon families with multiple variations controlled by props:
+
+- **Directional icons** - Single component with direction prop
+  ```tsx
+  <Arrow direction="up" />
+  <Arrow direction="down" />
+  <Arrow direction="left" />
+  <Arrow direction="right" />
+  ```
+- **Style variants** - Single component with style prop
+  ```tsx
+  <User filled />
+  <User /> {/* outline by default */}
+  ```
+- **Automatic variant detection** - Detect related icons and suggest grouping
+  ```bash
+  # Detects: ArrowUp.svg, ArrowDown.svg, ArrowLeft.svg, ArrowRight.svg
+  mkicon batch ./icons
+  # → Suggests creating <Arrow direction="..." /> component
+  ```
+
+### 📚 Additional Icon Libraries
+
+Expand beyond Lucide Icons:
+
+- Font Awesome
+- Material Design Icons
+- Feather Icons
+- Bootstrap Icons
+- Tabler Icons
+- Iconoir
+- Phosphor Icons
+
+### 🔧 Framework Support
+
+Additional framework targets:
+
+- Angular (standalone components)
+- Solid.js
+- Qwik
+- Preact
+
+### ♿ Accessibility
+
+Automatic accessibility improvements:
+
+- **Auto aria-label** - Generate from icon name
+- **role="img"** - Automatic role attribute
+- **title & desc** - Support for `<title>` and `<desc>` SVG elements
+- **Accessible by default** - Best practices built-in
+  ```tsx
+  <UserIcon aria-label="User profile" role="img">
+    <title>User profile icon</title>
+    <desc>An icon representing a user profile</desc>
+  </UserIcon>
+  ```
+
+---
+
+Want to contribute? Check out these TODOs or suggest new features in [Issues](https://github.com/Steellgold/mkicon/issues)!
 
 ## 🤝 Contributing
 
