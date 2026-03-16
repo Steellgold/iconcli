@@ -1,6 +1,6 @@
 {
   "name": "@steellgold/mkicon",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Transform SVG icons into beautiful React, Vue, or Svelte components with zero config",
   "keywords": [
     "icon",

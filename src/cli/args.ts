@@ -32,10 +32,8 @@ export const createProgram = (): Command => {
   program
     .name('mkicon')
     .description('Transform SVG icons into beautiful React, Vue, or Svelte components')
-    .version('0.2.0')
-    .allowUnknownOption(false)
-    .helpOption('-h, --help', 'Display help')
-    .addHelpCommand(false);
+    .version('0.2.2')
+    .helpOption('-h, --help', 'Display help');
   
   program
     .option('-n, --name <name>', 'Icon name')
@@ -45,30 +43,10 @@ export const createProgram = (): Command => {
     .option('-b, --batch <dir>', 'Batch process directory')
     .option('--svg <svg>', 'SVG code (non-interactive)')
     .option('--framework <framework>', 'Override framework (react, vue, svelte)')
-    .option('--output <dir>', 'Override output directory');
-  
-  program
-    .command('paste')
-    .alias('p')
-    .description('Create icon from pasted SVG (interactive)')
+    .option('--output <dir>', 'Override output directory')
     .action(() => {
-      // Handled in main index.ts
-    });
-  
-  program
-    .command('url')
-    .alias('u')
-    .description('Create icon from URL (interactive)')
-    .action(() => {
-      // Handled in main index.ts
-    });
-  
-  program
-    .command('file')
-    .alias('f')
-    .description('Create icon from file (interactive)')
-    .action(() => {
-      // Handled in main index.ts
+      // Default action - handled in main index.ts
+      // This prevents Commander from displaying help when no command is provided
     });
   
   program
@@ -165,13 +143,19 @@ export const processIconFromArgs = async (
       processSpinner.succeed('SVG processed');
     }
     
+    // Override config with CLI options
+    const effectiveConfig = {
+      ...config,
+      ...(options.framework && { framework: options.framework as 'react' | 'vue' | 'svelte' }),
+    };
+    
     // Generate component
     const genSpinner = spinner.start('Generating component...');
     const component = generateComponent({
       componentName,
       svgContent: processed.content,
       viewBox: processed.viewBox,
-      config,
+      config: effectiveConfig,
     });
     genSpinner.succeed(`${component.filename} generated`);
     
