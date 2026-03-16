@@ -33,13 +33,11 @@ export const generateVueComponent = (options: VueTemplateOptions): string => {
     defaultValues.color = "'currentColor'";
   }
   
-  const propsInterface = typescript 
+  const propsCode = typescript && (props.size || props.color)
+    ? `withDefaults(defineProps<{\n${propsFields.join('\n')}\n}>(), {\n${Object.entries(defaultValues).map(([key, val]) => `  ${key}: ${val}`).join(',\n')}\n})`
+    : typescript
     ? `defineProps<{\n${propsFields.join('\n')}\n}>()`
     : `defineProps(['size', 'color'])`;
-  
-  const withDefaultsCode = typescript && (props.size || props.color)
-    ? `\n\nwithDefaults(defineProps<{\n${propsFields.join('\n')}\n}>(), {\n${Object.entries(defaultValues).map(([key, val]) => `  ${key}: ${val}`).join(',\n')}\n})`
-    : '';
   
   // Build SVG attributes
   const svgAttrs: string[] = ['xmlns="http://www.w3.org/2000/svg"'];
@@ -67,7 +65,7 @@ export const generateVueComponent = (options: VueTemplateOptions): string => {
 </template>
 
 <script setup${scriptLang}>
-${propsInterface}${withDefaultsCode}
+${propsCode}
 </script>
 `;
 };

@@ -18,7 +18,7 @@ const main = async () => {
     const isConfigCommand = subcommand === 'config';
     const isInitCommand = subcommand === 'init';
     const isLibraryCommand = subcommand === 'library' || subcommand === 'browse';
-    const isSemiInteractiveCommand = ['paste', 'p', 'url', 'u', 'file', 'f'].includes(subcommand);
+    const isSemiInteractiveCommand = ['paste', 'url', 'file'].includes(subcommand);
     const showConfigFlag = process.argv.includes('--show');
     const hasAnyArgs = process.argv.length > 2;
     

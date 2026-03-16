@@ -141,6 +141,22 @@ This will:
 - Generate all components
 - Update index.ts
 
+### Icon Library Browser
+
+Browse and import icons from Lucide Icons (1700+ icons):
+
+```bash
+mkicon library
+# or shorthand:
+mkicon browse
+```
+
+This will:
+- Open an interactive browser
+- Search through 1700+ Lucide icons
+- Preview icon details
+- Import selected icons directly into your project
+
 ### Configuration Management
 
 ```bash
