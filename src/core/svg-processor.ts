@@ -59,6 +59,9 @@ export const optimizeSVG = async (
  */
 export const cleanSVGAttributes = (svgContent: string): string => {
   let cleaned = svgContent;
+
+  // Remove HTML comments (e.g., license headers inside <svg> from sources like lucide-static)
+  cleaned = cleaned.replace(/<!--[\s\S]*?-->/g, '');
   
   // Remove width and height attributes (we'll control these via props)
   cleaned = cleaned.replace(/\s*width=["'][^"']*["']/gi, '');
