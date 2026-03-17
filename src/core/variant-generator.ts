@@ -1,0 +1,105 @@
+import { Config } from "@/config/schema.js";
+import { VariantComponentData, DirectionVariant, StyleVariant } from "@/types/variants.js";
+import { generateIconName } from "@/utils/naming.js";
+import { generateReactVariantComponent, getReactFileExtension } from "@/templates/react-variant.js";
+import { generateVueVariantComponent, getVueFileExtension } from "@/templates/vue-variant.js";
+import {
+  generateSvelteVariantComponent,
+  getSvelteFileExtension,
+} from "@/templates/svelte-variant.js";
+
+export interface GenerateVariantComponentOptions {
+  variantData: VariantComponentData;
+  config: Config;
+}
+
+export interface GeneratedVariantComponent {
+  content: string;
+  filename: string;
+  extension: string;
+}
+
+/**
+ * Generate a multi-variant component
+ */
+export const generateVariantComponent = (
+  options: GenerateVariantComponentOptions
+): GeneratedVariantComponent => {
+  const { variantData, config } = options;
+
+  // Generate component name
+  const componentName = generateIconName(
+    variantData.config.baseName,
+    config.naming.suffix,
+    config.naming.componentCase
+  );
+
+  let content: string;
+  let extension: string;
+
+  switch (config.framework) {
+    case "react":
+      content = generateReactVariantComponent({
+        componentName,
+        variantData,
+        typescript: config.typescript,
+        props: config.props,
+      });
+      extension = getReactFileExtension(config.typescript);
+      break;
+
+    case "vue":
+      content = generateVueVariantComponent({
+        componentName,
+        variantData,
+        typescript: config.typescript,
+        props: config.props,
+      });
+      extension = getVueFileExtension();
+      break;
+
+    case "svelte":
+      content = generateSvelteVariantComponent({
+        componentName,
+        variantData,
+        typescript: config.typescript,
+        props: config.props,
+      });
+      extension = getSvelteFileExtension();
+      break;
+
+    default:
+      throw new Error(`Unsupported framework: ${config.framework}`);
+  }
+
+  const filename = `${componentName}${extension}`;
+
+  return {
+    content,
+    filename,
+    extension,
+  };
+};
+
+/**
+ * Helper: Extract SVG inner content (without <svg> tag)
+ */
+export const extractSVGInnerContent = (svgContent: string): string => {
+  const match = svgContent.match(/<svg[^>]*>([\s\S]*)<\/svg>/);
+  return match ? match[1].trim() : svgContent;
+};
+
+/**
+ * Helper: Generate a variant map for switch/case
+ */
+export const generateVariantMap = (
+  variants: Array<{ variant: DirectionVariant | StyleVariant; svgContent: string }>
+): Record<string, string> => {
+  const map: Record<string, string> = {};
+
+  for (const v of variants) {
+    map[v.variant] = extractSVGInnerContent(v.svgContent);
+  }
+
+  return map;
+};

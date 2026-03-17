@@ -162,6 +162,94 @@ This will:
 - Preview icon details
 - Import selected icons directly into your project
 
+### Multi-Variant Icons
+
+Create icons with multiple variations controlled by props:
+
+#### Directional Icons
+
+Create a single component with direction variants:
+
+```bash
+mkicon --name Arrow --directive
+```
+
+This will:
+1. Prompt you to select directions (up, down, left, right, etc.)
+2. Ask for SVG content for each direction
+3. Generate a single component with a `direction` prop
+
+Usage:
+```tsx
+<ArrowIcon direction="up" />
+<ArrowIcon direction="down" />
+<ArrowIcon direction="left" />
+<ArrowIcon direction="right" />
+```
+
+**Supported directions:**
+- Basic: `up`, `down`, `left`, `right`
+- Diagonal: `up-right`, `up-left`, `down-right`, `down-left`
+- Circle: `up-circle`, `down-circle`, `left-circle`, `right-circle`
+- Special: `up-tray`, `down-tray`, `up-on-square`, `down-on-square`
+- Combined: `up-down`, `left-right`
+
+#### Style Variants
+
+Create a single component with style variants:
+
+```bash
+mkicon --name User --variant
+```
+
+This will:
+1. Prompt you to select styles (outline, solid, filled, etc.)
+2. Ask for SVG content for each style
+3. Generate a single component with variant props
+
+Usage:
+```tsx
+<UserIcon filled />
+<UserIcon variant="outline" />
+<UserIcon variant="solid" />
+```
+
+**Supported styles:**
+- Basic: `outline`, `solid`, `filled`
+- Sizes: `mini`, `micro`
+- Weights: `thin`, `light`, `regular`, `bold`
+- Special: `duotone`, `sharp`
+
+#### Combined Variants
+
+Combine both directional and style variants:
+
+```bash
+mkicon --name Arrow --directive --variant
+```
+
+Usage:
+```tsx
+<ArrowIcon direction="up" variant="solid" />
+<ArrowIcon direction="down" filled />
+```
+
+#### Automatic Detection in Batch Mode
+
+When using batch mode, mkicon will automatically detect variant groups:
+
+```bash
+mkicon --batch ./icons
+# Detects: ArrowUp.svg, ArrowDown.svg, ArrowLeft.svg
+# → Suggests creating a multi-variant <Arrow direction="..." /> component
+```
+
+The detector looks for consistent naming patterns:
+- `ArrowUp.svg`, `ArrowDown.svg` → Directional variants
+- `UserOutline.svg`, `UserSolid.svg` → Style variants
+
+You'll be prompted to confirm if you want to process them as multi-variant components.
+
 ### Configuration Management
 
 ```bash
@@ -399,41 +487,6 @@ mkicon config
 Now `UserPlus` becomes just `UserPlus.tsx` instead of `UserPlusIcon.tsx`.
 
 ## 🚀 Roadmap & TODO
-
-### 🎨 Themes & Icon Variants
-
-Support for multiple style variants of the same icon:
-
-- **Multiple style support** - outline, solid, duotone variants
-- **Theme system** - Group coherent styles together
-- **Variant-specific generation**
-  ```bash
-  mkicon --name User --variant solid,outline
-  # Generates: UserIcon (default), UserSolidIcon, UserOutlineIcon
-  ```
-
-### 🎭 Multi-Variant Icons
-
-Support for icon families with multiple variations controlled by props:
-
-- **Directional icons** - Single component with direction prop
-  ```tsx
-  <Arrow direction="up" />
-  <Arrow direction="down" />
-  <Arrow direction="left" />
-  <Arrow direction="right" />
-  ```
-- **Style variants** - Single component with style prop
-  ```tsx
-  <User filled />
-  <User /> {/* outline by default */}
-  ```
-- **Automatic variant detection** - Detect related icons and suggest grouping
-  ```bash
-  # Detects: ArrowUp.svg, ArrowDown.svg, ArrowLeft.svg, ArrowRight.svg
-  mkicon batch ./icons
-  # → Suggests creating <Arrow direction="..." /> component
-  ```
 
 ### 📚 Additional Icon Libraries
 
