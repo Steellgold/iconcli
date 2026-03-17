@@ -7,13 +7,13 @@ export const toPascalCase = (str: string): string => {
   if (/^[A-Z][a-zA-Z0-9]*$/.test(str) || /^[a-z][a-zA-Z0-9]*$/.test(str)) {
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
-  
+
   return str
-    .replace(/[^a-zA-Z0-9]/g, ' ')
-    .split(' ')
+    .replace(/[^a-zA-Z0-9]/g, " ")
+    .split(" ")
     .filter(Boolean)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join('');
+    .join("");
 };
 
 /**
@@ -29,11 +29,11 @@ export const toCamelCase = (str: string): string => {
  */
 export const toKebabCase = (str: string): string => {
   return str
-    .replace(/[^a-zA-Z0-9]/g, '-')
-    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .replace(/[^a-zA-Z0-9]/g, "-")
+    .replace(/([a-z])([A-Z])/g, "$1-$2")
     .toLowerCase()
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
 };
 
 /**
@@ -41,16 +41,16 @@ export const toKebabCase = (str: string): string => {
  */
 export const generateComponentName = (
   input: string,
-  suffix: string = 'Icon',
+  suffix: string = "Icon",
   suffixEnabled: boolean = true
 ): string => {
   let baseName = toPascalCase(input);
-  
+
   // Add suffix if enabled and not already present
   if (suffixEnabled && !baseName.endsWith(suffix)) {
     baseName = `${baseName}${suffix}`;
   }
-  
+
   return baseName;
 };
 
@@ -59,14 +59,14 @@ export const generateComponentName = (
  */
 export const generateFileName = (
   componentName: string,
-  fileCase: 'PascalCase' | 'camelCase' | 'kebab-case' = 'PascalCase'
+  fileCase: "PascalCase" | "camelCase" | "kebab-case" = "PascalCase"
 ): string => {
   switch (fileCase) {
-    case 'PascalCase':
+    case "PascalCase":
       return componentName;
-    case 'camelCase':
+    case "camelCase":
       return toCamelCase(componentName);
-    case 'kebab-case':
+    case "kebab-case":
       return toKebabCase(componentName);
   }
 };
@@ -76,31 +76,29 @@ export const generateFileName = (
  */
 export const generateIconName = (
   input: string,
-  suffix: string = 'Icon',
-  caseFormat: 'PascalCase' | 'camelCase' | 'kebab-case' = 'PascalCase'
+  suffix: string = "Icon",
+  caseFormat: "PascalCase" | "camelCase" | "kebab-case" = "PascalCase"
 ): string => {
   let baseName: string;
-  
+
   switch (caseFormat) {
-    case 'PascalCase':
+    case "PascalCase":
       baseName = toPascalCase(input);
       break;
-    case 'camelCase':
+    case "camelCase":
       baseName = toCamelCase(input);
       break;
-    case 'kebab-case':
+    case "kebab-case":
       baseName = toKebabCase(input);
       suffix = suffix.toLowerCase();
       break;
   }
-  
+
   // Add suffix if not already present
   if (!baseName.endsWith(suffix)) {
-    baseName = caseFormat === 'kebab-case' 
-      ? `${baseName}-${suffix}`
-      : `${baseName}${suffix}`;
+    baseName = caseFormat === "kebab-case" ? `${baseName}-${suffix}` : `${baseName}${suffix}`;
   }
-  
+
   return baseName;
 };
 
@@ -108,9 +106,7 @@ export const generateIconName = (
  * Extract icon name from filename
  */
 export const extractIconNameFromFilename = (filename: string): string => {
-  return filename
-    .replace(/\.svg$/i, '')
-    .replace(/[-_]/g, ' ');
+  return filename.replace(/\.svg$/i, "").replace(/[-_]/g, " ");
 };
 
 /**
@@ -120,12 +116,12 @@ export const extractIconNameFromURL = (url: string): string | null => {
   try {
     const urlObj = new URL(url);
     const pathname = urlObj.pathname;
-    const filename = pathname.split('/').pop();
-    
-    if (!filename || !filename.endsWith('.svg')) {
+    const filename = pathname.split("/").pop();
+
+    if (!filename || !filename.endsWith(".svg")) {
       return null;
     }
-    
+
     return extractIconNameFromFilename(filename);
   } catch {
     return null;
@@ -143,7 +139,7 @@ export const extractLucideIconNameFromURL = (url: string): string | null => {
     const urlObj = new URL(url);
     const host = urlObj.hostname.toLowerCase();
 
-    if (!host.includes('lucide.dev')) {
+    if (!host.includes("lucide.dev")) {
       return null;
     }
 
@@ -152,7 +148,7 @@ export const extractLucideIconNameFromURL = (url: string): string | null => {
       return null;
     }
 
-    const iconName = match[1].replace(/\.svg$/i, '').toLowerCase();
+    const iconName = match[1].replace(/\.svg$/i, "").toLowerCase();
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(iconName)) {
       return null;
     }

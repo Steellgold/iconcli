@@ -1,5 +1,5 @@
-import { Config } from '@/config/schema.js';
-import enquirer from 'enquirer';
+import { Config } from "@/config/schema.js";
+import enquirer from "enquirer";
 
 const { prompt } = enquirer;
 
@@ -9,84 +9,85 @@ const { prompt } = enquirer;
 export const promptSetupConfig = async (): Promise<Partial<Config>> => {
   const answers = await prompt<{
     baseDir: string;
-    framework: 'react' | 'vue' | 'svelte';
+    framework: "react" | "vue" | "svelte";
     typescript: boolean;
     optimize: boolean;
     props: string[];
     suffixEnabled: boolean;
-    fileCase: 'PascalCase' | 'kebab-case' | 'camelCase';
+    fileCase: "PascalCase" | "kebab-case" | "camelCase";
   }>([
     {
-      type: 'input',
-      name: 'baseDir',
-      message: 'Where do you want to create your icons?\n  (An "icons" subfolder will be created automatically)\n  \n  Examples:\n  • src/components  → src/components/icons/\n  • app/ui          → app/ui/icons/\n  • lib             → lib/icons/\n  \n  Path:',
-      initial: 'src/components',
+      type: "input",
+      name: "baseDir",
+      message:
+        'Where do you want to create your icons?\n  (An "icons" subfolder will be created automatically)\n  \n  Examples:\n  • src/components  → src/components/icons/\n  • app/ui          → app/ui/icons/\n  • lib             → lib/icons/\n  \n  Path:',
+      initial: "src/components",
     },
     {
-      type: 'select',
-      name: 'framework',
-      message: 'Which framework are you using?',
+      type: "select",
+      name: "framework",
+      message: "Which framework are you using?",
       choices: [
-        { name: 'react', message: 'React (TypeScript)' },
-        { name: 'vue', message: 'Vue 3' },
-        { name: 'svelte', message: 'Svelte' },
+        { name: "react", message: "React (TypeScript)" },
+        { name: "vue", message: "Vue 3" },
+        { name: "svelte", message: "Svelte" },
       ],
     },
     {
-      type: 'confirm',
-      name: 'optimize',
-      message: 'Automatically optimize SVG with SVGO?',
+      type: "confirm",
+      name: "optimize",
+      message: "Automatically optimize SVG with SVGO?",
       initial: true,
     },
     {
-      type: 'multiselect',
-      name: 'props',
-      message: 'Enable customizable props by default?',
+      type: "multiselect",
+      name: "props",
+      message: "Enable customizable props by default?",
       choices: [
-        { name: 'size', message: 'size (control size)', enabled: true },
-        { name: 'color', message: 'color (control color)', enabled: true },
-        { name: 'className', message: 'className (add CSS classes)', enabled: true },
-        { name: 'style', message: 'style (inline style props)', enabled: false },
+        { name: "size", message: "size (control size)", enabled: true },
+        { name: "color", message: "color (control color)", enabled: true },
+        { name: "className", message: "className (add CSS classes)", enabled: true },
+        { name: "style", message: "style (inline style props)", enabled: false },
       ],
     },
     {
-      type: 'confirm',
-      name: 'suffixEnabled',
+      type: "confirm",
+      name: "suffixEnabled",
       message: 'Add "Icon" suffix to component names? (e.g., UserPlus → UserPlusIcon)',
       initial: true,
     },
     {
-      type: 'select',
-      name: 'fileCase',
-      message: 'File naming format?',
+      type: "select",
+      name: "fileCase",
+      message: "File naming format?",
       choices: [
-        { name: 'PascalCase', message: 'PascalCase (UserPlusIcon.tsx)' },
-        { name: 'kebab-case', message: 'kebab-case (user-plus-icon.tsx)' },
-        { name: 'camelCase', message: 'camelCase (userPlusIcon.tsx)' },
+        { name: "PascalCase", message: "PascalCase (UserPlusIcon.tsx)" },
+        { name: "kebab-case", message: "kebab-case (user-plus-icon.tsx)" },
+        { name: "camelCase", message: "camelCase (userPlusIcon.tsx)" },
       ],
     },
   ]);
-  
+
   // Determine typescript based on framework choice (for now, default to true for React)
-  const typescript = answers.framework === 'react';
-  
+  const typescript = answers.framework === "react";
+
   return {
     baseDir: answers.baseDir,
-    iconsFolder: 'icons',
+    iconsFolder: "icons",
     framework: answers.framework,
     typescript,
     optimize: answers.optimize,
     maintainIndex: true,
     props: {
-      size: answers.props.includes('size'),
-      color: answers.props.includes('color'),
-      className: answers.props.includes('className'),
-      style: answers.props.includes('style'),
+      size: answers.props.includes("size"),
+      color: answers.props.includes("color"),
+      className: answers.props.includes("className"),
+      style: answers.props.includes("style"),
     },
     naming: {
-      suffix: 'Icon',
+      suffix: "Icon",
       suffixEnabled: answers.suffixEnabled,
-      componentCase: 'PascalCase',
+      componentCase: "PascalCase",
       fileCase: answers.fileCase,
     },
   };
@@ -96,20 +97,20 @@ export const promptSetupConfig = async (): Promise<Partial<Config>> => {
  * Prompt for SVG source
  */
 export const promptSVGSource = async (): Promise<{
-  source: 'paste' | 'url' | 'file' | 'library';
+  source: "paste" | "url" | "file" | "library";
 }> => {
-  const answer = await prompt<{ source: 'paste' | 'url' | 'file' | 'library' }>({
-    type: 'select',
-    name: 'source',
-    message: 'How do you want to provide the SVG?',
+  const answer = await prompt<{ source: "paste" | "url" | "file" | "library" }>({
+    type: "select",
+    name: "source",
+    message: "How do you want to provide the SVG?",
     choices: [
-      { name: 'paste', message: 'Paste SVG code' },
-      { name: 'url', message: 'From URL' },
-      { name: 'library', message: 'From a library' },
-      { name: 'file', message: 'From local file' },
+      { name: "paste", message: "Paste SVG code" },
+      { name: "url", message: "From URL" },
+      { name: "library", message: "From a library" },
+      { name: "file", message: "From local file" },
     ],
   });
-  
+
   return answer;
 };
 
@@ -118,20 +119,20 @@ export const promptSVGSource = async (): Promise<{
  */
 export const promptSVGContent = async (): Promise<string> => {
   const answer = await prompt<{ svg: string }>({
-    type: 'input',
-    name: 'svg',
-    message: 'Paste your SVG:',
+    type: "input",
+    name: "svg",
+    message: "Paste your SVG:",
     validate: (input: string) => {
       if (!input || input.trim().length === 0) {
-        return 'SVG content cannot be empty';
+        return "SVG content cannot be empty";
       }
-      if (!input.includes('<svg')) {
-        return 'Invalid SVG - must contain <svg> tag';
+      if (!input.includes("<svg")) {
+        return "Invalid SVG - must contain <svg> tag";
       }
       return true;
     },
   });
-  
+
   return answer.svg;
 };
 
@@ -140,22 +141,22 @@ export const promptSVGContent = async (): Promise<string> => {
  */
 export const promptSVGURL = async (): Promise<string> => {
   const answer = await prompt<{ url: string }>({
-    type: 'input',
-    name: 'url',
-    message: 'Enter the SVG URL:',
+    type: "input",
+    name: "url",
+    message: "Enter the SVG URL:",
     validate: (input: string) => {
       if (!input || input.trim().length === 0) {
-        return 'URL cannot be empty';
+        return "URL cannot be empty";
       }
       try {
         new URL(input);
         return true;
       } catch {
-        return 'Invalid URL format';
+        return "Invalid URL format";
       }
     },
   });
-  
+
   return answer.url;
 };
 
@@ -164,21 +165,21 @@ export const promptSVGURL = async (): Promise<string> => {
  */
 export const promptIconName = async (defaultName?: string): Promise<string> => {
   const answer = await prompt<{ name: string }>({
-    type: 'input',
-    name: 'name',
-    message: 'Icon name (will be converted to PascalCase + Icon):',
+    type: "input",
+    name: "name",
+    message: "Icon name (will be converted to PascalCase + Icon):",
     initial: defaultName,
     validate: (input: string) => {
       if (!input || input.trim().length === 0) {
-        return 'Icon name cannot be empty';
+        return "Icon name cannot be empty";
       }
       if (!/[a-zA-Z]/.test(input)) {
-        return 'Icon name must contain at least one letter';
+        return "Icon name must contain at least one letter";
       }
       return true;
     },
   });
-  
+
   return answer.name;
 };
 
@@ -187,12 +188,12 @@ export const promptIconName = async (defaultName?: string): Promise<string> => {
  */
 export const promptConfirmIconName = async (suggestedName: string): Promise<boolean> => {
   const answer = await prompt<{ confirm: boolean }>({
-    type: 'confirm',
-    name: 'confirm',
+    type: "confirm",
+    name: "confirm",
     message: `Use '${suggestedName}' as icon name?`,
     initial: true,
   });
-  
+
   return answer.confirm;
 };
 
@@ -201,12 +202,12 @@ export const promptConfirmIconName = async (suggestedName: string): Promise<bool
  */
 export const promptCreateAnother = async (): Promise<boolean> => {
   const answer = await prompt<{ another: boolean }>({
-    type: 'confirm',
-    name: 'another',
-    message: 'Create another icon?',
+    type: "confirm",
+    name: "another",
+    message: "Create another icon?",
     initial: false,
   });
-  
+
   return answer.another;
 };
 
@@ -219,11 +220,12 @@ export const promptMultipleURLs = async (): Promise<string[]> => {
 
   while (true) {
     const answer = await prompt<{ url: string }>({
-      type: 'input',
-      name: 'url',
-      message: index === 1
-        ? 'Enter icon URL (press Enter without URL when done):'
-        : `Enter icon URL ${index} (press Enter without URL when done):`,
+      type: "input",
+      name: "url",
+      message:
+        index === 1
+          ? "Enter icon URL (press Enter without URL when done):"
+          : `Enter icon URL ${index} (press Enter without URL when done):`,
       validate: (input: string) => {
         const trimmed = input.trim();
         if (!trimmed) {
@@ -233,7 +235,7 @@ export const promptMultipleURLs = async (): Promise<string[]> => {
           new URL(trimmed);
           return true;
         } catch {
-          return 'Invalid URL format';
+          return "Invalid URL format";
         }
       },
     });

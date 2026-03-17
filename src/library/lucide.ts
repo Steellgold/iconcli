@@ -1,29 +1,29 @@
-import { FetchIconResult, IconLibrary, IconMetadata } from './types.js';
+import { FetchIconResult, IconLibrary, IconMetadata } from "./types.js";
 
 const LUCIDE_LIBRARY: IconLibrary = {
-  name: 'lucide',
-  displayName: 'Lucide Icons',
-  license: 'ISC',
-  licenseUrl: 'https://github.com/lucide-icons/lucide/blob/main/LICENSE',
-  website: 'https://lucide.dev',
-  copyright: 'Copyright (c) 2026 Lucide Contributors',
+  name: "lucide",
+  displayName: "Lucide Icons",
+  license: "ISC",
+  licenseUrl: "https://github.com/lucide-icons/lucide/blob/main/LICENSE",
+  website: "https://lucide.dev",
+  copyright: "Copyright (c) 2026 Lucide Contributors",
 };
 
-const TAGS_URL = 'https://unpkg.com/lucide-static@latest/tags.json';
-const ICON_BASE_URL = 'https://unpkg.com/lucide-static@latest/icons';
+const TAGS_URL = "https://unpkg.com/lucide-static@latest/tags.json";
+const ICON_BASE_URL = "https://unpkg.com/lucide-static@latest/icons";
 
 /**
  * Fetch all available Lucide icons with their tags
  */
 export const fetchLucideIcons = async (): Promise<IconMetadata[]> => {
   const response = await fetch(TAGS_URL);
-  
+
   if (!response.ok) {
     throw new Error(`Failed to fetch Lucide icons: ${response.status}`);
   }
-  
-  const tags = await response.json() as Record<string, string[]>;
-  
+
+  const tags = (await response.json()) as Record<string, string[]>;
+
   return Object.entries(tags).map(([name, iconTags]) => ({
     name,
     tags: iconTags,
@@ -35,15 +35,15 @@ export const fetchLucideIcons = async (): Promise<IconMetadata[]> => {
  */
 export const fetchLucideIcon = async (iconName: string): Promise<FetchIconResult> => {
   const url = `${ICON_BASE_URL}/${iconName}.svg`;
-  
+
   const response = await fetch(url);
-  
+
   if (!response.ok) {
     throw new Error(`Failed to fetch icon "${iconName}": ${response.status}`);
   }
-  
+
   const svgContent = await response.text();
-  
+
   return {
     svgContent,
     metadata: {
@@ -56,20 +56,17 @@ export const fetchLucideIcon = async (iconName: string): Promise<FetchIconResult
 /**
  * Search Lucide icons by name or tags
  */
-export const searchLucideIcons = (
-  icons: IconMetadata[],
-  query: string
-): IconMetadata[] => {
+export const searchLucideIcons = (icons: IconMetadata[], query: string): IconMetadata[] => {
   const lowerQuery = query.toLowerCase();
-  
-  return icons.filter(icon => {
+
+  return icons.filter((icon) => {
     // Match by name
     if (icon.name.includes(lowerQuery)) {
       return true;
     }
-    
+
     // Match by tags
-    return icon.tags.some(tag => tag.includes(lowerQuery));
+    return icon.tags.some((tag) => tag.includes(lowerQuery));
   });
 };
 

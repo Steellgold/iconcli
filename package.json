@@ -44,6 +44,10 @@
     "test": "vitest",
     "test:ci": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
@@ -57,11 +61,17 @@
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
+    "@typescript-eslint/eslint-plugin": "^8.57.1",
+    "@typescript-eslint/parser": "^8.57.1",
+    "@vitest/coverage-v8": "^4.1.0",
+    "eslint": "^10.0.3",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "prettier": "^3.8.1",
     "tsc-alias": "^1.8.16",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.0",
-    "@vitest/coverage-v8": "^4.1.0"
+    "vitest": "^4.1.0"
   },
   "engines": {
     "node": ">=18.0.0"

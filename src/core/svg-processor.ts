@@ -1,5 +1,5 @@
-import { extractViewBox } from '@/utils/validation.js';
-import { optimize } from 'svgo';
+import { extractViewBox } from "@/utils/validation.js";
+import { optimize } from "svgo";
 
 export interface ProcessedSVG {
   content: string;
@@ -15,10 +15,10 @@ export const optimizeSVG = async (
   svgContent: string,
   shouldOptimize: boolean = true
 ): Promise<ProcessedSVG> => {
-  const originalSize = Buffer.byteLength(svgContent, 'utf-8');
-  
+  const originalSize = Buffer.byteLength(svgContent, "utf-8");
+
   if (!shouldOptimize) {
-    const viewBox = extractViewBox(svgContent) || '0 0 24 24';
+    const viewBox = extractViewBox(svgContent) || "0 0 24 24";
     return {
       content: svgContent,
       viewBox,
@@ -26,26 +26,26 @@ export const optimizeSVG = async (
       optimizedSize: originalSize,
     };
   }
-  
+
   const result = optimize(svgContent, {
     plugins: [
-      'removeDoctype',
-      'removeComments',
-      'cleanupAttrs',
-      'removeEmptyAttrs',
-      'removeUselessDefs',
-      'cleanupNumericValues',
-      'convertColors',
-      'removeEmptyContainers',
+      "removeDoctype",
+      "removeComments",
+      "cleanupAttrs",
+      "removeEmptyAttrs",
+      "removeUselessDefs",
+      "cleanupNumericValues",
+      "convertColors",
+      "removeEmptyContainers",
     ],
   });
-  
+
   const optimizedContent = result.data;
-  const optimizedSize = Buffer.byteLength(optimizedContent, 'utf-8');
-  
+  const optimizedSize = Buffer.byteLength(optimizedContent, "utf-8");
+
   // Extract viewBox from optimized content
-  const viewBox = extractViewBox(optimizedContent) || '0 0 24 24';
-  
+  const viewBox = extractViewBox(optimizedContent) || "0 0 24 24";
+
   return {
     content: optimizedContent,
     viewBox,
@@ -61,11 +61,11 @@ export const cleanSVGAttributes = (svgContent: string): string => {
   let cleaned = svgContent;
 
   // Remove HTML comments (e.g., license headers inside <svg> from sources like lucide-static)
-  cleaned = cleaned.replace(/<!--[\s\S]*?-->/g, '');
-  
+  cleaned = cleaned.replace(/<!--[\s\S]*?-->/g, "");
+
   // Remove width and height attributes (we'll control these via props)
-  cleaned = cleaned.replace(/\s*width=["'][^"']*["']/gi, '');
-  cleaned = cleaned.replace(/\s*height=["'][^"']*["']/gi, '');
-  
+  cleaned = cleaned.replace(/\s*width=["'][^"']*["']/gi, "");
+  cleaned = cleaned.replace(/\s*height=["'][^"']*["']/gi, "");
+
   return cleaned;
 };
