@@ -39,6 +39,7 @@ export const ConfigSchema = z.object({
       plugins: z.array(z.string()).optional(),
     })
     .optional(),
+  adaptToProject: z.boolean().default(true),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;

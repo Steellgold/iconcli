@@ -90,6 +90,11 @@
     "svgo": {
       "type": "object",
       "description": "SVGO optimization plugins configuration"
+    },
+    "adaptToProject": {
+      "type": "boolean",
+      "description": "Automatically detect and apply project's ESLint/Prettier formatting rules",
+      "default": true
     }
   },
   "required": ["baseDir", "framework"]
