@@ -14,6 +14,7 @@ const DEFAULT_CONFIG: Omit<Config, "version"> = {
   typescript: true,
   optimize: true,
   maintainIndex: true,
+  adaptToProject: true,
   props: {
     size: true,
     color: true,

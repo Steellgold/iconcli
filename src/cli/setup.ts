@@ -58,6 +58,7 @@ export const runSetup = async (projectRoot: string): Promise<Config> => {
     typescript: config.typescript!,
     optimize: config.optimize!,
     maintainIndex: config.maintainIndex!,
+    adaptToProject: true,
     props: config.props!,
     naming: config.naming!,
   };
