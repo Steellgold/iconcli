@@ -106,7 +106,7 @@ export const runSemiInteractive = async (options: SemiInteractiveOptions): Promi
     // Generate component
     logger.newline();
     const genSpinner = spinner.start("Generating component...");
-    const component = generateComponent({
+    const component = await generateComponent({
       componentName,
       svgContent: processed.content,
       viewBox: processed.viewBox,

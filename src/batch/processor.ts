@@ -171,7 +171,7 @@ export const processBatchIcons = async (options: BatchProcessOptions): Promise<v
       const processed = await optimizeSVG(svgContent, config.optimize);
 
       // Generate component
-      const component = generateComponent({
+      const component = await generateComponent({
         componentName,
         svgContent: processed.content,
         viewBox: processed.viewBox,
@@ -207,7 +207,7 @@ export const processBatchIcons = async (options: BatchProcessOptions): Promise<v
   // Update index
   if (config.maintainIndex && results.success > 0) {
     const iconsDir = path.join(projectRoot, config.baseDir, config.iconsFolder);
-    const component = generateComponent({
+    const component = await generateComponent({
       componentName: "Temp",
       svgContent: "<svg></svg>",
       viewBox: "0 0 24 24",
@@ -277,7 +277,7 @@ const processBatchVariantGroup = async (
   };
 
   // Generate component
-  const component = generateVariantComponent({
+  const component = await generateVariantComponent({
     variantData,
     config,
   });
