@@ -1,6 +1,6 @@
 {
   "name": "@steellgold/mkicon",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Transform SVG icons into beautiful React, Vue, or Svelte components with zero config",
   "keywords": [
     "icon",
@@ -64,7 +64,7 @@
     "@typescript-eslint/eslint-plugin": "^8.57.1",
     "@typescript-eslint/parser": "^8.57.1",
     "@vitest/coverage-v8": "^4.1.0",
-    "eslint": "^10.0.3",
+    "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "prettier": "^3.8.1",
@@ -72,6 +72,14 @@
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
     "vitest": "^4.1.0"
+  },
+  "peerDependencies": {
+    "prettier": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "prettier": {
+      "optional": true
+    }
   },
   "engines": {
     "node": ">=18.0.0"
