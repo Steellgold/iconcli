@@ -119,6 +119,83 @@ describe("post-processor", () => {
       expect(result).toContain("'M10 10'");
     });
 
+    it("should add trailing commas when trailingComma is all", () => {
+      const codeWithoutComma = `const obj = {
+  foo: "bar"
+};`;
+
+      const config = {
+        ...DEFAULT_FORMAT_CONFIG,
+        trailingComma: "all" as const,
+      };
+
+      const result = applyFormatting(codeWithoutComma, config, "react");
+      expect(result).toContain('"bar",');
+    });
+
+    it("should not add trailing comma after TypeScript interface properties", () => {
+      const interfaceCode = `export interface IconProps extends SVGProps<SVGSVGElement> {
+  size?: number | string;
+  color?: string;
+}`;
+
+      const config = {
+        ...DEFAULT_FORMAT_CONFIG,
+        trailingComma: "all" as const,
+      };
+
+      const result = applyFormatting(interfaceCode, config, "react");
+      expect(result).not.toContain("color?: string;,");
+      expect(result).toContain("color?: string;");
+      expect(result).toMatch(/color\?: string;\s*}/);
+    });
+
+    it("should remove bracket spacing when bracketSpacing is false", () => {
+      const codeWithSpaces = `const x = { foo: 1 };`;
+
+      const config = {
+        ...DEFAULT_FORMAT_CONFIG,
+        bracketSpacing: false,
+      };
+
+      const result = applyFormatting(codeWithSpaces, config, "react");
+      expect(result).toContain("{foo:");
+    });
+
+    it("should remove arrow parens when arrowParens is avoid", () => {
+      const codeWithParens = `const fn = (x) => x + 1;`;
+
+      const config = {
+        ...DEFAULT_FORMAT_CONFIG,
+        arrowParens: "avoid" as const,
+      };
+
+      const result = applyFormatting(codeWithParens, config, "react");
+      expect(result).toContain("x => x + 1");
+    });
+
+    it("should leave line endings unchanged when endOfLine is auto", () => {
+      const config = {
+        ...DEFAULT_FORMAT_CONFIG,
+        endOfLine: "auto" as const,
+      };
+
+      const result = applyFormatting(sampleCode, config, "react");
+      expect(result).toContain("export const Icon");
+    });
+
+    it("should preserve double quotes on multi-line JSX attribute lines", () => {
+      const multiLineJSX = `<div\n  className="my-class"\n>content</div>`;
+
+      const config = {
+        ...DEFAULT_FORMAT_CONFIG,
+        quotes: "single" as const,
+      };
+
+      const result = applyFormatting(multiLineJSX, config, "react");
+      expect(result).toContain('className="my-class"');
+    });
+
     it("should apply multiple formatting rules together", () => {
       const config = {
         ...DEFAULT_FORMAT_CONFIG,

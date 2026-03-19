@@ -25,38 +25,24 @@ export const applyFormatting = (
 
 /**
  * Replace quotes in code
- * Handles JS/TS strings while preserving JSX/template attribute quotes
+ * Converts all double-quoted string literals to single quotes.
+ * Skips lines that are purely multi-line JSX/Vue opening tags (no closing >).
  */
-const applyQuotes = (code: string, quoteStyle: "single" | "double", framework: string): string => {
+const applyQuotes = (code: string, quoteStyle: "single" | "double", _framework: string): string => {
   if (quoteStyle === "single") {
-    // Convert double quotes to single quotes
-    // Strategy: Replace " with ' but be careful with:
-    // - Escaped quotes inside strings
-    // - JSX/Vue/Svelte attribute values (keep as-is for HTML compatibility)
-
     const lines = code.split("\n");
     const result: string[] = [];
 
     for (const line of lines) {
-      // Skip lines that look like HTML/JSX attributes (simplified heuristic)
-      // This covers most cases: <svg width="24" /> or :width="size"
-      const isAttributeLine = /<[^>]*$/.test(line) || /^\s*[a-zA-Z:@{}[\]]+="[^"]*"/.test(line);
+      // Skip lines that are part of a multi-line JSX/HTML opening tag
+      // e.g. a line like `  className="foo"` inside a multi-line element
+      const isMultiLineTagAttribute =
+        /^\s*[a-zA-Z:@[\]_-][\w:@[\]_.-]*="[^"]*"/.test(line) && !line.includes("<");
 
-      if (isAttributeLine && (framework === "vue" || framework === "react")) {
-        // Keep double quotes for attributes
+      if (isMultiLineTagAttribute) {
         result.push(line);
       } else {
-        // Replace double quotes with single quotes for JS strings
-        // Match strings that are not part of JSX attributes
-        const converted = line.replace(/"([^"]*)"/g, (match, content) => {
-          // If the line contains JSX-like syntax before this quote, keep it
-          const beforeMatch = line.substring(0, line.indexOf(match));
-          if (beforeMatch.includes("<") && !beforeMatch.includes(">")) {
-            return match; // Keep double quotes in JSX
-          }
-          return `'${content}'`;
-        });
-        result.push(converted);
+        result.push(line.replace(/"([^"]*)"/g, (_match, content) => `'${content}'`));
       }
     }
 
@@ -116,7 +102,8 @@ const applyTrailingCommas = (code: string, trailingComma: "none" | "es5" | "all"
   } else if (trailingComma === "all") {
     // Add trailing commas where missing (simplified)
     // This is complex to do perfectly with regex, so we do basic cases
-    return code.replace(/([^\s,])(\s*\n\s*[\]}])/g, "$1,$2");
+    // Skip TypeScript interface/type properties (they end with ; not ,)
+    return code.replace(/([^\s,;])(\s*\n\s*[\]}])/g, "$1,$2");
   }
   // "es5" is the default in our templates, no change needed
   return code;
