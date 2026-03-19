@@ -26,7 +26,7 @@ export interface DetectedFormatConfig {
   arrowParens: "always" | "avoid";
 
   // Source info (for debugging/logging)
-  source?: "prettier" | "default";
+  source?: "prettier" | "biome" | "eslint" | "editorconfig" | "default";
   configPath?: string;
 }
 

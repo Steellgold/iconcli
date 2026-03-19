@@ -4,6 +4,9 @@ import { join } from "path";
 
 import { DEFAULT_FORMAT_CONFIG } from "./types.js";
 import { loadPrettier } from "./project-detector.js";
+import { resolveBiomeConfig } from "./biome-resolver.js";
+import { resolveESLintConfig } from "./eslint-resolver.js";
+import { resolveEditorConfig } from "./editorconfig-resolver.js";
 
 /**
  * Resolve Prettier configuration for the current project
@@ -74,12 +77,47 @@ const findConfigPath = async (prettier: any, cwd: string): Promise<string | unde
 };
 
 /**
+ * Resolve the best available formatting configuration for the project.
+ * Priority: Prettier → Biome → ESLint → EditorConfig → mkicon defaults
+ */
+export const resolveFormatConfig = async (
+  cwd: string,
+  filePath?: string
+): Promise<DetectedFormatConfig> => {
+  // 1. Prettier (most explicit formatter config)
+  const prettierConfig = await resolvePrettierConfig(cwd, filePath);
+  if (prettierConfig.source === "prettier") return prettierConfig;
+
+  // 2. Biome (explicit formatter + linter combo)
+  const biomeConfig = await resolveBiomeConfig(cwd);
+  if (biomeConfig) return biomeConfig;
+
+  // 3. ESLint (extract formatting-only rules from static config)
+  const eslintConfig = await resolveESLintConfig(cwd);
+  if (eslintConfig) return eslintConfig;
+
+  // 4. EditorConfig (basic indentation / line-ending rules)
+  const editorConfig = await resolveEditorConfig(cwd);
+  if (editorConfig) return editorConfig;
+
+  // 5. mkicon defaults
+  return DEFAULT_FORMAT_CONFIG;
+};
+
+/**
  * Format a DetectedFormatConfig for display
  */
 export const formatConfigForDisplay = (config: DetectedFormatConfig): string => {
   const lines: string[] = [];
 
-  lines.push(`Source: ${config.source || "default"}`);
+  const sourceLabel: Record<string, string> = {
+    prettier: "Prettier",
+    biome: "Biome",
+    eslint: "ESLint",
+    editorconfig: "EditorConfig",
+    default: "mkicon defaults",
+  };
+  lines.push(`Source: ${sourceLabel[config.source ?? "default"] ?? config.source ?? "default"}`);
   if (config.configPath) {
     lines.push(`Config file: ${config.configPath}`);
   }
