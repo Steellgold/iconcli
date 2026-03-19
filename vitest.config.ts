@@ -18,6 +18,7 @@ export default defineConfig({
         'src/core/svg-processor.ts',
         'src/core/component-generator.ts',
         'src/config/schema.ts',
+        'src/adapters/post-processor.ts',
       ],
       exclude: ['src/**/*.test.ts', 'src/**/*.d.ts', 'bin/**'],
       thresholds: {
