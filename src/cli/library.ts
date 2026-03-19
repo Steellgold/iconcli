@@ -140,7 +140,7 @@ const importSingleFromSearch = async (projectRoot: string, config: Config): Prom
 
   logger.newline();
   const genSpinner = spinner.start("Generating component...");
-  const component = generateComponent({
+  const component = await generateComponent({
     componentName,
     svgContent: processed.content,
     viewBox: processed.viewBox,
@@ -219,7 +219,7 @@ const importMultipleFromURLs = async (projectRoot: string, config: Config): Prom
       const processed = await optimizeSVG(svgContent, config.optimize);
       processSpinner.succeed(`[${i + 1}/${urls.length}] Processed ${iconName}`);
 
-      const component = generateComponent({
+      const component = await generateComponent({
         componentName,
         svgContent: processed.content,
         viewBox: processed.viewBox,

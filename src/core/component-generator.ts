@@ -1,7 +1,10 @@
-import { Config } from "@/config/schema.js";
+import type { Config } from "@/config/schema.js";
+
+import { applyFormatting, resolveFormatConfig } from "@/adapters/index.js";
 import { generateReactComponent, getReactFileExtension } from "@/templates/react.js";
 import { generateSvelteComponent, getSvelteFileExtension } from "@/templates/svelte.js";
 import { generateVueComponent, getVueFileExtension } from "@/templates/vue.js";
+
 import { cleanSVGAttributes } from "./svg-processor.js";
 
 export interface GenerateComponentOptions {
@@ -17,10 +20,15 @@ export interface GeneratedComponent {
   extension: string;
 }
 
+// Cache for resolved format config during the session
+let formatConfigCache: Awaited<ReturnType<typeof resolveFormatConfig>> | null = null;
+
 /**
  * Generate component code based on framework
  */
-export const generateComponent = (options: GenerateComponentOptions): GeneratedComponent => {
+export const generateComponent = async (
+  options: GenerateComponentOptions
+): Promise<GeneratedComponent> => {
   const { componentName, svgContent, viewBox, config } = options;
 
   const cleanedSVG = cleanSVGAttributes(svgContent);
@@ -66,6 +74,32 @@ export const generateComponent = (options: GenerateComponentOptions): GeneratedC
       throw new Error(`Unsupported framework: ${config.framework}`);
   }
 
+  // Apply project formatting if enabled
+  if (config.adaptToProject) {
+    try {
+      // Use cached config if available
+      if (!formatConfigCache) {
+        formatConfigCache = await resolveFormatConfig(process.cwd());
+      }
+
+      const activeConfig = formatConfigCache;
+
+      // Log detected config in debug mode
+      if (process.env.DEBUG && activeConfig.source !== "default") {
+        console.log(
+          `[mkicon] Detected ${activeConfig.source} config: ${activeConfig.configPath || "inline"}`
+        );
+      }
+
+      content = applyFormatting(content, activeConfig, config.framework);
+    } catch (error) {
+      // Silent fallback - just use the generated content as-is
+      if (process.env.DEBUG) {
+        console.warn("[mkicon] Failed to apply project formatting:", error);
+      }
+    }
+  }
+
   const filename = `${componentName}${extension}`;
 
   return {
@@ -73,4 +107,11 @@ export const generateComponent = (options: GenerateComponentOptions): GeneratedC
     filename,
     extension,
   };
+};
+
+/**
+ * Clear the format config cache (useful for testing or when changing projects)
+ */
+export const clearFormatConfigCache = (): void => {
+  formatConfigCache = null;
 };

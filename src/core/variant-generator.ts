@@ -1,12 +1,14 @@
-import { Config } from "@/config/schema.js";
-import { VariantComponentData, DirectionVariant, StyleVariant } from "@/types/variants.js";
-import { generateIconName } from "@/utils/naming.js";
+import type { Config } from "@/config/schema.js";
+import type { DirectionVariant, StyleVariant, VariantComponentData } from "@/types/variants.js";
+
+import { applyFormatting, resolveFormatConfig } from "@/adapters/index.js";
 import { generateReactVariantComponent, getReactFileExtension } from "@/templates/react-variant.js";
-import { generateVueVariantComponent, getVueFileExtension } from "@/templates/vue-variant.js";
 import {
   generateSvelteVariantComponent,
   getSvelteFileExtension,
 } from "@/templates/svelte-variant.js";
+import { generateVueVariantComponent, getVueFileExtension } from "@/templates/vue-variant.js";
+import { generateIconName } from "@/utils/naming.js";
 
 export interface GenerateVariantComponentOptions {
   variantData: VariantComponentData;
@@ -19,12 +21,15 @@ export interface GeneratedVariantComponent {
   extension: string;
 }
 
+// Cache for resolved format config during the session
+let formatConfigCache: Awaited<ReturnType<typeof resolveFormatConfig>> | null = null;
+
 /**
  * Generate a multi-variant component
  */
-export const generateVariantComponent = (
+export const generateVariantComponent = async (
   options: GenerateVariantComponentOptions
-): GeneratedVariantComponent => {
+): Promise<GeneratedVariantComponent> => {
   const { variantData, config } = options;
 
   // Generate component name
@@ -72,6 +77,24 @@ export const generateVariantComponent = (
       throw new Error(`Unsupported framework: ${config.framework}`);
   }
 
+  // Apply project formatting if enabled
+  if (config.adaptToProject) {
+    try {
+      // Use cached config if available
+      if (!formatConfigCache) {
+        formatConfigCache = await resolveFormatConfig(process.cwd());
+      }
+
+      const activeConfig = formatConfigCache;
+      content = applyFormatting(content, activeConfig, config.framework);
+    } catch (error) {
+      // Silent fallback - just use the generated content as-is
+      if (process.env.DEBUG) {
+        console.warn("[mkicon] Failed to apply project formatting:", error);
+      }
+    }
+  }
+
   const filename = `${componentName}${extension}`;
 
   return {
@@ -79,6 +102,13 @@ export const generateVariantComponent = (
     filename,
     extension,
   };
+};
+
+/**
+ * Clear the format config cache (useful for testing or when changing projects)
+ */
+export const clearVariantFormatConfigCache = (): void => {
+  formatConfigCache = null;
 };
 
 /**

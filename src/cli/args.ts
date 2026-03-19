@@ -30,6 +30,7 @@ export interface CLIOptions {
   output?: string;
   directive?: boolean;
   variant?: boolean;
+  adapt?: boolean;
 }
 
 /**
@@ -41,7 +42,7 @@ export const createProgram = (): Command => {
   program
     .name("mkicon")
     .description("Transform SVG icons into beautiful React, Vue, or Svelte components")
-    .version("0.3.0")
+    .version("0.4.1")
     .helpOption("-h, --help", "Display help");
 
   program
@@ -55,6 +56,7 @@ export const createProgram = (): Command => {
     .option("--output <dir>", "Override output directory")
     .option("--directive", "Create directional icon variants (interactive selection)")
     .option("--variant", "Create style variants (interactive selection)")
+    .option("--no-adapt", "Disable auto-detection of project formatting rules")
     .action(() => {
       // Default action - handled in main index.ts
       // This prevents Commander from displaying help when no command is provided
@@ -79,6 +81,13 @@ export const createProgram = (): Command => {
   program
     .command("init")
     .description("Initialize mkicon with default configuration")
+    .action(() => {
+      // Handled in main index.ts
+    });
+
+  program
+    .command("inspect-config")
+    .description("Show detected project formatting configuration")
     .action(() => {
       // Handled in main index.ts
     });
@@ -158,11 +167,12 @@ export const processIconFromArgs = async (
     const effectiveConfig = {
       ...config,
       ...(options.framework && { framework: options.framework as "react" | "vue" | "svelte" }),
+      ...(options.adapt !== undefined && { adaptToProject: options.adapt }),
     };
 
     // Generate component
     const genSpinner = spinner.start("Generating component...");
-    const component = generateComponent({
+    const component = await generateComponent({
       componentName,
       svgContent: processed.content,
       viewBox: processed.viewBox,
@@ -305,6 +315,7 @@ export const processVariantIconFromArgs = async (
     const effectiveConfig = {
       ...config,
       ...(options.framework && { framework: options.framework as "react" | "vue" | "svelte" }),
+      ...(options.adapt !== undefined && { adaptToProject: options.adapt }),
     };
 
     const genSpinner = spinner.start("Generating variant component...");

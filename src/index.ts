@@ -7,6 +7,7 @@ import {
   processVariantIconFromArgs,
 } from "@/cli/args.js";
 import { runInit } from "@/cli/init.js";
+import { runInspectConfig } from "@/cli/inspect-config.js";
 import { runInteractive } from "@/cli/interactive.js";
 import { runLibraryBrowser } from "@/cli/library.js";
 import { runSemiInteractive } from "@/cli/semi-interactive.js";
@@ -22,6 +23,7 @@ const main = async () => {
     const subcommand = process.argv[2];
     const isConfigCommand = subcommand === "config";
     const isInitCommand = subcommand === "init";
+    const isInspectConfigCommand = subcommand === "inspect-config";
     const isLibraryCommand = subcommand === "library" || subcommand === "browse";
     const isSemiInteractiveCommand = ["paste", "url", "file"].includes(subcommand);
     const showConfigFlag = process.argv.includes("--show");
@@ -91,6 +93,12 @@ const main = async () => {
         await runConfigMenu(projectRoot);
         return;
       }
+    }
+
+    // Handle inspect-config command
+    if (isInspectConfigCommand) {
+      await runInspectConfig(projectRoot);
+      return;
     }
 
     // Handle library command

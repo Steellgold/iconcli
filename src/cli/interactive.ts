@@ -178,7 +178,7 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
               const processed = await optimizeSVG(libSvg, config.optimize);
               processSpinner.succeed(`[${i + 1}/${urls.length}] Processed ${iconName}`);
 
-              const component = generateComponent({
+              const component = await generateComponent({
                 componentName,
                 svgContent: processed.content,
                 viewBox: processed.viewBox,
@@ -364,7 +364,7 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
       // Generate component
       logger.newline();
       const genSpinner = spinner.start("Generating component...");
-      const component = generateComponent({
+      const component = await generateComponent({
         componentName,
         svgContent: processed.content,
         viewBox: processed.viewBox,
