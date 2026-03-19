@@ -1,7 +1,7 @@
 import type { Config } from "@/config/schema.js";
 import type { DirectionVariant, StyleVariant, VariantComponentData } from "@/types/variants.js";
 
-import { applyFormatting, resolvePrettierConfig } from "@/adapters/index.js";
+import { applyFormatting, resolveFormatConfig } from "@/adapters/index.js";
 import { generateReactVariantComponent, getReactFileExtension } from "@/templates/react-variant.js";
 import {
   generateSvelteVariantComponent,
@@ -22,7 +22,7 @@ export interface GeneratedVariantComponent {
 }
 
 // Cache for resolved format config during the session
-let formatConfigCache: Awaited<ReturnType<typeof resolvePrettierConfig>> | null = null;
+let formatConfigCache: Awaited<ReturnType<typeof resolveFormatConfig>> | null = null;
 
 /**
  * Generate a multi-variant component
@@ -82,10 +82,11 @@ export const generateVariantComponent = async (
     try {
       // Use cached config if available
       if (!formatConfigCache) {
-        formatConfigCache = await resolvePrettierConfig(process.cwd());
+        formatConfigCache = await resolveFormatConfig(process.cwd());
       }
 
-      content = applyFormatting(content, formatConfigCache, config.framework);
+      const activeConfig = formatConfigCache;
+      content = applyFormatting(content, activeConfig, config.framework);
     } catch (error) {
       // Silent fallback - just use the generated content as-is
       if (process.env.DEBUG) {

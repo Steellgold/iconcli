@@ -1,6 +1,6 @@
 import type { Config } from "@/config/schema.js";
 
-import { applyFormatting, resolvePrettierConfig } from "@/adapters/index.js";
+import { applyFormatting, resolveFormatConfig } from "@/adapters/index.js";
 import { generateReactComponent, getReactFileExtension } from "@/templates/react.js";
 import { generateSvelteComponent, getSvelteFileExtension } from "@/templates/svelte.js";
 import { generateVueComponent, getVueFileExtension } from "@/templates/vue.js";
@@ -21,7 +21,7 @@ export interface GeneratedComponent {
 }
 
 // Cache for resolved format config during the session
-let formatConfigCache: Awaited<ReturnType<typeof resolvePrettierConfig>> | null = null;
+let formatConfigCache: Awaited<ReturnType<typeof resolveFormatConfig>> | null = null;
 
 /**
  * Generate component code based on framework
@@ -79,17 +79,19 @@ export const generateComponent = async (
     try {
       // Use cached config if available
       if (!formatConfigCache) {
-        formatConfigCache = await resolvePrettierConfig(process.cwd());
-
-        // Log detected config in debug mode
-        if (process.env.DEBUG && formatConfigCache.source === "prettier") {
-          console.log(
-            `[mkicon] Detected Prettier config: ${formatConfigCache.configPath || "inline"}`
-          );
-        }
+        formatConfigCache = await resolveFormatConfig(process.cwd());
       }
 
-      content = applyFormatting(content, formatConfigCache, config.framework);
+      const activeConfig = formatConfigCache;
+
+      // Log detected config in debug mode
+      if (process.env.DEBUG && activeConfig.source !== "default") {
+        console.log(
+          `[mkicon] Detected ${activeConfig.source} config: ${activeConfig.configPath || "inline"}`
+        );
+      }
+
+      content = applyFormatting(content, activeConfig, config.framework);
     } catch (error) {
       // Silent fallback - just use the generated content as-is
       if (process.env.DEBUG) {
