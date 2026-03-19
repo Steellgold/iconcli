@@ -1,5 +1,12 @@
-import { formatConfigForDisplay, resolvePrettierConfig } from "@/adapters/index.js";
+import { formatConfigForDisplay, resolveFormatConfig } from "@/adapters/index.js";
 import { logger } from "@/utils/logger.js";
+
+const SOURCE_LABELS: Record<string, string> = {
+  prettier: "Prettier",
+  biome: "Biome",
+  eslint: "ESLint",
+  editorconfig: "EditorConfig",
+};
 
 /**
  * Run the inspect-config command to show detected project formatting rules
@@ -9,10 +16,11 @@ export const runInspectConfig = async (projectRoot: string): Promise<void> => {
   logger.newline();
 
   try {
-    const formatConfig = await resolvePrettierConfig(projectRoot);
+    const formatConfig = await resolveFormatConfig(projectRoot);
 
-    if (formatConfig.source === "prettier") {
-      logger.success("✓ Detected Prettier configuration");
+    if (formatConfig.source && formatConfig.source !== "default") {
+      const label = SOURCE_LABELS[formatConfig.source] ?? formatConfig.source;
+      logger.success(`✓ Detected ${label} configuration`);
       logger.newline();
       console.log(formatConfigForDisplay(formatConfig));
       logger.newline();
@@ -22,16 +30,17 @@ export const runInspectConfig = async (projectRoot: string): Promise<void> => {
       console.log("  • CLI flag: mkicon -n Icon icon.svg --no-adapt");
       console.log('  • Config file: Set "adaptToProject": false in .mkicon.json');
     } else {
-      logger.info("No Prettier configuration detected in project");
+      logger.info("No formatter configuration detected in project");
       logger.newline();
       logger.info("Using mkicon default formatting:");
       logger.newline();
       console.log(formatConfigForDisplay(formatConfig));
       logger.newline();
-      logger.info("To enable auto-adaptation:");
-      console.log("  1. Add a .prettierrc.json file to your project");
-      console.log("  2. Or install Prettier: pnpm add -D prettier");
-      console.log("  3. mkicon will automatically detect and apply your rules");
+      logger.info("To enable auto-adaptation, add one of the following to your project:");
+      console.log("  • Prettier  — .prettierrc.json  or  pnpm add -D prettier");
+      console.log("  • Biome     — biome.json         or  pnpm add -D @biomejs/biome");
+      console.log("  • ESLint    — .eslintrc.json     (with formatting rules)");
+      console.log("  • EditorConfig — .editorconfig");
     }
   } catch (error) {
     logger.error("Failed to inspect configuration");
