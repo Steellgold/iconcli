@@ -4,7 +4,7 @@ export const ConfigSchema = z.object({
   version: z.string().default("1.0.0"),
   baseDir: z.string(),
   iconsFolder: z.string().default("icons"),
-  framework: z.enum(["react", "vue", "svelte"]),
+  framework: z.enum(["react", "react-native", "vue", "svelte"]),
   typescript: z.boolean().default(true),
   optimize: z.boolean().default(true),
   maintainIndex: z.boolean().default(true),
@@ -43,6 +43,7 @@ export const ConfigSchema = z.object({
 });
 
 export type Config = z.infer<typeof ConfigSchema>;
+export type PropsConfig = Config["props"];
 
 export const PartialConfigSchema = ConfigSchema.partial();
 export type PartialConfig = z.infer<typeof PartialConfigSchema>;

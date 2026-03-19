@@ -2,7 +2,14 @@ import type { Config } from "@/config/schema.js";
 import type { DirectionVariant, StyleVariant, VariantComponentData } from "@/types/variants.js";
 
 import { applyFormatting, resolveFormatConfig } from "@/adapters/index.js";
-import { generateReactVariantComponent, getReactFileExtension } from "@/templates/react-variant.js";
+import {
+  generateReactVariantComponent,
+  getReactFileExtension,
+} from "@/templates/react-variant.js";
+import {
+  generateReactNativeVariantComponent,
+  getReactNativeFileExtension,
+} from "@/templates/react-native-variant.js";
 import {
   generateSvelteVariantComponent,
   getSvelteFileExtension,
@@ -51,6 +58,16 @@ export const generateVariantComponent = async (
         props: config.props,
       });
       extension = getReactFileExtension(config.typescript);
+      break;
+
+    case "react-native":
+      content = generateReactNativeVariantComponent({
+        componentName,
+        variantData,
+        typescript: config.typescript,
+        props: config.props,
+      });
+      extension = getReactNativeFileExtension(config.typescript);
       break;
 
     case "vue":

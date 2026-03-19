@@ -52,7 +52,7 @@ export const createProgram = (): Command => {
     .option("-f, --file [path]", "Load SVG from file (interactive if no value)")
     .option("-b, --batch <dir>", "Batch process directory")
     .option("--svg <svg>", "SVG code (non-interactive)")
-    .option("--framework <framework>", "Override framework (react, vue, svelte)")
+    .option("--framework <framework>", "Override framework (react, react-native, vue, svelte)")
     .option("--output <dir>", "Override output directory")
     .option("--directive", "Create directional icon variants (interactive selection)")
     .option("--variant", "Create style variants (interactive selection)")
@@ -166,7 +166,9 @@ export const processIconFromArgs = async (
     // Override config with CLI options
     const effectiveConfig = {
       ...config,
-      ...(options.framework && { framework: options.framework as "react" | "vue" | "svelte" }),
+      ...(options.framework && {
+        framework: options.framework as "react" | "react-native" | "vue" | "svelte",
+      }),
       ...(options.adapt !== undefined && { adaptToProject: options.adapt }),
     };
 
@@ -314,7 +316,9 @@ export const processVariantIconFromArgs = async (
     // Override config with CLI options
     const effectiveConfig = {
       ...config,
-      ...(options.framework && { framework: options.framework as "react" | "vue" | "svelte" }),
+      ...(options.framework && {
+        framework: options.framework as "react" | "react-native" | "vue" | "svelte",
+      }),
       ...(options.adapt !== undefined && { adaptToProject: options.adapt }),
     };
 

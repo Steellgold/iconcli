@@ -2,6 +2,10 @@ import type { Config } from "@/config/schema.js";
 
 import { applyFormatting, resolveFormatConfig } from "@/adapters/index.js";
 import { generateReactComponent, getReactFileExtension } from "@/templates/react.js";
+import {
+  generateReactNativeComponent,
+  getReactNativeFileExtension,
+} from "@/templates/react-native.js";
 import { generateSvelteComponent, getSvelteFileExtension } from "@/templates/svelte.js";
 import { generateVueComponent, getVueFileExtension } from "@/templates/vue.js";
 
@@ -46,6 +50,17 @@ export const generateComponent = async (
         props: config.props,
       });
       extension = getReactFileExtension(config.typescript);
+      break;
+
+    case "react-native":
+      content = generateReactNativeComponent({
+        componentName,
+        svgContent: cleanedSVG,
+        viewBox,
+        typescript: config.typescript,
+        props: config.props,
+      });
+      extension = getReactNativeFileExtension(config.typescript);
       break;
 
     case "vue":

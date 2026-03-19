@@ -38,6 +38,20 @@ describe("generateComponent", () => {
     expect(result.content).toContain('viewBox="0 0 24 24"');
   });
 
+  it("routes to React Native template when framework is react-native", async () => {
+    const config = baseConfig("react-native");
+    const result = await generateComponent({
+      componentName: "ArrowIcon",
+      svgContent: minimalSvg,
+      viewBox: "0 0 24 24",
+      config,
+    });
+    expect(result.extension).toBe(".tsx");
+    expect(result.filename).toBe("ArrowIcon.tsx");
+    expect(result.content).toContain("import { Svg");
+    expect(result.content).toContain("<Svg");
+  });
+
   it("routes to Vue template and returns .vue when framework is vue", async () => {
     const config = baseConfig("vue");
     const result = await generateComponent({
