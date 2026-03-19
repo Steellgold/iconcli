@@ -1,9 +1,9 @@
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
-import type { DetectedFormatConfig } from "./types.js";
+import type { DetectedFormatConfig } from "./types";
 
-import { DEFAULT_FORMAT_CONFIG } from "./types.js";
+import { DEFAULT_FORMAT_CONFIG } from "./types";
 
 interface BiomeFormatterConfig {
   enabled?: boolean;
@@ -37,9 +37,9 @@ export const resolveBiomeConfig = async (cwd: string): Promise<DetectedFormatCon
     const biomeJsoncPath = join(cwd, "biome.jsonc");
 
     let configPath: string | null = null;
-    if (existsSync(biomePath)) configPath = biomePath;
-    else if (existsSync(biomeJsoncPath)) configPath = biomeJsoncPath;
-    else return null;
+    if (existsSync(biomePath)) {configPath = biomePath;}
+    else if (existsSync(biomeJsoncPath)) {configPath = biomeJsoncPath;}
+    else {return null;}
 
     const raw = readFileSync(configPath, "utf-8");
     // Strip JSONC comments for biome.jsonc
@@ -50,10 +50,10 @@ export const resolveBiomeConfig = async (cwd: string): Promise<DetectedFormatCon
     const jsFmt = biomeConfig.javascript?.formatter;
 
     // If no formatter config at all, return null
-    if (!fmt && !jsFmt) return null;
+    if (!fmt && !jsFmt) {return null;}
 
     // If formatter is explicitly disabled, skip
-    if (fmt?.enabled === false) return null;
+    if (fmt?.enabled === false) {return null;}
 
     return {
       quotes: jsFmt?.quoteStyle === "single" ? "single" : "double",

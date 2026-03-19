@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { generateSvelteComponent, getSvelteFileExtension } from "./svelte.js";
-import type { Config } from "@/config/schema.js";
+import { generateSvelteComponent, getSvelteFileExtension } from "./svelte";
+import type { Config } from "@/config/schema";
 
 const defaultProps: Config["props"] = {
   size: true,

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { generateVueComponent, getVueFileExtension } from "./vue.js";
-import type { Config } from "@/config/schema.js";
+import { generateVueComponent, getVueFileExtension } from "./vue";
+import type { Config } from "@/config/schema";
 
 const defaultProps: Config["props"] = {
   size: true,

@@ -1,6 +1,5 @@
 import tseslint from "@typescript-eslint/eslint-plugin";
 import tsparser from "@typescript-eslint/parser";
-import importPlugin from "eslint-plugin-import";
 
 export default [
   {
@@ -18,7 +17,6 @@ export default [
     },
     plugins: {
       "@typescript-eslint": tseslint,
-      import: importPlugin,
     },
     rules: {
       // TypeScript specific
@@ -60,34 +58,6 @@ export default [
       eqeqeq: ["error", "always"],
       curly: ["error", "all"],
       "no-throw-literal": "error",
-
-      // Import rules
-      "import/order": [
-        "error",
-        {
-          groups: ["builtin", "external", "internal", "parent", "sibling", "index"],
-          pathGroups: [
-            {
-              pattern: "@/**",
-              group: "internal",
-            },
-          ],
-          alphabetize: {
-            order: "asc",
-            caseInsensitive: true,
-          },
-          "newlines-between": "always",
-        },
-      ],
-      "import/no-duplicates": "error",
-      "sort-imports": [
-        "error",
-        {
-          ignoreCase: true,
-          ignoreDeclarationSort: true,
-          ignoreMemberSort: false,
-        },
-      ],
     },
   },
 ];

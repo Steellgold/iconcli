@@ -9,7 +9,7 @@ import {
   extractIconNameFromFilename,
   extractIconNameFromURL,
   extractLucideIconNameFromURL,
-} from "./naming.js";
+} from "./naming";
 
 describe("toPascalCase", () => {
   it("converts kebab-case to PascalCase", () => {

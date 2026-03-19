@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { generateReactComponent, getReactFileExtension } from "./react.js";
-import type { Config } from "@/config/schema.js";
+import { generateReactComponent, getReactFileExtension } from "./react";
+import type { Config } from "@/config/schema";
 
 const defaultProps: Config["props"] = {
   size: true,

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ConfigSchema, PartialConfigSchema } from "./schema.js";
+import { ConfigSchema, PartialConfigSchema } from "./schema";
 
 describe("ConfigSchema", () => {
   it("parses valid minimal config", () => {

@@ -1,4 +1,4 @@
-import { Config } from "@/config/schema.js";
+import type { Config } from "@/config/schema";
 
 interface ReactTemplateOptions {
   componentName: string;
@@ -51,22 +51,22 @@ export const generateReactComponent = (options: ReactTemplateOptions): string =>
     propsInterface = `export interface ${componentName}Props extends SVGProps<SVGSVGElement> {\n${propsFields.join("\n")}\n}\n\n`;
 
     const tsxProps: string[] = [...defaultProps];
-    if (props.className) tsxProps.push("className");
-    if (props.style) tsxProps.push("style");
+    if (props.className) {tsxProps.push("className");}
+    if (props.style) {tsxProps.push("style");}
     tsxProps.push("...props");
 
     propsSignature = `{ ${tsxProps.join(",\n")} }: ${componentName}Props`;
   } else {
     const defaultProps: string[] = [];
 
-    if (props.size) defaultProps.push("size = 24");
-    if (props.color) defaultProps.push("color = 'currentColor'");
+    if (props.size) {defaultProps.push("size = 24");}
+    if (props.color) {defaultProps.push("color = 'currentColor'");}
 
     const destructuredProps = [];
-    if (props.size) destructuredProps.push("size");
-    if (props.color) destructuredProps.push("color");
-    if (props.className) destructuredProps.push("className");
-    if (props.style) destructuredProps.push("style");
+    if (props.size) {destructuredProps.push("size");}
+    if (props.color) {destructuredProps.push("color");}
+    if (props.className) {destructuredProps.push("className");}
+    if (props.style) {destructuredProps.push("style");}
     destructuredProps.push("...props");
 
     propsSignature = `{ ${destructuredProps.join(", ")} }`;

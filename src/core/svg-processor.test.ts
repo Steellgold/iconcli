@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { optimizeSVG, cleanSVGAttributes } from "./svg-processor.js";
+import { optimizeSVG, cleanSVGAttributes } from "./svg-processor";
 
 describe("cleanSVGAttributes", () => {
   it("removes width attribute", () => {

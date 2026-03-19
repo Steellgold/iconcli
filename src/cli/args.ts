@@ -1,13 +1,13 @@
-import { processBatchIcons } from "@/batch/processor.js";
-import { Config } from "@/config/schema.js";
-import { generateComponent } from "@/core/component-generator.js";
-import { writeComponentFile } from "@/core/file-writer.js";
-import { updateIndexFile } from "@/core/index-maintainer.js";
-import { optimizeSVG } from "@/core/svg-processor.js";
-import { fetchSVGFromURL } from "@/core/url-fetcher.js";
-import { logger, spinner } from "@/utils/logger.js";
-import { generateIconName } from "@/utils/naming.js";
-import { isValidSVG } from "@/utils/validation.js";
+import { processBatchIcons } from "@/batch/processor";
+import type { Config } from "@/config/schema";
+import { generateComponent } from "@/core/component-generator";
+import { writeComponentFile } from "@/core/file-writer";
+import { updateIndexFile } from "@/core/index-maintainer";
+import { optimizeSVG } from "@/core/svg-processor";
+import { fetchSVGFromURL } from "@/core/url-fetcher";
+import { logger, spinner } from "@/utils/logger";
+import { generateIconName } from "@/utils/naming";
+import { isValidSVG } from "@/utils/validation";
 import { Command } from "commander";
 import fs from "fs/promises";
 import path from "path";
@@ -16,8 +16,8 @@ import {
   promptStyleVariants,
   promptAddStyleVariants,
   promptVariantSVG,
-} from "./variant-prompts.js";
-import { VariantConfig, VariantSVGContent, VariantComponentData } from "@/types/variants.js";
+} from "./variant-prompts";
+import type { VariantConfig, VariantSVGContent, VariantComponentData } from "@/types/variants";
 
 export interface CLIOptions {
   name?: string;

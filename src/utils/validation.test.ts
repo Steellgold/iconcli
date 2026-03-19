@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isValidSVG, extractViewBox, extractDimensions, isValidIconName } from "./validation.js";
+import { isValidSVG, extractViewBox, extractDimensions, isValidIconName } from "./validation";
 
 describe("isValidSVG", () => {
   it("returns true for valid svg with content", () => {

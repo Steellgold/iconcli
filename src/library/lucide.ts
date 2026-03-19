@@ -1,4 +1,4 @@
-import { FetchIconResult, IconLibrary, IconMetadata } from "./types.js";
+import type { FetchIconResult, IconLibrary, IconMetadata } from "./types";
 
 const LUCIDE_LIBRARY: IconLibrary = {
   name: "lucide",

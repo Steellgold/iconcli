@@ -1,9 +1,9 @@
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
-import type { DetectedFormatConfig } from "./types.js";
+import type { DetectedFormatConfig } from "./types";
 
-import { DEFAULT_FORMAT_CONFIG } from "./types.js";
+import { DEFAULT_FORMAT_CONFIG } from "./types";
 
 type SectionSettings = Record<string, string>;
 
@@ -18,7 +18,7 @@ const parseEditorConfigFile = (content: string): Record<string, SectionSettings>
     const line = rawLine.trim();
 
     // Skip comments and blank lines
-    if (!line || line.startsWith("#") || line.startsWith(";")) continue;
+    if (!line || line.startsWith("#") || line.startsWith(";")) {continue;}
 
     if (line.startsWith("[") && line.endsWith("]")) {
       currentSection = line.slice(1, -1).trim();
@@ -41,7 +41,7 @@ const parseEditorConfigFile = (content: string): Record<string, SectionSettings>
  * Check whether a section glob pattern applies to JS/TS files
  */
 const sectionMatchesJSTS = (section: string): boolean => {
-  if (section === "*") return true;
+  if (section === "*") {return true;}
   const jstsExts = [".js", ".ts", ".jsx", ".tsx", ".mjs", ".cjs", ".mts", ".cts"];
   return jstsExts.some((ext) => section.includes(ext));
 };
@@ -53,7 +53,7 @@ const sectionMatchesJSTS = (section: string): boolean => {
 export const resolveEditorConfig = async (cwd: string): Promise<DetectedFormatConfig | null> => {
   try {
     const editorConfigPath = join(cwd, ".editorconfig");
-    if (!existsSync(editorConfigPath)) return null;
+    if (!existsSync(editorConfigPath)) {return null;}
 
     const content = readFileSync(editorConfigPath, "utf-8");
     const sections = parseEditorConfigFile(content);
@@ -61,7 +61,7 @@ export const resolveEditorConfig = async (cwd: string): Promise<DetectedFormatCo
     // Merge: [*] provides the base, then JS/TS-specific sections override
     const merged: SectionSettings = {};
 
-    if (sections["*"]) Object.assign(merged, sections["*"]);
+    if (sections["*"]) {Object.assign(merged, sections["*"]);}
 
     for (const [section, values] of Object.entries(sections)) {
       if (section !== "*" && sectionMatchesJSTS(section)) {
@@ -71,7 +71,7 @@ export const resolveEditorConfig = async (cwd: string): Promise<DetectedFormatCo
 
     // Require at least one useful formatting key
     const hasSettings = ["indent_style", "indent_size", "end_of_line"].some((k) => k in merged);
-    if (!hasSettings) return null;
+    if (!hasSettings) {return null;}
 
     const indentStyle: "space" | "tab" = merged["indent_style"] === "tab" ? "tab" : "space";
 

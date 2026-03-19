@@ -1,11 +1,12 @@
 import enquirer from "enquirer";
+import type {
+  DirectionVariant,
+  StyleVariant} from "@/types/variants";
 import {
   DIRECTION_VARIANTS,
-  STYLE_VARIANTS,
-  DirectionVariant,
-  StyleVariant,
-} from "@/types/variants.js";
-import { logger } from "@/utils/logger.js";
+  STYLE_VARIANTS
+} from "@/types/variants";
+import { logger } from "@/utils/logger";
 
 const { prompt } = enquirer;
 

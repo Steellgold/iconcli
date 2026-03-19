@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { applyFormatting } from "./post-processor.js";
-import { DEFAULT_FORMAT_CONFIG } from "./types.js";
+import { applyFormatting } from "./post-processor";
+import { DEFAULT_FORMAT_CONFIG } from "./types";
 
 describe("post-processor", () => {
   describe("applyFormatting", () => {

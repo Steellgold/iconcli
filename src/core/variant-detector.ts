@@ -1,9 +1,10 @@
+import type {
+  DirectionVariant,
+  StyleVariant} from "@/types/variants";
 import {
   DIRECTION_VARIANTS,
-  STYLE_VARIANTS,
-  DirectionVariant,
-  StyleVariant,
-} from "@/types/variants.js";
+  STYLE_VARIANTS
+} from "@/types/variants";
 import path from "path";
 
 export interface DetectedVariantGroup {

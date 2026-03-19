@@ -1,21 +1,21 @@
-import type { Config } from "@/config/schema.js";
-import type { DirectionVariant, StyleVariant, VariantComponentData } from "@/types/variants.js";
+import type { Config } from "@/config/schema";
+import type { DirectionVariant, StyleVariant, VariantComponentData } from "@/types/variants";
 
-import { applyFormatting, resolveFormatConfig } from "@/adapters/index.js";
+import { applyFormatting, resolveFormatConfig } from "@/adapters/index";
 import {
   generateReactVariantComponent,
   getReactFileExtension,
-} from "@/templates/react-variant.js";
+} from "@/templates/react-variant";
 import {
   generateReactNativeVariantComponent,
   getReactNativeFileExtension,
-} from "@/templates/react-native-variant.js";
+} from "@/templates/react-native-variant";
 import {
   generateSvelteVariantComponent,
   getSvelteFileExtension,
-} from "@/templates/svelte-variant.js";
-import { generateVueVariantComponent, getVueFileExtension } from "@/templates/vue-variant.js";
-import { generateIconName } from "@/utils/naming.js";
+} from "@/templates/svelte-variant";
+import { generateVueVariantComponent, getVueFileExtension } from "@/templates/vue-variant";
+import { generateIconName } from "@/utils/naming";
 
 export interface GenerateVariantComponentOptions {
   variantData: VariantComponentData;

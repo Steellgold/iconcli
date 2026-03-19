@@ -1,4 +1,4 @@
-import { Config } from "@/config/schema.js";
+import type { Config } from "@/config/schema";
 import enquirer from "enquirer";
 
 const { prompt } = enquirer;

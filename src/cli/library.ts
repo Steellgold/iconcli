@@ -1,15 +1,15 @@
-import { Config } from "@/config/schema.js";
-import { generateComponent } from "@/core/component-generator.js";
-import { writeComponentFile } from "@/core/file-writer.js";
-import { updateIndexFile } from "@/core/index-maintainer.js";
-import { optimizeSVG } from "@/core/svg-processor.js";
-import { fetchLucideIcon, fetchLucideIcons, generateLucideCopyright } from "@/library/lucide.js";
-import { IconMetadata } from "@/library/types.js";
-import { logger, spinner } from "@/utils/logger.js";
-import { extractLucideIconNameFromURL, generateIconName } from "@/utils/naming.js";
+import type { Config } from "@/config/schema";
+import { generateComponent } from "@/core/component-generator";
+import { writeComponentFile } from "@/core/file-writer";
+import { updateIndexFile } from "@/core/index-maintainer";
+import { optimizeSVG } from "@/core/svg-processor";
+import { fetchLucideIcon, fetchLucideIcons, generateLucideCopyright } from "@/library/lucide";
+import type { IconMetadata } from "@/library/types";
+import { logger, spinner } from "@/utils/logger";
+import { extractLucideIconNameFromURL, generateIconName } from "@/utils/naming";
 import enquirer from "enquirer";
 import path from "path";
-import { promptMultipleURLs } from "./prompts.js";
+import { promptMultipleURLs } from "./prompts";
 
 const { prompt, AutoComplete } = enquirer as any;
 
@@ -318,12 +318,12 @@ const promptIconSearchAndSelect = async (icons: IconMetadata[]): Promise<string 
       limit: 15,
       choices: iconChoices,
       suggest(input: string, choices: any[]) {
-        if (!input) return choices.slice(0, 15);
+        if (!input) {return choices.slice(0, 15);}
 
         const lowerInput = input.toLowerCase();
 
         const matchingIcons = icons.filter((icon) => {
-          if (icon.name.toLowerCase().includes(lowerInput)) return true;
+          if (icon.name.toLowerCase().includes(lowerInput)) {return true;}
           return icon.tags.some((tag: string) => tag.toLowerCase().includes(lowerInput));
         });
 

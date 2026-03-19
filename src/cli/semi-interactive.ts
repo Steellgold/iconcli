@@ -1,12 +1,12 @@
-import { Config } from "@/config/schema.js";
-import { generateComponent } from "@/core/component-generator.js";
-import { writeComponentFile } from "@/core/file-writer.js";
-import { updateIndexFile } from "@/core/index-maintainer.js";
-import { optimizeSVG } from "@/core/svg-processor.js";
-import { fetchSVGFromURL } from "@/core/url-fetcher.js";
-import { logger, spinner } from "@/utils/logger.js";
-import { extractIconNameFromURL, generateIconName } from "@/utils/naming.js";
-import { isValidSVG } from "@/utils/validation.js";
+import type { Config } from "@/config/schema";
+import { generateComponent } from "@/core/component-generator";
+import { writeComponentFile } from "@/core/file-writer";
+import { updateIndexFile } from "@/core/index-maintainer";
+import { optimizeSVG } from "@/core/svg-processor";
+import { fetchSVGFromURL } from "@/core/url-fetcher";
+import { logger, spinner } from "@/utils/logger";
+import { extractIconNameFromURL, generateIconName } from "@/utils/naming";
+import { isValidSVG } from "@/utils/validation";
 import fs from "fs/promises";
 import path from "path";
 import {
@@ -14,7 +14,7 @@ import {
   promptIconName,
   promptSVGContent,
   promptSVGURL,
-} from "./prompts.js";
+} from "./prompts";
 
 export interface SemiInteractiveOptions {
   projectRoot: string;

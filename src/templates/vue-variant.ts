@@ -1,6 +1,6 @@
-import { PropsConfig } from "@/config/schema.js";
-import { VariantComponentData, DirectionVariant, StyleVariant } from "@/types/variants.js";
-import { extractSVGInnerContent } from "@/core/variant-generator.js";
+import type { PropsConfig } from "@/config/schema";
+import type { VariantComponentData, DirectionVariant, StyleVariant } from "@/types/variants";
+import { extractSVGInnerContent } from "@/core/variant-generator";
 
 export interface GenerateVueVariantOptions {
   componentName: string;
@@ -19,8 +19,8 @@ export const generateVueVariantComponent = (options: GenerateVueVariantOptions):
   // Build props
   const propDefs: string[] = [];
 
-  if (props.size) propDefs.push("  size?: number | string;");
-  if (props.color) propDefs.push("  color?: string;");
+  if (props.size) {propDefs.push("  size?: number | string;");}
+  if (props.color) {propDefs.push("  color?: string;");}
 
   if (hasDirections) {
     const directionType = config.directions!.map((d) => `'${d}'`).join(" | ");
@@ -37,10 +37,10 @@ export const generateVueVariantComponent = (options: GenerateVueVariantOptions):
 
   // Defaults
   const defaultValues: Record<string, string | number> = {};
-  if (props.size) defaultValues.size = 24;
-  if (props.color) defaultValues.color = "'currentColor'";
-  if (hasDirections) defaultValues.direction = `'${config.directions![0]}'`;
-  if (hasStyles) defaultValues.variant = `'${config.styles![0]}'`;
+  if (props.size) {defaultValues.size = 24;}
+  if (props.color) {defaultValues.color = "'currentColor'";}
+  if (hasDirections) {defaultValues.direction = `'${config.directions![0]}'`;}
+  if (hasStyles) {defaultValues.variant = `'${config.styles![0]}'`;}
 
   const propsCode =
     typescript && propDefs.length > 0
@@ -114,7 +114,7 @@ const generateVueDirectionComputed = (
   const cases = directions
     .map((dir) => {
       const v = variants.find((v) => v.variant === dir);
-      if (!v) return "";
+      if (!v) {return "";}
 
       const content = extractSVGInnerContent(v.svgContent);
       // Escape backticks and ${} in content for template literals
@@ -142,7 +142,7 @@ const generateVueStyleComputed = (
   const cases = styles
     .map((style) => {
       const v = variants.find((v) => v.variant === style);
-      if (!v) return "";
+      if (!v) {return "";}
 
       const content = extractSVGInnerContent(v.svgContent);
       const escapedContent = content.replace(/`/g, "\\`").replace(/\$/g, "\\$");
@@ -174,4 +174,4 @@ ${checks}
 `;
 };
 
-export { getVueFileExtension } from "./vue.js";
+export { getVueFileExtension } from "./vue";

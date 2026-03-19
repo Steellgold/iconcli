@@ -1,20 +1,20 @@
-import { updateConfig } from "@/config/manager.js";
-import { Config } from "@/config/schema.js";
-import { validateConfigPath } from "@/config/validator.js";
-import { generateComponent } from "@/core/component-generator.js";
-import { writeComponentFile } from "@/core/file-writer.js";
-import { updateIndexFile } from "@/core/index-maintainer.js";
-import { optimizeSVG } from "@/core/svg-processor.js";
-import { fetchSVGFromURL } from "@/core/url-fetcher.js";
-import { fetchLucideIcon, fetchLucideIcons, generateLucideCopyright } from "@/library/lucide.js";
-import { IconMetadata } from "@/library/types.js";
-import { logger, spinner } from "@/utils/logger.js";
+import { updateConfig } from "@/config/manager";
+import type { Config } from "@/config/schema";
+import { validateConfigPath } from "@/config/validator";
+import { generateComponent } from "@/core/component-generator";
+import { writeComponentFile } from "@/core/file-writer";
+import { updateIndexFile } from "@/core/index-maintainer";
+import { optimizeSVG } from "@/core/svg-processor";
+import { fetchSVGFromURL } from "@/core/url-fetcher";
+import { fetchLucideIcon, fetchLucideIcons, generateLucideCopyright } from "@/library/lucide";
+import type { IconMetadata } from "@/library/types";
+import { logger, spinner } from "@/utils/logger";
 import {
   extractIconNameFromURL,
   extractLucideIconNameFromURL,
   generateIconName,
-} from "@/utils/naming.js";
-import { isValidSVG } from "@/utils/validation.js";
+} from "@/utils/naming";
+import { isValidSVG } from "@/utils/validation";
 import enquirer from "enquirer";
 import fs from "fs/promises";
 import path from "path";
@@ -26,7 +26,7 @@ import {
   promptSVGContent,
   promptSVGSource,
   promptSVGURL,
-} from "./prompts.js";
+} from "./prompts";
 
 const { AutoComplete, prompt } = enquirer as any;
 
@@ -264,11 +264,11 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
           limit: 15,
           choices: iconChoices,
           suggest(input: string, choices: any[]) {
-            if (!input) return choices.slice(0, 15);
+            if (!input) {return choices.slice(0, 15);}
 
             const lowerInput = input.toLowerCase();
             const matchingIcons = icons.filter((icon) => {
-              if (icon.name.toLowerCase().includes(lowerInput)) return true;
+              if (icon.name.toLowerCase().includes(lowerInput)) {return true;}
               return icon.tags.some((tag: string) => tag.toLowerCase().includes(lowerInput));
             });
 

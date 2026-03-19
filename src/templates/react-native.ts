@@ -1,4 +1,4 @@
-import { Config } from "@/config/schema.js";
+import type { Config } from "@/config/schema";
 
 interface ReactNativeTemplateOptions {
   componentName: string;
@@ -117,15 +117,15 @@ export const generateReactNativeComponent = (options: ReactNativeTemplateOptions
     )}\n}\n\n`;
 
     const tsxProps: string[] = [...defaultProps];
-    if (props.style) tsxProps.push("style");
+    if (props.style) {tsxProps.push("style");}
     tsxProps.push("...props");
 
     propsSignature = `{ ${tsxProps.join(",\n")} }: ${componentName}Props`;
   } else {
     const destructuredProps: string[] = [];
-    if (props.size) destructuredProps.push("size = 24");
-    if (props.color) destructuredProps.push("color = \"currentColor\"");
-    if (props.style) destructuredProps.push("style");
+    if (props.size) {destructuredProps.push("size = 24");}
+    if (props.color) {destructuredProps.push("color = \"currentColor\"");}
+    if (props.style) {destructuredProps.push("style");}
     destructuredProps.push("...props");
 
     propsSignature = `{ ${destructuredProps.join(", ")} }`;

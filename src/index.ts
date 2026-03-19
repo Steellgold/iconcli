@@ -5,17 +5,17 @@ import {
   processBatchFromArgs,
   processIconFromArgs,
   processVariantIconFromArgs,
-} from "@/cli/args.js";
-import { runInit } from "@/cli/init.js";
-import { runInspectConfig } from "@/cli/inspect-config.js";
-import { runInteractive } from "@/cli/interactive.js";
-import { runLibraryBrowser } from "@/cli/library.js";
-import { runSemiInteractive } from "@/cli/semi-interactive.js";
-import { runSetup } from "@/cli/setup.js";
-import { runConfigMenu, showConfig } from "@/config/commands.js";
-import { configExists, loadConfig } from "@/config/manager.js";
-import { findProjectRoot } from "@/core/project.js";
-import { logger } from "@/utils/logger.js";
+} from "@/cli/args";
+import { runInit } from "@/cli/init";
+import { runInspectConfig } from "@/cli/inspect-config";
+import { runInteractive } from "@/cli/interactive";
+import { runLibraryBrowser } from "@/cli/library";
+import { runSemiInteractive } from "@/cli/semi-interactive";
+import { runSetup } from "@/cli/setup";
+import { runConfigMenu, showConfig } from "@/config/commands";
+import { configExists, loadConfig } from "@/config/manager";
+import { findProjectRoot } from "@/core/project";
+import { logger } from "@/utils/logger";
 
 const main = async () => {
   try {

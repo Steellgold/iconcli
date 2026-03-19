@@ -1,24 +1,25 @@
-import { Config } from "@/config/schema.js";
-import { generateComponent } from "@/core/component-generator.js";
-import { writeComponentFile } from "@/core/file-writer.js";
-import { updateIndexFile } from "@/core/index-maintainer.js";
-import { optimizeSVG } from "@/core/svg-processor.js";
-import { logger, spinner } from "@/utils/logger.js";
-import { extractIconNameFromFilename, generateIconName } from "@/utils/naming.js";
-import { getFilesWithExtension } from "@/utils/paths.js";
-import { isValidSVG } from "@/utils/validation.js";
+import type { Config } from "@/config/schema";
+import { generateComponent } from "@/core/component-generator";
+import { writeComponentFile } from "@/core/file-writer";
+import { updateIndexFile } from "@/core/index-maintainer";
+import { optimizeSVG } from "@/core/svg-processor";
+import { logger, spinner } from "@/utils/logger";
+import { extractIconNameFromFilename, generateIconName } from "@/utils/naming";
+import { getFilesWithExtension } from "@/utils/paths";
+import { isValidSVG } from "@/utils/validation";
 import enquirer from "enquirer";
 import fs from "fs/promises";
 import path from "path";
-import { detectVariantGroups, DetectedVariantGroup } from "@/core/variant-detector.js";
-import { generateVariantComponent } from "@/core/variant-generator.js";
-import {
+import type { DetectedVariantGroup } from "@/core/variant-detector";
+import { detectVariantGroups } from "@/core/variant-detector";
+import { generateVariantComponent } from "@/core/variant-generator";
+import type {
   VariantConfig,
   VariantSVGContent,
   VariantComponentData,
   DirectionVariant,
   StyleVariant,
-} from "@/types/variants.js";
+} from "@/types/variants";
 
 const { prompt } = enquirer;
 

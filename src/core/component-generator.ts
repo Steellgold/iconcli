@@ -1,15 +1,15 @@
-import type { Config } from "@/config/schema.js";
+import type { Config } from "@/config/schema";
 
-import { applyFormatting, resolveFormatConfig } from "@/adapters/index.js";
-import { generateReactComponent, getReactFileExtension } from "@/templates/react.js";
+import { applyFormatting, resolveFormatConfig } from "@/adapters/index";
+import { generateReactComponent, getReactFileExtension } from "@/templates/react";
 import {
   generateReactNativeComponent,
   getReactNativeFileExtension,
-} from "@/templates/react-native.js";
-import { generateSvelteComponent, getSvelteFileExtension } from "@/templates/svelte.js";
-import { generateVueComponent, getVueFileExtension } from "@/templates/vue.js";
+} from "@/templates/react-native";
+import { generateSvelteComponent, getSvelteFileExtension } from "@/templates/svelte";
+import { generateVueComponent, getVueFileExtension } from "@/templates/vue";
 
-import { cleanSVGAttributes } from "./svg-processor.js";
+import { cleanSVGAttributes } from "./svg-processor";
 
 export interface GenerateComponentOptions {
   componentName: string;

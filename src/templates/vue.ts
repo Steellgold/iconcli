@@ -1,4 +1,4 @@
-import { Config } from "@/config/schema.js";
+import type { Config } from "@/config/schema";
 
 interface VueTemplateOptions {
   componentName: string;

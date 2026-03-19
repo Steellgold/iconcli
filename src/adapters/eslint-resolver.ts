@@ -1,9 +1,9 @@
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
-import type { DetectedFormatConfig } from "./types.js";
+import type { DetectedFormatConfig } from "./types";
 
-import { DEFAULT_FORMAT_CONFIG } from "./types.js";
+import { DEFAULT_FORMAT_CONFIG } from "./types";
 
 type ESLintRuleEntry = string | number | [string | number, ...unknown[]];
 
@@ -22,8 +22,8 @@ interface ESLintConfig {
  * "single" -> "single"
  */
 const getRuleValue = (rule: ESLintRuleEntry | undefined): unknown => {
-  if (rule === undefined) return undefined;
-  if (Array.isArray(rule)) return rule[1];
+  if (rule === undefined) {return undefined;}
+  if (Array.isArray(rule)) {return rule[1];}
   return rule;
 };
 
@@ -87,13 +87,13 @@ const FORMATTING_RULES = [
 export const resolveESLintConfig = async (cwd: string): Promise<DetectedFormatConfig | null> => {
   try {
     const eslintConfig = loadESLintConfigFile(cwd);
-    if (!eslintConfig?.rules) return null;
+    if (!eslintConfig?.rules) {return null;}
 
     const rules = eslintConfig.rules;
 
     // Only proceed if at least one formatting rule is defined
     const hasFormattingRules = FORMATTING_RULES.some((key) => rules[key] !== undefined);
-    if (!hasFormattingRules) return null;
+    if (!hasFormattingRules) {return null;}
 
     // Quotes: prefer @typescript-eslint/quotes over quotes
     const quotesValue = getRuleValue(rules["@typescript-eslint/quotes"] ?? rules["quotes"]);
@@ -114,9 +114,9 @@ export const resolveESLintConfig = async (cwd: string): Promise<DetectedFormatCo
       rules["@typescript-eslint/comma-dangle"] ?? rules["comma-dangle"]
     );
     let trailingComma: "none" | "es5" | "all" = DEFAULT_FORMAT_CONFIG.trailingComma;
-    if (commaValue === "never" || commaValue === "ignore") trailingComma = "none";
-    else if (commaValue === "always-multiline") trailingComma = "es5";
-    else if (commaValue === "always") trailingComma = "all";
+    if (commaValue === "never" || commaValue === "ignore") {trailingComma = "none";}
+    else if (commaValue === "always-multiline") {trailingComma = "es5";}
+    else if (commaValue === "always") {trailingComma = "all";}
 
     return {
       ...DEFAULT_FORMAT_CONFIG,

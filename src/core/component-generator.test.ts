@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { generateComponent } from "./component-generator.js";
-import type { Config } from "@/config/schema.js";
+import { generateComponent } from "./component-generator";
+import type { Config } from "@/config/schema";
 
 const baseConfig = (framework: Config["framework"]): Config =>
   ({

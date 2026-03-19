@@ -1,7 +1,7 @@
-import { logger } from "@/utils/logger.js";
+import { logger } from "@/utils/logger";
 import enquirer from "enquirer";
-import { loadConfig, updateConfig } from "./manager.js";
-import { Config } from "./schema.js";
+import { loadConfig, updateConfig } from "./manager";
+import type { Config } from "./schema";
 
 const { prompt } = enquirer;
 

@@ -1,4 +1,4 @@
-import type { DetectedFormatConfig } from "./types.js";
+import type { DetectedFormatConfig } from "./types";
 
 /**
  * Apply formatting rules to generated component code

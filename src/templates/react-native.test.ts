@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { generateReactNativeComponent, getReactNativeFileExtension } from "./react-native.js";
-import type { Config } from "@/config/schema.js";
+import { generateReactNativeComponent, getReactNativeFileExtension } from "./react-native";
+import type { Config } from "@/config/schema";
 
 const defaultProps: Config["props"] = {
   size: true,

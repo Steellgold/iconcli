@@ -1,4 +1,4 @@
-import { getFilesWithExtension } from "@/utils/paths.js";
+import { getFilesWithExtension } from "@/utils/paths";
 import fs from "fs/promises";
 import path from "path";
 

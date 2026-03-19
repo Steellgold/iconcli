@@ -1,8 +1,8 @@
-import { logger } from "@/utils/logger.js";
-import { dirExists, ensureDir } from "@/utils/paths.js";
+import { logger } from "@/utils/logger";
+import { dirExists, ensureDir } from "@/utils/paths";
 import enquirer from "enquirer";
 import path from "path";
-import { Config } from "./schema.js";
+import type { Config } from "./schema";
 
 const { prompt } = enquirer;
 

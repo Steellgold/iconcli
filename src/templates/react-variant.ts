@@ -1,6 +1,6 @@
-import { PropsConfig } from "@/config/schema.js";
-import { VariantComponentData, DirectionVariant, StyleVariant } from "@/types/variants.js";
-import { extractSVGInnerContent } from "@/core/variant-generator.js";
+import type { PropsConfig } from "@/config/schema";
+import type { VariantComponentData, DirectionVariant, StyleVariant } from "@/types/variants";
+import { extractSVGInnerContent } from "@/core/variant-generator";
 
 export interface GenerateReactVariantOptions {
   componentName: string;
@@ -25,10 +25,10 @@ export const generateReactVariantComponent = (options: GenerateReactVariantOptio
 
     const customProps: string[] = [];
 
-    if (props.size) customProps.push("  size?: number | string;");
-    if (props.color) customProps.push("  color?: string;");
-    if (props.className) customProps.push("  className?: string;");
-    if (props.style) customProps.push("  style?: React.CSSProperties;");
+    if (props.size) {customProps.push("  size?: number | string;");}
+    if (props.color) {customProps.push("  color?: string;");}
+    if (props.className) {customProps.push("  className?: string;");}
+    if (props.style) {customProps.push("  style?: React.CSSProperties;");}
 
     if (hasDirections) {
       const directionType = config.directions!.map((d) => `'${d}'`).join(" | ");
@@ -59,11 +59,11 @@ ${customProps.join("\n")}
 
   // Props destructuring
   const propsList: string[] = [];
-  if (props.size) propsList.push(`size = ${defaultSize}`);
-  if (props.color) propsList.push(`color = ${defaultColor}`);
-  if (props.className) propsList.push("className");
-  if (props.style) propsList.push("style");
-  if (hasDirections) propsList.push("direction");
+  if (props.size) {propsList.push(`size = ${defaultSize}`);}
+  if (props.color) {propsList.push(`color = ${defaultColor}`);}
+  if (props.className) {propsList.push("className");}
+  if (props.style) {propsList.push("style");}
+  if (hasDirections) {propsList.push("direction");}
   if (hasStyles) {
     propsList.push("variant");
     for (const style of config.styles!) {
@@ -149,7 +149,7 @@ const generateDirectionSwitch = (
   const cases = directions
     .map((dir) => {
       const v = variants.find((v) => v.variant === dir);
-      if (!v) return "";
+      if (!v) {return "";}
 
       const content = extractSVGInnerContent(v.svgContent);
       return `      case '${dir}':
@@ -185,7 +185,7 @@ const generateStyleSwitch = (
   const cases = styles
     .map((style) => {
       const v = variants.find((v) => v.variant === style);
-      if (!v) return "";
+      if (!v) {return "";}
 
       const content = extractSVGInnerContent(v.svgContent);
       return `      case '${style}':
@@ -226,4 +226,4 @@ const generateStyleResolver = (styles: StyleVariant[]): string => {
   if (!resolvedVariant) resolvedVariant = '${styles[0]}';`;
 };
 
-export { getReactFileExtension } from "./react.js";
+export { getReactFileExtension } from "./react";

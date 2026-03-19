@@ -1,5 +1,5 @@
-import { formatConfigForDisplay, resolveFormatConfig } from "@/adapters/index.js";
-import { logger } from "@/utils/logger.js";
+import { formatConfigForDisplay, resolveFormatConfig } from "@/adapters/index";
+import { logger } from "@/utils/logger";
 
 const SOURCE_LABELS: Record<string, string> = {
   prettier: "Prettier",

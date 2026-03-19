@@ -1,6 +1,6 @@
-import { PropsConfig } from "@/config/schema.js";
-import { VariantComponentData, DirectionVariant, StyleVariant } from "@/types/variants.js";
-import { extractSVGInnerContent } from "@/core/variant-generator.js";
+import type { PropsConfig } from "@/config/schema";
+import type { VariantComponentData, DirectionVariant, StyleVariant } from "@/types/variants";
+import { extractSVGInnerContent } from "@/core/variant-generator";
 
 export interface GenerateSvelteVariantOptions {
   componentName: string;
@@ -19,8 +19,8 @@ export const generateSvelteVariantComponent = (options: GenerateSvelteVariantOpt
   // Props export
   const exportProps: string[] = [];
 
-  if (props.size) exportProps.push("  export let size: number | string = 24;");
-  if (props.color) exportProps.push("  export let color: string = 'currentColor';");
+  if (props.size) {exportProps.push("  export let size: number | string = 24;");}
+  if (props.color) {exportProps.push("  export let color: string = 'currentColor';");}
 
   if (hasDirections) {
     const directionType = typescript
@@ -95,7 +95,7 @@ const generateSvelteDirectionRender = (
   const cases = directions
     .map((dir) => {
       const v = variants.find((v) => v.variant === dir);
-      if (!v) return "";
+      if (!v) {return "";}
 
       const content = extractSVGInnerContent(v.svgContent);
       // Escape backticks and ${} in content for template literals
@@ -125,7 +125,7 @@ const generateSvelteStyleRender = (
   const cases = styles
     .map((style) => {
       const v = variants.find((v) => v.variant === style);
-      if (!v) return "";
+      if (!v) {return "";}
 
       const content = extractSVGInnerContent(v.svgContent);
       const escapedContent = content.replace(/`/g, "\\`").replace(/\$/g, "\\$");
@@ -161,4 +161,4 @@ ${checks}
 `;
 };
 
-export { getSvelteFileExtension } from "./svelte.js";
+export { getSvelteFileExtension } from "./svelte";

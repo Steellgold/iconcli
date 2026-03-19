@@ -1,9 +1,9 @@
-import { createConfig } from "@/config/manager.js";
-import { Config } from "@/config/schema.js";
-import { logger } from "@/utils/logger.js";
-import { ensureDir } from "@/utils/paths.js";
+import { createConfig } from "@/config/manager";
+import type { Config } from "@/config/schema";
+import { logger } from "@/utils/logger";
+import { ensureDir } from "@/utils/paths";
 import path from "path";
-import { promptSetupConfig } from "./prompts.js";
+import { promptSetupConfig } from "./prompts";
 
 /**
  * Run initial setup for the project

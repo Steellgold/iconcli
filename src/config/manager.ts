@@ -1,7 +1,8 @@
 import { cosmiconfigSync } from "cosmiconfig";
 import fs from "fs/promises";
 import path from "path";
-import { Config, ConfigSchema, PartialConfig } from "./schema.js";
+import type { Config, PartialConfig } from "./schema";
+import { ConfigSchema } from "./schema";
 
 const explorer = cosmiconfigSync("mkicon");
 const CONFIG_FILENAME = ".mkicon.json";

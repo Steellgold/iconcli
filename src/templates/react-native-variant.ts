@@ -1,6 +1,6 @@
-import { PropsConfig } from "@/config/schema.js";
-import { extractSVGInnerContent } from "@/core/variant-generator.js";
-import { VariantComponentData, DirectionVariant, StyleVariant } from "@/types/variants.js";
+import type { PropsConfig } from "@/config/schema";
+import { extractSVGInnerContent } from "@/core/variant-generator";
+import type { VariantComponentData, DirectionVariant, StyleVariant } from "@/types/variants";
 
 export interface GenerateReactNativeVariantOptions {
   componentName: string;
@@ -86,10 +86,10 @@ export const generateReactNativeVariantComponent = (options: GenerateReactNative
   const defaultColor = props.color ? "\"currentColor\"" : "undefined";
 
   const propsList: string[] = [];
-  if (props.size) propsList.push(`size = ${defaultSize}`);
-  if (props.color) propsList.push(`color = ${defaultColor}`);
-  if (props.style) propsList.push("style");
-  if (hasDirections) propsList.push("direction");
+  if (props.size) {propsList.push(`size = ${defaultSize}`);}
+  if (props.color) {propsList.push(`color = ${defaultColor}`);}
+  if (props.style) {propsList.push("style");}
+  if (hasDirections) {propsList.push("direction");}
   if (hasStyles) {
     propsList.push("variant");
     for (const style of config.styles!) {
@@ -106,9 +106,9 @@ export const generateReactNativeVariantComponent = (options: GenerateReactNative
     importTypes.push("SvgProps");
 
     const customProps: string[] = [];
-    if (props.size) customProps.push("  size?: number | string;");
-    if (props.color) customProps.push("  color?: string;");
-    if (props.style) customProps.push("  style?: SvgProps[\"style\"];");
+    if (props.size) {customProps.push("  size?: number | string;");}
+    if (props.color) {customProps.push("  color?: string;");}
+    if (props.style) {customProps.push("  style?: SvgProps[\"style\"];");}
 
     if (hasDirections) {
       const directionType = config.directions!.map((d) => `"${d}"`).join(" | ");
@@ -165,8 +165,8 @@ export const generateReactNativeVariantComponent = (options: GenerateReactNative
   imports.push("Svg", ...used);
 
   const header =
-    (typescript ? `import type { ${importTypes.join(", ")} } from "react-native-svg";\n` : "") +
-    `import { ${Array.from(new Set(imports)).sort((a, b) => a.localeCompare(b)).join(", ")} } from "react-native-svg";\n\n`;
+    `${typescript ? `import type { ${importTypes.join(", ")} } from "react-native-svg";\n` : "" 
+    }import { ${Array.from(new Set(imports)).sort((a, b) => a.localeCompare(b)).join(", ")} } from "react-native-svg";\n\n`;
 
   return `${header}${propsInterface}export const ${componentName} = (${propsDestructure}) => {
   ${styleResolver}
@@ -192,7 +192,7 @@ const generateDirectionSwitch = (
   const cases = directions
     .map((dir) => {
       const v = variants.find((v) => v.variant === dir);
-      if (!v) return "";
+      if (!v) {return "";}
 
       const content = convertSvgInnerToReactNativeJsx(extractSVGInnerContent(v.svgContent));
       return `case "${dir}":
@@ -225,7 +225,7 @@ const generateStyleSwitch = (
   const cases = styles
     .map((style) => {
       const v = variants.find((v) => v.variant === style);
-      if (!v) return "";
+      if (!v) {return "";}
 
       const content = convertSvgInnerToReactNativeJsx(extractSVGInnerContent(v.svgContent));
       return `case "${style}":
@@ -261,5 +261,5 @@ const generateStyleResolver = (styles: StyleVariant[]): string => {
   if (!resolvedVariant) resolvedVariant = "${styles[0]}";`;
 };
 
-export { getReactNativeFileExtension } from "./react-native.js";
+export { getReactNativeFileExtension } from "./react-native";
 
