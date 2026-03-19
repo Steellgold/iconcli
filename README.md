@@ -2,8 +2,8 @@
 
 Transform SVG icons into beautiful React, Vue, or Svelte components with zero config.
 
-[npm version](https://www.npmjs.com/package/@steellgold/mkicon)
-[License: MIT](https://opensource.org/licenses/MIT)
+[![npm version](https://img.shields.io/npm/v/@steellgold/mkicon)](https://www.npmjs.com/package/@steellgold/mkicon)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## ✨ Features
 
@@ -303,23 +303,23 @@ The `.mkicon.json` file in your project root:
 
 ### Configuration Options
 
-| Option                 | Type          | Default      | Description                    |
-| ---------------------- | ------------- | ------------ | ------------------------------ | --------------------- | ---------------- |
-| `baseDir`              | `string`      | -            | Base directory for icons       |
-| `iconsFolder`          | `string`      | `"icons"`    | Subfolder name                 |
-| `framework`            | `"react"      | "vue"        | "svelte"`                      | `"react"`             | Target framework |
-| `typescript`           | `boolean`     | `true`       | Generate TypeScript files      |
-| `optimize`             | `boolean`     | `true`       | Optimize SVG with SVGO         |
-| `maintainIndex`        | `boolean`     | `true`       | Auto-maintain index.ts         |
-| `props.size`           | `boolean`     | `true`       | Enable size prop               |
-| `props.color`          | `boolean`     | `true`       | Enable color prop              |
-| `props.className`      | `boolean`     | `true`       | Enable className prop          |
-| `props.style`          | `boolean`     | `false`      | Enable style prop              |
-| `naming.suffix`        | `string`      | `"Icon"`     | Component name suffix          |
-| `naming.suffixEnabled` | `boolean`     | `true`       | Add suffix to names            |
-| `naming.componentCase` | `"PascalCase" | "camelCase"` | `"PascalCase"`                 | Component name format |
-| `naming.fileCase`      | `"PascalCase" | "kebab-case" | "camelCase"`                   | `"PascalCase"`        | File name format |
-| `adaptToProject`       | `boolean`     | `true`       | Auto-detect project formatting |
+| Option                 | Type                                          | Default        | Description                    |
+| ---------------------- | --------------------------------------------- | -------------- | ------------------------------ |
+| `baseDir`              | `string`                                      | -              | Base directory for icons       |
+| `iconsFolder`          | `string`                                      | `"icons"`      | Subfolder name                 |
+| `framework`            | `"react" \| "vue" \| "svelte"`                | `"react"`      | Target framework               |
+| `typescript`           | `boolean`                                     | `true`         | Generate TypeScript files      |
+| `optimize`             | `boolean`                                     | `true`         | Optimize SVG with SVGO         |
+| `maintainIndex`        | `boolean`                                     | `true`         | Auto-maintain index.ts         |
+| `props.size`           | `boolean`                                     | `true`         | Enable size prop               |
+| `props.color`          | `boolean`                                     | `true`         | Enable color prop              |
+| `props.className`      | `boolean`                                     | `true`         | Enable className prop          |
+| `props.style`          | `boolean`                                     | `false`        | Enable style prop              |
+| `naming.suffix`        | `string`                                      | `"Icon"`       | Component name suffix          |
+| `naming.suffixEnabled` | `boolean`                                     | `true`         | Add suffix to names            |
+| `naming.componentCase` | `"PascalCase" \| "camelCase"`                 | `"PascalCase"` | Component name format          |
+| `naming.fileCase`      | `"PascalCase" \| "kebab-case" \| "camelCase"` | `"PascalCase"` | File name format               |
+| `adaptToProject`       | `boolean`                                     | `true`         | Auto-detect project formatting |
 
 ### Automatic Project Formatting Adaptation
 
@@ -421,7 +421,7 @@ export const UserPlusIcon = ({
 
 ### Vue Example
 
-```vue
+```html
 <template>
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -452,7 +452,7 @@ withDefaults(
 
 ### Svelte Example
 
-```svelte
+```html
 <script lang="ts">
   export let size: number | string = 24;
   export let color: string = 'currentColor';
@@ -594,6 +594,7 @@ Automatic accessibility improvements:
 - **role="img"** - Automatic role attribute
 - **title & desc** - Support for `<title>` and `<desc>` SVG elements
 - **Accessible by default** - Best practices built-in
+
   ```tsx
   <UserIcon aria-label="User profile" role="img">
     <title>User profile icon</title>
