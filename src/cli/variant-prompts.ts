@@ -38,9 +38,6 @@ export const promptDirectionVariants = async (baseName: string): Promise<Directi
     name: "directions",
     message: `Select the directions for ${baseName}:`,
     choices,
-    result(names: string[]) {
-      return names;
-    },
   });
 
   if (answer.directions.length === 0) {
@@ -68,9 +65,6 @@ export const promptStyleVariants = async (baseName: string): Promise<StyleVarian
     name: "styles",
     message: `Select the style variants for ${baseName}:`,
     choices,
-    result(names: string[]) {
-      return names;
-    },
   });
 
   if (answer.styles.length === 0) {

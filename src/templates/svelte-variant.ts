@@ -10,7 +10,7 @@ export interface GenerateSvelteVariantOptions {
 }
 
 export const generateSvelteVariantComponent = (options: GenerateSvelteVariantOptions): string => {
-  const { componentName, variantData, typescript, props } = options;
+  const { variantData, typescript, props } = options;
   const { config, variants } = variantData;
 
   const hasDirections = config.directions && config.directions.length > 0;

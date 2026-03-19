@@ -102,10 +102,6 @@ export const processBatchIcons = async (options: BatchProcessOptions): Promise<v
   }
 
   // Ask for confirmation
-  const totalComponents = processAsVariants
-    ? variantGroups.length + filesToProcess.length
-    : svgFiles.length;
-
   const { confirm } = await prompt<{ confirm: boolean }>({
     type: "confirm",
     name: "confirm",
@@ -133,7 +129,7 @@ export const processBatchIcons = async (options: BatchProcessOptions): Promise<v
   if (processAsVariants && variantGroups.length > 0) {
     for (const group of variantGroups) {
       try {
-        await processBatchVariantGroup(group, config, projectRoot, resolvedBatchDir);
+        await processBatchVariantGroup(group, config, projectRoot);
         processSpinner.text = `Processing variant: ${group.baseName} (${group.variants.length} variants)`;
         results.success++;
       } catch (error) {
@@ -237,8 +233,7 @@ export const processBatchIcons = async (options: BatchProcessOptions): Promise<v
 const processBatchVariantGroup = async (
   group: DetectedVariantGroup,
   config: Config,
-  projectRoot: string,
-  resolvedBatchDir: string
+  projectRoot: string
 ): Promise<void> => {
   // Read and process each SVG
   const variants: VariantSVGContent[] = [];
