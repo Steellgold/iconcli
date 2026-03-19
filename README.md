@@ -1,6 +1,6 @@
 # 🎨 mkicon
 
-Transform SVG icons into beautiful React, Vue, or Svelte components with zero config.
+Transform SVG icons into beautiful React, React Native, Vue, or Svelte components with zero config.
 
 [![npm version](https://img.shields.io/npm/v/@steellgold/mkicon)](https://www.npmjs.com/package/@steellgold/mkicon)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -9,7 +9,7 @@ Transform SVG icons into beautiful React, Vue, or Svelte components with zero co
 
 - 🚀 **Zero Config** - Get started instantly with `mkicon init`
 - 📚 **Icon Libraries** - Browse and import from Lucide Icons (1700+ icons)
-- 🎨 **Multi-Framework** - Support for React, Vue 3, and Svelte
+- 🎨 **Multi-Framework** - Support for React, React Native, Vue 3, and Svelte
 - 📦 **Batch Processing** - Convert multiple SVG files at once
 - 🔧 **Fully Customizable** - Control props, naming, and file formats
 - ⚡ **Auto-Optimization** - Built-in SVGO integration
@@ -62,7 +62,7 @@ mkicon
 Configure:
 
 - Where to create icons
-- Framework (React, Vue, or Svelte)
+- Framework (React, React Native, Vue, or Svelte)
 - Optimization preferences
 - Props configuration
 - Naming conventions
