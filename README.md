@@ -13,6 +13,7 @@ Transform SVG icons into beautiful React, Vue, or Svelte components with zero co
 - 📦 **Batch Processing** - Convert multiple SVG files at once
 - 🔧 **Fully Customizable** - Control props, naming, and file formats
 - ⚡ **Auto-Optimization** - Built-in SVGO integration
+- 🎯 **Smart Formatting** - Auto-adapts to Prettier, Biome, ESLint, or EditorConfig
 - 📝 **Auto-Index** - Maintains index.ts for easy imports
 - 🌐 **URL Support** - Fetch icons directly from URLs
 - 🔍 **Smart Suggestions** - Auto-detect icon names from URLs
@@ -175,11 +176,13 @@ mkicon --name Arrow --directive
 ```
 
 This will:
+
 1. Prompt you to select directions (up, down, left, right, etc.)
 2. Ask for SVG content for each direction
 3. Generate a single component with a `direction` prop
 
 Usage:
+
 ```tsx
 <ArrowIcon direction="up" />
 <ArrowIcon direction="down" />
@@ -188,6 +191,7 @@ Usage:
 ```
 
 **Supported directions:**
+
 - Basic: `up`, `down`, `left`, `right`
 - Diagonal: `up-right`, `up-left`, `down-right`, `down-left`
 - Circle: `up-circle`, `down-circle`, `left-circle`, `right-circle`
@@ -203,11 +207,13 @@ mkicon --name User --variant
 ```
 
 This will:
+
 1. Prompt you to select styles (outline, solid, filled, etc.)
 2. Ask for SVG content for each style
 3. Generate a single component with variant props
 
 Usage:
+
 ```tsx
 <UserIcon filled />
 <UserIcon variant="outline" />
@@ -215,6 +221,7 @@ Usage:
 ```
 
 **Supported styles:**
+
 - Basic: `outline`, `solid`, `filled`
 - Sizes: `mini`, `micro`
 - Weights: `thin`, `light`, `regular`, `bold`
@@ -229,6 +236,7 @@ mkicon --name Arrow --directive --variant
 ```
 
 Usage:
+
 ```tsx
 <ArrowIcon direction="up" variant="solid" />
 <ArrowIcon direction="down" filled />
@@ -245,6 +253,7 @@ mkicon --batch ./icons
 ```
 
 The detector looks for consistent naming patterns:
+
 - `ArrowUp.svg`, `ArrowDown.svg` → Directional variants
 - `UserOutline.svg`, `UserSolid.svg` → Style variants
 
@@ -258,6 +267,9 @@ mkicon config
 
 # Show current config
 mkicon config --show
+
+# Inspect detected project formatting
+mkicon inspect-config
 ```
 
 ## ⚙️ Configuration
@@ -291,47 +303,109 @@ The `.mkicon.json` file in your project root:
 
 ### Configuration Options
 
+| Option                 | Type          | Default      | Description                    |
+| ---------------------- | ------------- | ------------ | ------------------------------ | --------------------- | ---------------- |
+| `baseDir`              | `string`      | -            | Base directory for icons       |
+| `iconsFolder`          | `string`      | `"icons"`    | Subfolder name                 |
+| `framework`            | `"react"      | "vue"        | "svelte"`                      | `"react"`             | Target framework |
+| `typescript`           | `boolean`     | `true`       | Generate TypeScript files      |
+| `optimize`             | `boolean`     | `true`       | Optimize SVG with SVGO         |
+| `maintainIndex`        | `boolean`     | `true`       | Auto-maintain index.ts         |
+| `props.size`           | `boolean`     | `true`       | Enable size prop               |
+| `props.color`          | `boolean`     | `true`       | Enable color prop              |
+| `props.className`      | `boolean`     | `true`       | Enable className prop          |
+| `props.style`          | `boolean`     | `false`      | Enable style prop              |
+| `naming.suffix`        | `string`      | `"Icon"`     | Component name suffix          |
+| `naming.suffixEnabled` | `boolean`     | `true`       | Add suffix to names            |
+| `naming.componentCase` | `"PascalCase" | "camelCase"` | `"PascalCase"`                 | Component name format |
+| `naming.fileCase`      | `"PascalCase" | "kebab-case" | "camelCase"`                   | `"PascalCase"`        | File name format |
+| `adaptToProject`       | `boolean`     | `true`       | Auto-detect project formatting |
 
-| Option                 | Type                                        | Default        | Description               |
-| ---------------------- | ------------------------------------------- | -------------- | ------------------------- |
-| `baseDir`              | `string`                                    | -              | Base directory for icons  |
-| `iconsFolder`          | `string`                                    | `"icons"`      | Subfolder name            |
-| `framework`            | `"react" | "vue" | "svelte"`                | `"react"`      | Target framework          |
-| `typescript`           | `boolean`                                   | `true`         | Generate TypeScript files |
-| `optimize`             | `boolean`                                   | `true`         | Optimize SVG with SVGO    |
-| `maintainIndex`        | `boolean`                                   | `true`         | Auto-maintain index.ts    |
-| `props.size`           | `boolean`                                   | `true`         | Enable size prop          |
-| `props.color`          | `boolean`                                   | `true`         | Enable color prop         |
-| `props.className`      | `boolean`                                   | `true`         | Enable className prop     |
-| `props.style`          | `boolean`                                   | `false`        | Enable style prop         |
-| `naming.suffix`        | `string`                                    | `"Icon"`       | Component name suffix     |
-| `naming.suffixEnabled` | `boolean`                                   | `true`         | Add suffix to names       |
-| `naming.componentCase` | `"PascalCase" | "camelCase"`                | `"PascalCase"` | Component name format     |
-| `naming.fileCase`      | `"PascalCase" | "kebab-case" | "camelCase"` | `"PascalCase"` | File name format          |
+### Automatic Project Formatting Adaptation
 
+mkicon automatically adapts to your project's formatting rules by detecting and applying configurations from:
+
+**Priority order:**
+
+1. **Prettier** - Most explicit formatter configuration
+2. **Biome** - Modern formatter + linter combo
+3. **ESLint** - Formatting rules extraction
+4. **EditorConfig** - Basic indentation and line endings
+5. **mkicon defaults** - Fallback if no config found
+
+**Detected settings:**
+
+- Quote style (single/double)
+- Indentation (spaces/tabs, size)
+- Semicolons (required/optional)
+- Trailing commas (none/es5/all)
+- Bracket spacing
+- Arrow function parentheses
+- Line endings (LF/CRLF)
+
+**Example:**
+
+If your project uses Prettier with:
+
+```json
+{
+  "semi": false,
+  "singleQuote": true,
+  "trailingComma": "all"
+}
+```
+
+mkicon will automatically generate components matching this style:
+
+```tsx
+// Generated with your project's style
+export const UserIcon = ({ size = 24, color = "currentColor" }) => {
+  return <svg>...</svg>;
+};
+```
+
+**Disable adaptation:**
+
+```bash
+# One-time disable
+mkicon --no-adapt
+
+# Permanent disable in .mkicon.json
+{
+  "adaptToProject": false
+}
+```
+
+**Inspect detected configuration:**
+
+```bash
+mkicon inspect-config
+```
+
+This shows exactly what formatting rules mkicon detected from your project.
 
 ## 🎨 Generated Components
 
 ### React Example
 
 ```tsx
-import type { SVGProps } from 'react';
+import type { SVGProps } from "react";
 
 export interface UserPlusIconProps extends SVGProps<SVGSVGElement> {
   size?: number | string;
   color?: string;
 }
 
-export const UserPlusIcon = ({ 
-  size = 24, 
-  color = 'currentColor',
+export const UserPlusIcon = ({
+  size = 24,
+  color = "currentColor",
   className,
-  ...props 
+  ...props
 }: UserPlusIconProps) => {
   return (
-    <svg 
+    <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={size} 
+      width={size}
       height={size}
       viewBox="0 0 24 24"
       fill="none"
@@ -349,9 +423,9 @@ export const UserPlusIcon = ({
 
 ```vue
 <template>
-  <svg 
+  <svg
     xmlns="http://www.w3.org/2000/svg"
-    :width="size" 
+    :width="size"
     :height="size"
     viewBox="0 0 24 24"
     fill="none"
@@ -363,13 +437,16 @@ export const UserPlusIcon = ({
 </template>
 
 <script setup lang="ts">
-withDefaults(defineProps<{
-  size?: number | string;
-  color?: string;
-}>(), {
-  size: 24,
-  color: 'currentColor'
-})
+withDefaults(
+  defineProps<{
+    size?: number | string;
+    color?: string;
+  }>(),
+  {
+    size: 24,
+    color: "currentColor",
+  }
+);
 </script>
 ```
 
@@ -381,9 +458,9 @@ withDefaults(defineProps<{
   export let color: string = 'currentColor';
 </script>
 
-<svg 
+<svg
   xmlns="http://www.w3.org/2000/svg"
-  width={size} 
+  width={size}
   height={size}
   viewBox="0 0 24 24"
   fill="none"
@@ -437,21 +514,21 @@ mkicon automatically maintains an `index.ts` file:
 // Auto-generated by mkicon
 // Do not edit manually - this file is updated automatically
 
-export { ArrowIcon } from './ArrowIcon';
-export { HomeIcon } from './HomeIcon';
-export { UserIcon } from './UserIcon';
-export { UserPlusIcon } from './UserPlusIcon';
+export { ArrowIcon } from "./ArrowIcon";
+export { HomeIcon } from "./HomeIcon";
+export { UserIcon } from "./UserIcon";
+export { UserPlusIcon } from "./UserPlusIcon";
 ```
 
 This allows clean imports:
 
 ```typescript
 // Instead of:
-import { UserPlusIcon } from '@/components/icons/UserPlusIcon';
-import { ArrowIcon } from '@/components/icons/ArrowIcon';
+import { UserPlusIcon } from "@/components/icons/UserPlusIcon";
+import { ArrowIcon } from "@/components/icons/ArrowIcon";
 
 // You can do:
-import { UserPlusIcon, ArrowIcon } from '@/components/icons';
+import { UserPlusIcon, ArrowIcon } from "@/components/icons";
 ```
 
 ## 💡 Tips
