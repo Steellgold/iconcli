@@ -85,7 +85,7 @@ import { logger } from "@/utils/logger";
 - **Use ESM imports** (not `require`)
 - **Prefer named exports** over default exports
 - **Sort imports alphabetically**
-- **DO NOT include file extensions** in import paths (no `.js`, no `.ts`)
+- **DO NOT include file extensions** in import paths (no `.js`, no `.ts`) ([Changes](https://github.com/Steellgold/mkicon/commit/8043d6ea5244b775e02707dd38a9ee2f7e07f7a0))
 
 ### TypeScript Best Practices
 
