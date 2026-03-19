@@ -11,6 +11,7 @@ const baseConfig = (framework: Config["framework"]): Config =>
     typescript: true,
     optimize: true,
     maintainIndex: true,
+    adaptToProject: false,
     props: { size: true, color: true, className: true, style: false },
     naming: {
       suffix: "Icon",
@@ -23,9 +24,9 @@ const baseConfig = (framework: Config["framework"]): Config =>
 const minimalSvg = '<svg viewBox="0 0 24 24"><path d="M1 1"/></svg>';
 
 describe("generateComponent", () => {
-  it("routes to React template and returns .tsx when framework is react and typescript", () => {
+  it("routes to React template and returns .tsx when framework is react and typescript", async () => {
     const config = baseConfig("react");
-    const result = generateComponent({
+    const result = await generateComponent({
       componentName: "ArrowIcon",
       svgContent: minimalSvg,
       viewBox: "0 0 24 24",
@@ -37,9 +38,9 @@ describe("generateComponent", () => {
     expect(result.content).toContain('viewBox="0 0 24 24"');
   });
 
-  it("routes to Vue template and returns .vue when framework is vue", () => {
+  it("routes to Vue template and returns .vue when framework is vue", async () => {
     const config = baseConfig("vue");
-    const result = generateComponent({
+    const result = await generateComponent({
       componentName: "ArrowIcon",
       svgContent: minimalSvg,
       viewBox: "0 0 24 24",
@@ -51,9 +52,9 @@ describe("generateComponent", () => {
     expect(result.content).toContain('viewBox="0 0 24 24"');
   });
 
-  it("routes to Svelte template and returns .svelte when framework is svelte", () => {
+  it("routes to Svelte template and returns .svelte when framework is svelte", async () => {
     const config = baseConfig("svelte");
-    const result = generateComponent({
+    const result = await generateComponent({
       componentName: "ArrowIcon",
       svgContent: minimalSvg,
       viewBox: "0 0 24 24",
@@ -64,10 +65,10 @@ describe("generateComponent", () => {
     expect(result.content).toContain('viewBox="0 0 24 24"');
   });
 
-  it("passes cleaned SVG to template (no width/height)", () => {
+  it("passes cleaned SVG to template (no width/height)", async () => {
     const config = baseConfig("react");
     const svgWithDimensions = '<svg width="48" height="48" viewBox="0 0 24 24"><path/></svg>';
-    const result = generateComponent({
+    const result = await generateComponent({
       componentName: "ArrowIcon",
       svgContent: svgWithDimensions,
       viewBox: "0 0 24 24",
@@ -77,15 +78,27 @@ describe("generateComponent", () => {
     expect(result.content).not.toContain('height="48"');
   });
 
-  it("throws for unsupported framework", () => {
+  it("applies formatting when adaptToProject is true", async () => {
+    const config = { ...baseConfig("react"), adaptToProject: true };
+    const result = await generateComponent({
+      componentName: "ArrowIcon",
+      svgContent: minimalSvg,
+      viewBox: "0 0 24 24",
+      config,
+    });
+    expect(result.content).toContain("ArrowIcon");
+    expect(result.extension).toBe(".tsx");
+  });
+
+  it("throws for unsupported framework", async () => {
     const config = { ...baseConfig("react"), framework: "angular" } as unknown as Config;
-    expect(() =>
+    await expect(
       generateComponent({
         componentName: "ArrowIcon",
         svgContent: minimalSvg,
         viewBox: "0 0 24 24",
         config,
       })
-    ).toThrow(/Unsupported framework/);
+    ).rejects.toThrow(/Unsupported framework/);
   });
 });
