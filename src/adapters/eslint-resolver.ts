@@ -78,6 +78,7 @@ const FORMATTING_RULES = [
   "comma-dangle",
   "@typescript-eslint/comma-dangle",
   "eol-last",
+  "max-len",
 ];
 
 /**
@@ -118,6 +119,20 @@ export const resolveESLintConfig = async (cwd: string): Promise<DetectedFormatCo
     else if (commaValue === "always-multiline") {trailingComma = "es5";}
     else if (commaValue === "always") {trailingComma = "all";}
 
+    // Line width from max-len rule
+    const maxLenValue = getRuleValue(rules["max-len"]);
+    let lineWidth: number = DEFAULT_FORMAT_CONFIG.lineWidth;
+    if (typeof maxLenValue === "number") {
+      lineWidth = maxLenValue;
+    } else if (
+      maxLenValue !== null &&
+      typeof maxLenValue === "object" &&
+      "code" in (maxLenValue as object) &&
+      typeof (maxLenValue as Record<string, unknown>).code === "number"
+    ) {
+      lineWidth = (maxLenValue as Record<string, unknown>).code as number;
+    }
+
     return {
       ...DEFAULT_FORMAT_CONFIG,
       quotes,
@@ -125,6 +140,7 @@ export const resolveESLintConfig = async (cwd: string): Promise<DetectedFormatCo
       indentStyle,
       indentSize,
       trailingComma,
+      lineWidth,
       source: "eslint",
     };
   } catch {
