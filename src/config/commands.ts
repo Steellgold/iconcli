@@ -123,16 +123,24 @@ const modifyBaseDir = async (projectRoot: string, config: Config): Promise<void>
  */
 const modifyFramework = async (projectRoot: string, config: Config): Promise<void> => {
   const answers = await prompt<{
-    framework: "react" | "vue" | "svelte";
+    framework: "react" | "react-native" | "vue" | "svelte";
     typescript: boolean;
   }>([
     {
       type: "select",
       name: "framework",
       message: "Select framework:",
-      initial: config.framework === "react" ? 0 : config.framework === "vue" ? 1 : 2,
+      initial:
+        config.framework === "react"
+          ? 0
+          : config.framework === "react-native"
+            ? 1
+            : config.framework === "vue"
+              ? 2
+              : 3,
       choices: [
         { name: "react", message: "React" },
+        { name: "react-native", message: "React Native" },
         { name: "vue", message: "Vue 3" },
         { name: "svelte", message: "Svelte" },
       ],

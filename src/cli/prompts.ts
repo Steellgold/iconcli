@@ -9,7 +9,7 @@ const { prompt } = enquirer;
 export const promptSetupConfig = async (): Promise<Partial<Config>> => {
   const answers = await prompt<{
     baseDir: string;
-    framework: "react" | "vue" | "svelte";
+    framework: "react" | "react-native" | "vue" | "svelte";
     typescript: boolean;
     optimize: boolean;
     props: string[];
@@ -29,6 +29,7 @@ export const promptSetupConfig = async (): Promise<Partial<Config>> => {
       message: "Which framework are you using?",
       choices: [
         { name: "react", message: "React (TypeScript)" },
+        { name: "react-native", message: "React Native" },
         { name: "vue", message: "Vue 3" },
         { name: "svelte", message: "Svelte" },
       ],
@@ -69,7 +70,7 @@ export const promptSetupConfig = async (): Promise<Partial<Config>> => {
   ]);
 
   // Determine typescript based on framework choice (for now, default to true for React)
-  const typescript = answers.framework === "react";
+  const typescript = answers.framework === "react" || answers.framework === "react-native";
 
   return {
     baseDir: answers.baseDir,
