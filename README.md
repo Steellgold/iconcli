@@ -259,6 +259,129 @@ The detector looks for consistent naming patterns:
 
 You'll be prompted to confirm if you want to process them as multi-variant components.
 
+### Spinner Generator
+
+Create animated loading spinner components:
+
+```bash
+mkicon spinner
+# or shorthand:
+mkicon spin
+```
+
+This will:
+
+1. Ask for spinner name
+2. Select framework (React, Vue, Svelte, React Native)
+3. Select animation type (CSS, Framer Motion, Motion One, Vue Transitions, Svelte Transitions, Reanimated)
+4. Generate spinner component with animation
+
+#### React Example
+
+```tsx
+import { motion } from "framer-motion";
+
+export const SpinnerIcon = ({ size = 24, color = "currentColor" }) => {
+  return (
+    <motion.div
+      animate={{ rotate: 360 }}
+      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+    >
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color}>
+        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+      </svg>
+    </motion.div>
+  );
+};
+```
+
+#### Vue Example
+
+```html
+<template>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    :width="size"
+    :height="size"
+    viewBox="0 0 24 24"
+    fill="none"
+    :stroke="color"
+    :class="['spinner', { 'animate-spin': animate }]"
+  >
+    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+  </svg>
+</template>
+
+<script setup lang="ts">
+  withDefaults(
+    defineProps<{
+      size?: number | string;
+      color?: string;
+      animate?: boolean;
+    }>(),
+    {
+      size: 24,
+      color: "currentColor",
+      animate: true,
+    }
+  );
+</script>
+```
+
+#### Svelte Example
+
+```html
+<script lang="ts">
+  import { fade } from "svelte/transition";
+
+  export let size: number | string = 24;
+  export let color: string = "currentColor";
+</script>
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="{size}"
+  height="{size}"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="{color}"
+  class="animate-spin"
+>
+  <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+</svg>
+```
+
+#### React Native Example
+
+```tsx
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from "react-native-reanimated";
+
+export const SpinnerIcon = ({ size = 24, color = "currentColor" }) => {
+  const rotation = useSharedValue(0);
+
+  rotation.value = withRepeat(withTiming(360, { duration: 1000 }), -1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value}deg` }],
+  }));
+
+  return (
+    <Animated.View style={animatedStyle}>
+      <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+        <Path d="M21 12a9 9 0 1 1-6.219-8.56" stroke={color} />
+      </Svg>
+    </Animated.View>
+  );
+};
+```
+
+> Requires [`react-native-reanimated`](https://docs.swmansion.com/react-native-reanimated/) installed for Reanimated animations.
+
 ### Configuration Management
 
 ```bash
@@ -303,23 +426,23 @@ The `.mkicon.json` file in your project root:
 
 ### Configuration Options
 
-| Option                 | Type                                          | Default        | Description                    |
-| ---------------------- | --------------------------------------------- | -------------- | ------------------------------ |
-| `baseDir`              | `string`                                      | -              | Base directory for icons       |
-| `iconsFolder`          | `string`                                      | `"icons"`      | Subfolder name                 |
-| `framework`            | `"react" \| "react-native" \| "vue" \| "svelte"` | `"react"`   | Target framework               |
-| `typescript`           | `boolean`                                     | `true`         | Generate TypeScript files      |
-| `optimize`             | `boolean`                                     | `true`         | Optimize SVG with SVGO         |
-| `maintainIndex`        | `boolean`                                     | `true`         | Auto-maintain index.ts         |
-| `props.size`           | `boolean`                                     | `true`         | Enable size prop               |
-| `props.color`          | `boolean`                                     | `true`         | Enable color prop              |
-| `props.className`      | `boolean`                                     | `true`         | Enable className prop          |
-| `props.style`          | `boolean`                                     | `false`        | Enable style prop              |
-| `naming.suffix`        | `string`                                      | `"Icon"`       | Component name suffix          |
-| `naming.suffixEnabled` | `boolean`                                     | `true`         | Add suffix to names            |
-| `naming.componentCase` | `"PascalCase" \| "camelCase"`                 | `"PascalCase"` | Component name format          |
-| `naming.fileCase`      | `"PascalCase" \| "kebab-case" \| "camelCase"` | `"PascalCase"` | File name format               |
-| `adaptToProject`       | `boolean`                                     | `true`         | Auto-detect project formatting |
+| Option                 | Type                                             | Default        | Description                    |
+| ---------------------- | ------------------------------------------------ | -------------- | ------------------------------ |
+| `baseDir`              | `string`                                         | -              | Base directory for icons       |
+| `iconsFolder`          | `string`                                         | `"icons"`      | Subfolder name                 |
+| `framework`            | `"react" \| "react-native" \| "vue" \| "svelte"` | `"react"`      | Target framework               |
+| `typescript`           | `boolean`                                        | `true`         | Generate TypeScript files      |
+| `optimize`             | `boolean`                                        | `true`         | Optimize SVG with SVGO         |
+| `maintainIndex`        | `boolean`                                        | `true`         | Auto-maintain index.ts         |
+| `props.size`           | `boolean`                                        | `true`         | Enable size prop               |
+| `props.color`          | `boolean`                                        | `true`         | Enable color prop              |
+| `props.className`      | `boolean`                                        | `true`         | Enable className prop          |
+| `props.style`          | `boolean`                                        | `false`        | Enable style prop              |
+| `naming.suffix`        | `string`                                         | `"Icon"`       | Component name suffix          |
+| `naming.suffixEnabled` | `boolean`                                        | `true`         | Add suffix to names            |
+| `naming.componentCase` | `"PascalCase" \| "camelCase"`                    | `"PascalCase"` | Component name format          |
+| `naming.fileCase`      | `"PascalCase" \| "kebab-case" \| "camelCase"`    | `"PascalCase"` | File name format               |
+| `adaptToProject`       | `boolean`                                        | `true`         | Auto-detect project formatting |
 
 ### Automatic Project Formatting Adaptation
 
@@ -436,14 +559,7 @@ export const UserPlusIcon = ({
   ...props
 }: UserPlusIconProps) => {
   return (
-    <Svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke={color}
-      {...props}
-    >
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} {...props}>
       {/* SVG paths */}
     </Svg>
   );
@@ -470,16 +586,16 @@ export const UserPlusIcon = ({
 </template>
 
 <script setup lang="ts">
-withDefaults(
-  defineProps<{
-    size?: number | string;
-    color?: string;
-  }>(),
-  {
-    size: 24,
-    color: "currentColor",
-  }
-);
+  withDefaults(
+    defineProps<{
+      size?: number | string;
+      color?: string;
+    }>(),
+    {
+      size: 24,
+      color: "currentColor",
+    }
+  );
 </script>
 ```
 
@@ -488,16 +604,16 @@ withDefaults(
 ```html
 <script lang="ts">
   export let size: number | string = 24;
-  export let color: string = 'currentColor';
+  export let color: string = "currentColor";
 </script>
 
 <svg
   xmlns="http://www.w3.org/2000/svg"
-  width={size}
-  height={size}
+  width="{size}"
+  height="{size}"
   viewBox="0 0 24 24"
   fill="none"
-  stroke={color}
+  stroke="{color}"
   {...$$restProps}
 >
   <!-- SVG paths -->

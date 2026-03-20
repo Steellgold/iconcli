@@ -39,14 +39,14 @@ pnpm build && node bin/cli.js  # Test CLI locally
 
 ```
 src/
-├── cli/           # CLI commands and argument parsing
-├── core/          # Core business logic (generators, processors)
-├── templates/     # Component templates (React, Vue, Svelte)
-├── types/         # TypeScript type definitions
-├── utils/         # Utility functions (validation, naming, etc.)
-├── config/        # Configuration management
-├── batch/         # Batch processing
-└── library/       # Icon library browser
+├── adapters/        # Project config detection (ESLint, Prettier, Biome, etc.)
+├── batch/           # Batch processing for multiple SVGs
+├── cli/             # CLI commands and argument parsing
+├── config/          # Configuration management
+├── core/            # Core business logic (generators, processors)
+├── templates/       # Component templates (React, Vue, Svelte, React Native)
+├── types/           # TypeScript type definitions
+└── utils/           # Utility functions (validation, naming, logger, etc.)
 ```
 
 ## 🎨 Code Style Rules (MANDATORY)
@@ -85,23 +85,7 @@ import { logger } from "@/utils/logger";
 - **Use ESM imports** (not `require`)
 - **Prefer named exports** over default exports
 - **Sort imports alphabetically**
-- **DO NOT include file extensions** in import paths (no `.js`, no `.ts`) ([Changes](https://github.com/Steellgold/mkicon/commit/8043d6ea5244b775e02707dd38a9ee2f7e07f7a0))
-
-### TypeScript Best Practices
-
-```typescript
-// ✅ Good
-export const processIcon = async (svgContent: string, config: Config): Promise<string> => {
-  const result = optimize(svgContent);
-  return result.data;
-};
-
-// ❌ Bad
-export const processIcon = async (svgContent, config) => {
-  let result = optimize(svgContent);
-  return result.data;
-};
-```
+- **DO NOT include file extensions** in import paths (no `.js`, no `.ts`)
 
 ### Error Handling
 
@@ -117,59 +101,27 @@ if (!options.name) {
 
 ## 🧪 Testing Guidelines
 
-### Test Structure
-
 - Test files: `*.test.ts` colocated with source
 - Use descriptive test names in English
 - Test both success and error cases
 - Current coverage threshold: 80%
 
-### Running Tests
+## 🔧 Key Files
 
-```bash
-# All tests
-pnpm test
-
-# Single file
-vitest run src/utils/naming.test.ts
-
-# With coverage
-pnpm test:ci
-```
-
-## 🔧 Configuration Files
-
-### TypeScript (`tsconfig.json`)
-
-- Target: ES2022
-- Strict mode enabled
-- Path alias: `@/*` → `src/*`
-- Module: ESNext
-
-### ESLint (`.eslintrc.json`)
-
-- TypeScript ESLint parser
-- Enforces explicit return types
-- No unused variables/imports
-- Sorted imports required
-
-### Prettier (`.prettierrc.json`)
-
-- Double quotes
-- Semicolons required
-- Trailing commas (ES5)
-- 100 char line width
-- 2 space indentation
-
-## 🚫 Git & Commit Rules
-
-- **NEVER commit code automatically** - Wait for explicit user confirmation
-- **NEVER use git commands** without user consent
-- **NEVER add co-authors** to commits
+| File                                 | Purpose                               |
+| ------------------------------------ | ------------------------------------- |
+| `src/core/component-generator.ts`    | Main icon component generation        |
+| `src/core/spinner-generator.ts`      | Animated spinner component generation |
+| `src/core/variant-generator.ts`      | Multi-variant icon generation         |
+| `src/templates/*.ts`                 | Framework-specific templates          |
+| `src/cli/args.ts`                    | CLI argument handling                 |
+| `src/cli/spinner.ts`                 | Spinner CLI command                   |
+| `src/adapters/*.ts`                  | Project config detection              |
+| `src/utils/detect-animation-libs.ts` | Animation library detection           |
 
 ## 🏗️ Architecture Patterns
 
-### Component Generation
+### Icon Generation
 
 1. Parse/validate SVG input
 2. Optimize with SVGO (if enabled)
@@ -177,62 +129,52 @@ pnpm test:ci
 4. Write file to configured location
 5. Update index.ts (if maintainIndex enabled)
 
-### Multi-Variant Icons (New Feature)
+### Spinner Generation
+
+1. Detect available animation libraries
+2. Generate spinner component based on framework and animation type
+3. Write file to configured location
+
+### Multi-Variant Icons
 
 - Directional variants: `<Arrow direction="up" />`
 - Style variants: `<User variant="filled" />` or `<User filled />`
 - Auto-detection in batch mode
 
-### Key Files
-
-- `src/core/component-generator.ts` - Main component generation logic
-- `src/core/variant-generator.ts` - Multi-variant component generation
-- `src/templates/*.ts` - Framework-specific templates
-- `src/cli/args.ts` - CLI argument handling
-
 ## 📝 Comments & Documentation
 
-### Use JSDoc for exported functions
-
-```typescript
-/**
- * Generate a component from SVG content
- * @param options - Component generation options
- * @returns Generated component with content and filename
- */
-export const generateComponent = (options: Options): GeneratedComponent => {
-  // ...
-};
-```
-
-### Inline Comments
-
-- Use sparingly - code should be self-documenting
-- Explain "why" not "what"
+- Use JSDoc for exported functions
+- Inline comments: explain "why" not "what"
 - Always in English
 
-## 🔍 Common Tasks
+## 🚫 Git Rules
 
-### Adding a new CLI option
+- **NEVER commit code automatically** - Wait for explicit user confirmation
+- **NEVER use git commands** without user consent
+- **NEVER add co-authors** to commits
 
-1. Update `CLIOptions` interface in `src/cli/args.ts`
-2. Add option to Commander program
-3. Handle option in appropriate processor function
-4. Update README.md with usage example
+## 🔍 Adding New Features
 
-### Adding a new template
+### New CLI command
 
-1. Create `src/templates/{framework}-variant.ts`
+1. Create command file in `src/cli/`
+2. Add command to `src/cli/args.ts`
+3. Import and wire in `src/index.ts`
+4. Add tests
+
+### New template
+
+1. Create `src/templates/{framework}-{type}.ts`
 2. Export generation function and file extension getter
-3. Import in `src/core/variant-generator.ts`
+3. Import in appropriate generator
 4. Add case in framework switch
 
-### Adding a new utility
+### New adapter
 
-1. Create file in `src/utils/`
-2. Export named functions with explicit return types
-3. Add corresponding `*.test.ts` file
-4. Update `vitest.config.ts` coverage if needed
+1. Create file in `src/adapters/`
+2. Export detection function with return type
+3. Add test file
+4. Import in `src/adapters/index.ts`
 
 ---
 
