@@ -61,7 +61,7 @@ export const updateConfig = async (
   const configPath = path.join(projectRoot, CONFIG_FILENAME);
 
   // Load existing config
-  let existingConfig: any = {};
+  let existingConfig: Record<string, unknown> = {};
   try {
     const content = await fs.readFile(configPath, "utf-8");
     existingConfig = JSON.parse(content);

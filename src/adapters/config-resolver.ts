@@ -3,6 +3,7 @@ import type { DetectedFormatConfig } from "./types";
 import { join } from "path";
 
 import { DEFAULT_FORMAT_CONFIG } from "./types";
+import type { PrettierModule } from "./project-detector";
 import { loadPrettier } from "./project-detector";
 import { resolveBiomeConfig } from "./biome-resolver";
 import { resolveESLintConfig } from "./eslint-resolver";
@@ -64,7 +65,10 @@ export const resolvePrettierConfig = async (
 /**
  * Find the path to the Prettier config file
  */
-const findConfigPath = async (prettier: any, cwd: string): Promise<string | undefined> => {
+const findConfigPath = async (
+  prettier: PrettierModule,
+  cwd: string
+): Promise<string | undefined> => {
   try {
     if (prettier.resolveConfigFile) {
       const configFile = await prettier.resolveConfigFile(cwd);

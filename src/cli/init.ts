@@ -56,17 +56,17 @@ export const runInit = async (projectRoot: string): Promise<Config> => {
 
   logger.newline();
   logger.info("Default configuration:");
-  console.log(`  Framework:    ${DEFAULT_CONFIG.framework} (TypeScript)`);
-  console.log(`  Optimization: ${DEFAULT_CONFIG.optimize ? "Enabled" : "Disabled"}`);
-  console.log(`  Props:        size, color, className`);
-  console.log(`  Suffix:       ${DEFAULT_CONFIG.naming.suffix}`);
+  logger.print(`  Framework:    ${DEFAULT_CONFIG.framework} (TypeScript)`);
+  logger.print(`  Optimization: ${DEFAULT_CONFIG.optimize ? "Enabled" : "Disabled"}`);
+  logger.print(`  Props:        size, color, className`);
+  logger.print(`  Suffix:       ${DEFAULT_CONFIG.naming.suffix}`);
   logger.newline();
   logger.info("💡 You can customize settings later with:");
-  console.log("   mkicon config");
+  logger.print("   mkicon config");
   logger.newline();
   logger.success("✨ Ready to go! Start creating icons with:");
-  console.log("   mkicon           # Interactive mode");
-  console.log("   mkicon library   # Browse Lucide Icons");
+  logger.print("   mkicon           # Interactive mode");
+  logger.print("   mkicon library   # Browse Lucide Icons");
   logger.newline();
 
   return {

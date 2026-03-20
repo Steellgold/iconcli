@@ -11,7 +11,11 @@ import enquirer from "enquirer";
 import path from "path";
 import { promptMultipleURLs } from "./prompts";
 
-const { prompt, AutoComplete } = enquirer as any;
+type EnquirerExt = {
+  prompt: <T>(options: Record<string, unknown> | Record<string, unknown>[]) => Promise<T>;
+  AutoComplete: new (options: Record<string, unknown>) => { run: () => Promise<unknown> };
+};
+const { prompt, AutoComplete } = enquirer as unknown as EnquirerExt;
 
 export interface LibraryOptions {
   projectRoot: string;
@@ -34,8 +38,8 @@ export const runLibraryBrowser = async (options: LibraryOptions): Promise<void> 
         "https://github.com/Steellgold/mkicon/issues/new?template=library-request.yml";
       logger.info("Opening GitHub to request a new library...");
       logger.newline();
-      console.log(`Please open this URL in your browser:`);
-      console.log(issueUrl);
+      logger.print(`Please open this URL in your browser:`);
+      logger.print(issueUrl);
       logger.newline();
       logger.info("Thank you for your suggestion! 🙏");
       return;
@@ -170,14 +174,14 @@ const importSingleFromSearch = async (projectRoot: string, config: Config): Prom
   logger.newline();
   logger.title("Icon imported successfully! 🎉");
   logger.newline();
-  console.log(`📁 ${path.relative(projectRoot, filePath)}`);
-  console.log(`📚 From: Lucide Icons (${metadata.library.website})`);
+  logger.print(`📁 ${path.relative(projectRoot, filePath)}`);
+  logger.print(`📚 From: Lucide Icons (${metadata.library.website})`);
   logger.newline();
-  console.log("Import:");
-  console.log(`  import { ${componentName} } from '@/components/icons';`);
+  logger.print("Import:");
+  logger.print(`  import { ${componentName} } from '@/components/icons';`);
   logger.newline();
-  console.log("Usage:");
-  console.log(`  <${componentName} size={24} color="blue" />`);
+  logger.print("Usage:");
+  logger.print(`  <${componentName} size={24} color="blue" />`);
   logger.separator();
   logger.newline();
 };
@@ -260,8 +264,8 @@ const importMultipleFromURLs = async (projectRoot: string, config: Config): Prom
     );
     logger.newline();
     for (const item of successes) {
-      console.log(`📁 ${path.relative(projectRoot, item.filePath)}`);
-      console.log(`   import { ${item.componentName} } from '@/components/icons';`);
+      logger.print(`📁 ${path.relative(projectRoot, item.filePath)}`);
+      logger.print(`   import { ${item.componentName} } from '@/components/icons';`);
     }
     logger.newline();
   }
@@ -269,8 +273,8 @@ const importMultipleFromURLs = async (projectRoot: string, config: Config): Prom
   if (failures.length > 0) {
     logger.error(`${failures.length} URL${failures.length > 1 ? "s" : ""} failed:`);
     for (const failure of failures) {
-      console.log(`  ❌ ${failure.url}`);
-      console.log(`     ${failure.reason}`);
+      logger.print(`  ❌ ${failure.url}`);
+      logger.print(`     ${failure.reason}`);
     }
     logger.newline();
   }
@@ -295,7 +299,7 @@ const promptLibrarySelection = async (): Promise<string | null> => {
     })) as { library: string };
 
     return answer.library;
-  } catch (error) {
+  } catch {
     // User cancelled
     return null;
   }
@@ -317,7 +321,7 @@ const promptIconSearchAndSelect = async (icons: IconMetadata[]): Promise<string 
       message: "Search for an icon:",
       limit: 15,
       choices: iconChoices,
-      suggest(input: string, choices: any[]) {
+      suggest(input: string, choices: Record<string, unknown>[]) {
         if (!input) {return choices.slice(0, 15);}
 
         const lowerInput = input.toLowerCase();
@@ -337,7 +341,7 @@ const promptIconSearchAndSelect = async (icons: IconMetadata[]): Promise<string 
 
     const selected = await autocomplete.run();
     return selected as string;
-  } catch (error) {
+  } catch {
     // User cancelled
     return null;
   }

@@ -11,23 +11,23 @@ const { prompt } = enquirer;
 export const showConfig = (config: Config): void => {
   logger.title("Current Configuration");
   logger.newline();
-  console.log(`  Base directory:     ${config.baseDir}`);
-  console.log(`  Icons folder:       ${config.iconsFolder}`);
-  console.log(
+  logger.print(`  Base directory:     ${config.baseDir}`);
+  logger.print(`  Icons folder:       ${config.iconsFolder}`);
+  logger.print(
     `  Framework:          ${config.framework}${config.typescript ? " (TypeScript)" : ""}`
   );
-  console.log(`  SVG optimization:   ${config.optimize ? "Enabled" : "Disabled"}`);
-  console.log(`  Maintain index.ts:  ${config.maintainIndex ? "Yes" : "No"}`);
-  console.log(
+  logger.print(`  SVG optimization:   ${config.optimize ? "Enabled" : "Disabled"}`);
+  logger.print(`  Maintain index.ts:  ${config.maintainIndex ? "Yes" : "No"}`);
+  logger.print(
     `  Props enabled:      ${Object.entries(config.props)
       .filter(([_, v]) => v)
       .map(([k]) => k)
       .join(", ")}`
   );
-  console.log(
+  logger.print(
     `  Component suffix:   ${config.naming.suffixEnabled ? config.naming.suffix : "None"}`
   );
-  console.log(`  File naming:        ${config.naming.fileCase}`);
+  logger.print(`  File naming:        ${config.naming.fileCase}`);
   logger.newline();
 };
 
@@ -226,7 +226,7 @@ const modifyNaming = async (projectRoot: string, config: Config): Promise<void> 
       name: "suffix",
       message: "Suffix to use:",
       initial: config.naming.suffix,
-      skip: function (this: any) {
+      skip: function (this: { state: { answers: { suffixEnabled: boolean } } }) {
         return !this.state.answers.suffixEnabled;
       },
     },

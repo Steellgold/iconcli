@@ -136,13 +136,13 @@ export const runSemiInteractive = async (options: SemiInteractiveOptions): Promi
     logger.newline();
     logger.title("Icon created successfully! 🎉");
     logger.newline();
-    console.log(`📁 ${path.relative(projectRoot, filePath)}`);
+    logger.print(`📁 ${path.relative(projectRoot, filePath)}`);
     logger.newline();
-    console.log("Import:");
-    console.log(`  import { ${componentName} } from '@/components/icons';`);
+    logger.print("Import:");
+    logger.print(`  import { ${componentName} } from '@/components/icons';`);
     logger.newline();
-    console.log("Usage:");
-    console.log(`  <${componentName} size={24} color="blue" />`);
+    logger.print("Usage:");
+    logger.print(`  <${componentName} size={24} color="blue" />`);
     logger.separator();
     logger.newline();
   } catch (error) {

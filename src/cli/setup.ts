@@ -11,8 +11,8 @@ import { promptSetupConfig } from "./prompts";
 export const runSetup = async (projectRoot: string): Promise<Config> => {
   logger.title("🎨 Welcome to mkicon!");
   logger.newline();
-  console.log("No configuration found in this project.");
-  console.log("Let's set up mkicon together.");
+  logger.print("No configuration found in this project.");
+  logger.print("Let's set up mkicon together.");
   logger.separator();
   logger.newline();
 
@@ -43,7 +43,7 @@ export const runSetup = async (projectRoot: string): Promise<Config> => {
   logger.success(`Folder created: ${config.baseDir}/${config.iconsFolder}/`);
 
   logger.newline();
-  console.log("📦 An index.ts file will be automatically maintained.");
+  logger.print("📦 An index.ts file will be automatically maintained.");
   logger.newline();
   logger.info("🚀 All set! Let's create your first icon.");
   logger.separator();

@@ -28,7 +28,11 @@ import {
   promptSVGURL,
 } from "./prompts";
 
-const { AutoComplete, prompt } = enquirer as any;
+type EnquirerExt = {
+  prompt: <T>(options: Record<string, unknown> | Record<string, unknown>[]) => Promise<T>;
+  AutoComplete: new (options: Record<string, unknown>) => { run: () => Promise<unknown> };
+};
+const { AutoComplete, prompt } = enquirer as unknown as EnquirerExt;
 
 export interface InteractiveOptions {
   projectRoot: string;
@@ -104,8 +108,8 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
               "https://github.com/Steellgold/mkicon/issues/new?template=library-request.yml";
             logger.info("Opening GitHub to request a new library...");
             logger.newline();
-            console.log("Please open this URL in your browser:");
-            console.log(issueUrl);
+            logger.print("Please open this URL in your browser:");
+            logger.print(issueUrl);
             logger.newline();
             logger.info("Thank you for your suggestion! 🙏");
             logger.newline();
@@ -223,8 +227,8 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
           if (failures.length > 0) {
             logger.error(`${failures.length} URL${failures.length > 1 ? "s" : ""} failed:`);
             for (const failure of failures) {
-              console.log(`  ❌ ${failure.url}`);
-              console.log(`     ${failure.reason}`);
+              logger.print(`  ❌ ${failure.url}`);
+              logger.print(`     ${failure.reason}`);
             }
             logger.newline();
           }
@@ -263,7 +267,7 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
           message: "Search for an icon:",
           limit: 15,
           choices: iconChoices,
-          suggest(input: string, choices: any[]) {
+          suggest(input: string, choices: Record<string, unknown>[]) {
             if (!input) {return choices.slice(0, 15);}
 
             const lowerInput = input.toLowerCase();
@@ -400,13 +404,13 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
       logger.newline();
       logger.title("Icon created successfully! 🎉");
       logger.newline();
-      console.log(`📁 ${path.relative(projectRoot, filePath)}`);
+      logger.print(`📁 ${path.relative(projectRoot, filePath)}`);
       logger.newline();
-      console.log("Import:");
-      console.log(`  import { ${componentName} } from '@/components/icons';`);
+      logger.print("Import:");
+      logger.print(`  import { ${componentName} } from '@/components/icons';`);
       logger.newline();
-      console.log("Usage:");
-      console.log(`  <${componentName} size={24} color="blue" />`);
+      logger.print("Usage:");
+      logger.print(`  <${componentName} size={24} color="blue" />`);
       logger.separator();
       logger.newline();
 

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import chalk from "chalk";
 import ora, { type Ora } from "ora";
 
@@ -28,6 +29,10 @@ export const logger = {
 
   newline: () => {
     console.log();
+  },
+
+  print: (message = "") => {
+    console.log(message);
   },
 };
 

@@ -21,7 +21,7 @@ export const validateConfigPath = async (
 
   // Path doesn't exist, ask user what to do
   logger.warning(`Configured folder doesn't exist:`);
-  console.log(`   ${fullPath}`);
+  logger.print(`   ${fullPath}`);
   logger.newline();
 
   const response = await prompt<{ action: string }>({
