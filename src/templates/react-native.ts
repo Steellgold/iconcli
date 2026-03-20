@@ -41,7 +41,7 @@ const toCamelCaseAttr = (attr: string): string => {
   return attr.replace(/-([a-z])/g, (_, letter: string) => letter.toUpperCase());
 };
 
-const convertSvgToReactNativeJsx = (svgInnerContent: string): string => {
+export const convertSvgToReactNativeJsx = (svgInnerContent: string): string => {
   let out = svgInnerContent;
 
   // Convert tag names to react-native-svg component names
@@ -62,11 +62,11 @@ const convertSvgToReactNativeJsx = (svgInnerContent: string): string => {
   return out.trim();
 };
 
-const extractInnerSvg = (svgContent: string): string => {
+export const extractInnerSvg = (svgContent: string): string => {
   return svgContent.replace(/<svg[^>]*>/, "").replace(/<\/svg>/, "").trim();
 };
 
-const getUsedReactNativeSvgImports = (jsxContent: string): string[] => {
+export const getUsedReactNativeSvgImports = (jsxContent: string): string[] => {
   const used = new Set<string>();
   const tagRegex = /<([A-Z][A-Za-z0-9]*)\b/g;
   let match: RegExpExecArray | null = null;
