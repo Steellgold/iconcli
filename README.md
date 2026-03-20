@@ -307,7 +307,7 @@ The `.mkicon.json` file in your project root:
 | ---------------------- | --------------------------------------------- | -------------- | ------------------------------ |
 | `baseDir`              | `string`                                      | -              | Base directory for icons       |
 | `iconsFolder`          | `string`                                      | `"icons"`      | Subfolder name                 |
-| `framework`            | `"react" \| "vue" \| "svelte"`                | `"react"`      | Target framework               |
+| `framework`            | `"react" \| "react-native" \| "vue" \| "svelte"` | `"react"`   | Target framework               |
 | `typescript`           | `boolean`                                     | `true`         | Generate TypeScript files      |
 | `optimize`             | `boolean`                                     | `true`         | Optimize SVG with SVGO         |
 | `maintainIndex`        | `boolean`                                     | `true`         | Auto-maintain index.ts         |
@@ -418,6 +418,39 @@ export const UserPlusIcon = ({
   );
 };
 ```
+
+### React Native Example
+
+```tsx
+import type { SvgProps } from "react-native-svg";
+import { Svg, Path } from "react-native-svg";
+
+export interface UserPlusIconProps extends SvgProps {
+  size?: number | string;
+  color?: string;
+}
+
+export const UserPlusIcon = ({
+  size = 24,
+  color = "currentColor",
+  ...props
+}: UserPlusIconProps) => {
+  return (
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      {...props}
+    >
+      {/* SVG paths */}
+    </Svg>
+  );
+};
+```
+
+> Requires [`react-native-svg`](https://github.com/software-mansion/react-native-svg) installed in your project.
 
 ### Vue Example
 
