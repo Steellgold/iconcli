@@ -5,6 +5,7 @@ import { writeComponentFile } from "@/core/file-writer";
 import { updateIndexFile } from "@/core/index-maintainer";
 import { optimizeSVG } from "@/core/svg-processor";
 import { fetchSVGFromURL } from "@/core/url-fetcher";
+import type { VariantComponentData, VariantConfig, VariantSVGContent } from "@/types/variants";
 import { logger, spinner } from "@/utils/logger";
 import { generateIconName } from "@/utils/naming";
 import { isValidSVG } from "@/utils/validation";
@@ -12,12 +13,11 @@ import { Command } from "commander";
 import fs from "fs/promises";
 import path from "path";
 import {
+  promptAddStyleVariants,
   promptDirectionVariants,
   promptStyleVariants,
-  promptAddStyleVariants,
   promptVariantSVG,
 } from "./variant-prompts";
-import type { VariantConfig, VariantSVGContent, VariantComponentData } from "@/types/variants";
 
 export interface CLIOptions {
   name?: string;
@@ -88,6 +88,14 @@ export const createProgram = (): Command => {
   program
     .command("inspect-config")
     .description("Show detected project formatting configuration")
+    .action(() => {
+      // Handled in main index.ts
+    });
+
+  program
+    .command("spinner")
+    .alias("spin")
+    .description("Generate an animated loading spinner component")
     .action(() => {
       // Handled in main index.ts
     });
@@ -208,7 +216,7 @@ export const processIconFromArgs = async (
     logger.newline();
     logger.title("Icon created successfully! 🎉");
     logger.newline();
-    console.log(`📁 ${path.relative(projectRoot, filePath)}`);
+    logger.print(`📁 ${path.relative(projectRoot, filePath)}`);
   } catch (error) {
     if (error instanceof Error) {
       logger.error(error.message);
@@ -357,15 +365,15 @@ export const processVariantIconFromArgs = async (
     logger.newline();
     logger.title("Multi-variant icon created successfully! 🎉");
     logger.newline();
-    console.log(`📁 ${path.relative(projectRoot, filePath)}`);
+    logger.print(`📁 ${path.relative(projectRoot, filePath)}`);
     logger.newline();
-    console.log("Usage examples:");
+    logger.print("Usage examples:");
     if (variantConfig.directions) {
-      console.log(`  <${baseName} direction="${variantConfig.directions[0]}" />`);
+      logger.print(`  <${baseName} direction="${variantConfig.directions[0]}" />`);
     }
     if (variantConfig.styles) {
-      console.log(`  <${baseName} variant="${variantConfig.styles[0]}" />`);
-      console.log(`  <${baseName} ${variantConfig.styles[0]} />`);
+      logger.print(`  <${baseName} variant="${variantConfig.styles[0]}" />`);
+      logger.print(`  <${baseName} ${variantConfig.styles[0]} />`);
     }
   } catch (error) {
     if (error instanceof Error) {

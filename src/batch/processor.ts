@@ -59,9 +59,9 @@ export const processBatchIcons = async (options: BatchProcessOptions): Promise<v
   }
 
   logger.newline();
-  console.log("SVG files found:");
+  logger.print("SVG files found:");
   svgFiles.forEach((file) => {
-    console.log(`  • ${file}`);
+    logger.print(`  • ${file}`);
   });
   logger.newline();
 
@@ -78,7 +78,7 @@ export const processBatchIcons = async (options: BatchProcessOptions): Promise<v
 
     for (const group of variantGroups) {
       const variantsList = group.variants.map((v) => v.variant).join(", ");
-      console.log(`  ${group.baseName} (${group.type}): ${variantsList}`);
+      logger.print(`  ${group.baseName} (${group.type}): ${variantsList}`);
     }
 
     logger.newline();
@@ -220,7 +220,7 @@ export const processBatchIcons = async (options: BatchProcessOptions): Promise<v
   if (results.failed > 0) {
     logger.warning(`${results.failed} file(s) failed:`);
     results.errors.forEach(({ file, error }) => {
-      console.log(`  ✗ ${file}: ${error}`);
+      logger.print(`  ✗ ${file}: ${error}`);
     });
     logger.newline();
   }

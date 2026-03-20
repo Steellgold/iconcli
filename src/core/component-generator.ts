@@ -1,6 +1,7 @@
 import type { Config } from "@/config/schema";
 
 import { applyFormatting, resolveFormatConfig } from "@/adapters/index";
+import { logger } from "@/utils/logger";
 import { generateReactComponent, getReactFileExtension } from "@/templates/react";
 import {
   generateReactNativeComponent,
@@ -101,7 +102,7 @@ export const generateComponent = async (
 
       // Log detected config in debug mode
       if (process.env.DEBUG && activeConfig.source !== "default") {
-        console.log(
+        logger.print(
           `[mkicon] Detected ${activeConfig.source} config: ${activeConfig.configPath || "inline"}`
         );
       }
