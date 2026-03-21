@@ -32,3 +32,6 @@ coverage/
 
 # User config
 .mkicon.json
+
+# Test projects
+.project-test/

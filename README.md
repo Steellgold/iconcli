@@ -133,9 +133,7 @@ mkicon --name UserPlus --svg '<svg>...</svg>'
 Convert multiple SVG files at once:
 
 ```bash
-mkicon --batch ./svg-icons
-# or shorthand:
-mkicon -b ./svg-icons
+mkicon batch ./svg-icons
 ```
 
 This will:
@@ -145,6 +143,58 @@ This will:
 - Ask for confirmation
 - Generate all components
 - Update index.ts
+- Track components in `.mkicon.lock.json` (auto-added to `.gitignore`)
+
+### Tracking & Diff
+
+mkicon tracks generated components in `.mkicon.lock.json` (automatically gitignored). This enables:
+
+#### Diff — detect component drift
+
+```bash
+mkicon diff
+```
+
+Detects when a component file has been manually edited or is out of sync with its SVG source. For each changed component, shows a line-by-line diff of the `.tsx`/`.vue`/`.svelte` file and lets you:
+
+- **Skip** — leave it for now
+- **Show full diff** — see the complete file diff
+- **Revert** — restore the file to what mkicon would generate
+
+#### Preview — visualise a component in the terminal
+
+```bash
+# Interactive fuzzy search
+mkicon preview
+
+# Jump directly to a component
+mkicon preview BananaIcon
+mkicon preview banana   # fuzzy match
+```
+
+Renders the icon inline in the terminal with a side-by-side info panel (component name, source, viewBox, elements, generation date).
+
+#### Export back to SVG
+
+```bash
+mkicon svg src/components/icons/BananaIcon.tsx
+
+# Custom output path
+mkicon svg src/components/icons/BananaIcon.tsx -o exports/banana.svg
+```
+
+Converts a generated component back to a plain `.svg` file. Uses the original SVG from the lock file when available, otherwise extracts it from the component file.
+
+#### Rebuild lock file
+
+```bash
+# After a fresh clone (lock file is gitignored)
+mkicon batch --refresh
+# shorthand:
+mkicon batch -r
+```
+
+Rebuilds `.mkicon.lock.json` from existing component files without regenerating anything. Automatically matches components to their SVG source files. Also runs automatically when `mkicon diff` or `mkicon preview` detects a missing lock file.
 
 ### Icon Library Browser
 
@@ -247,7 +297,7 @@ Usage:
 When using batch mode, mkicon will automatically detect variant groups:
 
 ```bash
-mkicon --batch ./icons
+mkicon batch ./icons
 # Detects: ArrowUp.svg, ArrowDown.svg, ArrowLeft.svg
 # → Suggests creating a multi-variant <Arrow direction="..." /> component
 ```
@@ -437,6 +487,7 @@ The `.mkicon.json` file in your project root:
 | `props.size`           | `boolean`                                        | `true`         | Enable size prop               |
 | `props.color`          | `boolean`                                        | `true`         | Enable color prop              |
 | `props.className`      | `boolean`                                        | `true`         | Enable className prop          |
+| `props.strokeWidth`    | `boolean`                                        | `false`        | Enable strokeWidth prop        |
 | `props.style`          | `boolean`                                        | `false`        | Enable style prop              |
 | `naming.suffix`        | `string`                                         | `"Icon"`       | Component name suffix          |
 | `naming.suffixEnabled` | `boolean`                                        | `true`         | Add suffix to names            |
@@ -652,7 +703,7 @@ mkicon --name Logo --svg '
 
 ```bash
 # Export icons from Figma to ./figma-icons/
-mkicon --batch ./figma-icons
+mkicon batch ./figma-icons
 ```
 
 ## 🔧 Auto-Generated Index
