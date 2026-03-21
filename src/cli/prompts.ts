@@ -22,7 +22,9 @@ export const promptSetupConfig = async (): Promise<Partial<Config>> => {
       message:
         'Where do you want to create your icons?\n  (An "icons" subfolder will be created automatically)\n  \n  Examples:\n  • src/components  → src/components/icons/\n  • app/ui          → app/ui/icons/\n  • lib             → lib/icons/\n  \n  Path:',
       initial: "src/components",
-    },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      hint: "[TAB to complete]",
+    } as any,
     {
       type: "select",
       name: "framework",
@@ -47,6 +49,7 @@ export const promptSetupConfig = async (): Promise<Partial<Config>> => {
       choices: [
         { name: "size", message: "size (control size)", enabled: true },
         { name: "color", message: "color (control color)", enabled: true },
+        { name: "strokeWidth", message: "strokeWidth (control stroke width)", enabled: false },
         { name: "className", message: "className (add CSS classes)", enabled: true },
         { name: "style", message: "style (inline style props)", enabled: false },
       ],
@@ -84,6 +87,7 @@ export const promptSetupConfig = async (): Promise<Partial<Config>> => {
       color: answers.props.includes("color"),
       className: answers.props.includes("className"),
       style: answers.props.includes("style"),
+      strokeWidth: answers.props.includes("strokeWidth"),
     },
     naming: {
       suffix: "Icon",
@@ -162,14 +166,16 @@ export const promptSVGURL = async (): Promise<string> => {
 };
 
 /**
- * Prompt for icon name
+ * Prompt for icon name.
+ * If a suggested name is provided it appears as the initial value — press TAB to accept.
  */
-export const promptIconName = async (defaultName?: string): Promise<string> => {
+export const promptIconName = async (suggestedName?: string): Promise<string> => {
   const answer = await prompt<{ name: string }>({
     type: "input",
     name: "name",
-    message: "Icon name (will be converted to PascalCase + Icon):",
-    initial: defaultName,
+    message: "Icon name:",
+    initial: suggestedName,
+    ...(suggestedName && { hint: "[TAB to complete]" }),
     validate: (input: string) => {
       if (!input || input.trim().length === 0) {
         return "Icon name cannot be empty";
@@ -182,20 +188,6 @@ export const promptIconName = async (defaultName?: string): Promise<string> => {
   });
 
   return answer.name;
-};
-
-/**
- * Prompt to confirm suggested icon name
- */
-export const promptConfirmIconName = async (suggestedName: string): Promise<boolean> => {
-  const answer = await prompt<{ confirm: boolean }>({
-    type: "confirm",
-    name: "confirm",
-    message: `Use '${suggestedName}' as icon name?`,
-    initial: true,
-  });
-
-  return answer.confirm;
 };
 
 /**

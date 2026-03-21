@@ -5,16 +5,17 @@ import { updateIndexFile } from "@/core/index-maintainer";
 import { optimizeSVG } from "@/core/svg-processor";
 import { fetchSVGFromURL } from "@/core/url-fetcher";
 import { logger, spinner } from "@/utils/logger";
+import { previewSVGSideBySide } from "@/utils/svg-preview";
 import { extractIconNameFromURL, generateIconName } from "@/utils/naming";
 import { isValidSVG } from "@/utils/validation";
 import fs from "fs/promises";
 import path from "path";
 import {
-  promptConfirmIconName,
   promptIconName,
   promptSVGContent,
   promptSVGURL,
 } from "./prompts";
+import { detectIconNameFromSvg } from "@/utils/svg-detector";
 
 export interface SemiInteractiveOptions {
   projectRoot: string;
@@ -40,6 +41,7 @@ export const runSemiInteractive = async (options: SemiInteractiveOptions): Promi
       } else {
         svgContent = await promptSVGContent();
       }
+      suggestedName = detectIconNameFromSvg(svgContent);
     } else if (mode === "url") {
       const url = value || (await promptSVGURL());
 
@@ -67,19 +69,8 @@ export const runSemiInteractive = async (options: SemiInteractiveOptions): Promi
       process.exit(1);
     }
 
-    // Ask for icon name (with suggestion if available)
-    let iconName: string;
-
-    if (suggestedName) {
-      const useSuggested = await promptConfirmIconName(suggestedName);
-      if (useSuggested) {
-        iconName = suggestedName;
-      } else {
-        iconName = await promptIconName();
-      }
-    } else {
-      iconName = await promptIconName();
-    }
+    // Ask for icon name — pre-filled if a name was detected/suggested
+    const iconName = await promptIconName(suggestedName ?? undefined);
     const componentName = generateIconName(
       iconName,
       config.naming.suffix,
@@ -101,7 +92,19 @@ export const runSemiInteractive = async (options: SemiInteractiveOptions): Promi
       processSpinner.succeed("SVG processed");
     }
 
-    logger.success(`ViewBox detected: ${processed.viewBox}`);
+    // Show SVG preview with info panel
+    await previewSVGSideBySide(processed.content, [
+      { label: "Component", value: componentName },
+      { label: "Framework", value: config.framework },
+      { label: "ViewBox", value: processed.viewBox },
+      {
+        label: "Size",
+        value:
+          config.optimize && processed.optimizedSize < processed.originalSize
+            ? `${processed.originalSize}B → ${processed.optimizedSize}B`
+            : `${processed.originalSize}B`,
+      },
+    ]);
 
     // Generate component
     logger.newline();

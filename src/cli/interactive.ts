@@ -15,11 +15,12 @@ import {
   generateIconName,
 } from "@/utils/naming";
 import { isValidSVG } from "@/utils/validation";
+import { previewSVGSideBySide } from "@/utils/svg-preview";
+import { insertHeaderComment } from "@/utils/header";
 import enquirer from "enquirer";
 import fs from "fs/promises";
 import path from "path";
 import {
-  promptConfirmIconName,
   promptCreateAnother,
   promptIconName,
   promptMultipleURLs,
@@ -27,6 +28,7 @@ import {
   promptSVGSource,
   promptSVGURL,
 } from "./prompts";
+import { detectIconNameFromSvg } from "@/utils/svg-detector";
 
 type EnquirerExt = {
   prompt: <T>(options: Record<string, unknown> | Record<string, unknown>[]) => Promise<T>;
@@ -190,7 +192,7 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
               });
 
               const copyright = generateLucideCopyright(metadata.iconName);
-              const contentWithCopyright = `${copyright}\n\n${component.content}`;
+              const contentWithCopyright = insertHeaderComment(component.content, copyright);
 
               await writeComponentFile({
                 projectRoot,
@@ -293,6 +295,7 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
         copyrightHeader = generateLucideCopyright(metadata.iconName);
       } else if (source === "paste") {
         svgContent = await promptSVGContent();
+        suggestedName = detectIconNameFromSvg(svgContent);
         previousSource = null;
         previousLibraryMode = null;
         cachedLucideIcons = null;
@@ -329,19 +332,8 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
         continue;
       }
 
-      // Ask for icon name (with suggestion if available)
-      let iconName: string;
-
-      if (suggestedName) {
-        const useSuggested = await promptConfirmIconName(suggestedName);
-        if (useSuggested) {
-          iconName = suggestedName;
-        } else {
-          iconName = await promptIconName();
-        }
-      } else {
-        iconName = await promptIconName();
-      }
+      // Ask for icon name — pre-filled if a name was detected/suggested
+      const iconName = await promptIconName(suggestedName ?? undefined);
       const componentName = generateIconName(
         iconName,
         config.naming.suffix,
@@ -363,7 +355,19 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
         processSpinner.succeed("SVG processed");
       }
 
-      logger.success(`ViewBox detected: ${processed.viewBox}`);
+      // Show SVG preview with info panel
+      await previewSVGSideBySide(processed.content, [
+        { label: "Component", value: componentName },
+        { label: "Framework", value: config.framework },
+        { label: "ViewBox", value: processed.viewBox },
+        {
+          label: "Size",
+          value:
+            config.optimize && processed.optimizedSize < processed.originalSize
+              ? `${processed.originalSize}B → ${processed.optimizedSize}B`
+              : `${processed.originalSize}B`,
+        },
+      ]);
 
       // Generate component
       logger.newline();
@@ -377,7 +381,7 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
 
       // Add copyright header if from library
       const finalContent = copyrightHeader
-        ? `${copyrightHeader}\n\n${component.content}`
+        ? insertHeaderComment(component.content, copyrightHeader)
         : component.content;
 
       genSpinner.succeed(`${component.filename} generated`);
