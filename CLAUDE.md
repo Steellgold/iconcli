@@ -8,14 +8,17 @@ mkicon is a CLI tool that transforms SVG icons into beautiful React, Vue, or Sve
 
 ## Architecture
 
-- **Core**: `src/core/` - Component generation, SVG processing, file writing, and index maintenance
+- **Core**: `src/core/` - Component generation, SVG processing, file writing, index maintenance, and spinner generation
 - **CLI**: `src/cli/` - Interactive/non-interactive modes, argument parsing, setup flows
 - **Config**: `src/config/` - Zod schema validation, configuration management
-- **Templates**: `src/templates/` - Framework-specific code generation (React/Vue/Svelte)
+- **Templates**: `src/templates/` - Framework-specific code generation (React/Vue/Svelte/React Native, including spinner variants)
 - **Utils**: `src/utils/` - Naming conventions, validation, logging, path utilities
 - **Library**: `src/library/` - Icon library integrations (currently Lucide)
+- **Adapters**: `src/adapters/` - Project format detection (Prettier/Biome/ESLint/EditorConfig) and code post-processing to match project style
+- **Batch**: `src/batch/` - Batch processing of multiple SVG files from a directory
+- **Types**: `src/types/` - Shared type definitions (variants, spinner)
 
-The main entry point is `src/index.ts` which handles subcommands, detects CLI vs interactive modes, and orchestrates the appropriate flows.
+The main entry point is `src/index.ts` which handles subcommands, detects CLI vs interactive modes, and orchestrates the appropriate flows. The `@/` path alias maps to `src/`.
 
 ## Common Commands
 
@@ -31,6 +34,7 @@ The main entry point is `src/index.ts` which handles subcommands, detects CLI vs
 ### Testing
 - `pnpm test` - Run Vitest in watch mode
 - `pnpm test:ci` - Run tests once with coverage report
+- `pnpm test src/core/component-generator.test.ts` - Run a single test file
 
 ### Publishing
 - `pnpm prepublishOnly` - Automatically runs build before publishing
@@ -58,6 +62,11 @@ The main entry point is `src/index.ts` which handles subcommands, detects CLI vs
 - Pluggable library system (currently supports Lucide Icons)
 - Supports both search/selection and URL-based import
 - Automatic copyright header generation
+
+### Project Adaptation (`adaptToProject`)
+- When enabled in config, the adapters layer detects the project's formatter config (Prettier → Biome → ESLint → EditorConfig → defaults)
+- `src/adapters/config-resolver.ts` resolves a `DetectedFormatConfig`, then `src/adapters/post-processor.ts` applies it to generated code (quotes, indentation, semis, trailing commas, etc.)
+- Both icon and spinner generators share this same adapter pipeline
 
 ## Testing
 
