@@ -9,6 +9,9 @@ export interface LockEntry {
   svgHash: string;
   svgContent: string;
   generatedAt: string;
+  iconSize?: number;
+  library?: string;
+  libraryIconName?: string;
 }
 
 export type LockFile = Record<string, LockEntry>;
@@ -71,7 +74,8 @@ export const trackGeneratedComponent = async (
   filename: string,
   componentName: string,
   sourcePath: string,
-  svgContent: string
+  svgContent: string,
+  meta?: { iconSize?: number; library?: string; libraryIconName?: string }
 ): Promise<void> => {
   const lock = await readLockFile(projectRoot);
   lock[filename] = {
@@ -80,6 +84,9 @@ export const trackGeneratedComponent = async (
     svgHash: hashSvg(svgContent),
     svgContent,
     generatedAt: new Date().toISOString(),
+    ...(meta?.iconSize !== undefined && { iconSize: meta.iconSize }),
+    ...(meta?.library && { library: meta.library }),
+    ...(meta?.libraryIconName && { libraryIconName: meta.libraryIconName }),
   };
   await writeLockFile(projectRoot, lock);
 };
