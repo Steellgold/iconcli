@@ -15,4 +15,5 @@ export interface SpinnerTemplateOptions {
   lineWidth?: number;
   jsxQuotes?: "single" | "double";
   bracketSameLine?: boolean;
+  header?: string;
 }

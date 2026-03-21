@@ -7,10 +7,11 @@ export interface GenerateReactVariantOptions {
   variantData: VariantComponentData;
   typescript: boolean;
   props: PropsConfig;
+  header?: string;
 }
 
 export const generateReactVariantComponent = (options: GenerateReactVariantOptions): string => {
-  const { componentName, variantData, typescript, props } = options;
+  const { componentName, variantData, typescript, props, header = "" } = options;
   const { config, variants } = variantData;
 
   // Déterminer les types de props
@@ -27,6 +28,7 @@ export const generateReactVariantComponent = (options: GenerateReactVariantOptio
 
     if (props.size) {customProps.push("  size?: number | string;");}
     if (props.color) {customProps.push("  color?: string;");}
+    if (props.strokeWidth) {customProps.push("  strokeWidth?: number;");}
     if (props.className) {customProps.push("  className?: string;");}
     if (props.style) {customProps.push("  style?: React.CSSProperties;");}
 
@@ -61,6 +63,7 @@ ${customProps.join("\n")}
   const propsList: string[] = [];
   if (props.size) {propsList.push(`size = ${defaultSize}`);}
   if (props.color) {propsList.push(`color = ${defaultColor}`);}
+  if (props.strokeWidth) {propsList.push("strokeWidth = 2");}
   if (props.className) {propsList.push("className");}
   if (props.style) {propsList.push("style");}
   if (hasDirections) {propsList.push("direction");}
@@ -97,6 +100,7 @@ ${customProps.join("\n")}
   const imports = typescript ? "import type { SVGProps } from 'react';" : "";
 
   // Build SVG attributes
+
   const svgAttrs: string[] = ['xmlns="http://www.w3.org/2000/svg"'];
 
   if (props.size) {
@@ -110,6 +114,10 @@ ${customProps.join("\n")}
     svgAttrs.push("{...(color && { stroke: color })}");
   }
 
+  if (props.strokeWidth) {
+    svgAttrs.push("{...(strokeWidth && { strokeWidth })}");
+  }
+
   if (props.className) {
     svgAttrs.push("{...(className && { className })}");
   }
@@ -120,7 +128,7 @@ ${customProps.join("\n")}
 
   svgAttrs.push("{...props}");
 
-  return `${imports}
+  return `${header}${imports}
 
 ${propsInterface}export const ${componentName} = (${propsDestructure}) => {
   ${hasStyles ? generateStyleResolver(config.styles!) : ""}

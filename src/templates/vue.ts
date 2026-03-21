@@ -6,10 +6,11 @@ interface VueTemplateOptions {
   viewBox: string;
   typescript: boolean;
   props: Config["props"];
+  header?: string;
 }
 
 export const generateVueComponent = (options: VueTemplateOptions): string => {
-  const { svgContent, viewBox, typescript, props } = options;
+  const { svgContent, viewBox, typescript, props, header = "" } = options;
 
   // Extract the inner content of the SVG
   const svgInnerContent = svgContent
@@ -33,8 +34,13 @@ export const generateVueComponent = (options: VueTemplateOptions): string => {
     defaultValues.color = "'currentColor'";
   }
 
+  if (props.strokeWidth) {
+    propsFields.push("  strokeWidth?: number;");
+    defaultValues.strokeWidth = 2;
+  }
+
   const propsCode =
-    typescript && (props.size || props.color)
+    typescript && (props.size || props.color || props.strokeWidth)
       ? `withDefaults(defineProps<{\n${propsFields.join("\n")}\n}>(), {\n${Object.entries(
           defaultValues
         )
@@ -42,7 +48,7 @@ export const generateVueComponent = (options: VueTemplateOptions): string => {
           .join(",\n")}\n})`
       : typescript
         ? `defineProps<{\n${propsFields.join("\n")}\n}>()`
-        : `defineProps(['size', 'color'])`;
+        : `defineProps(['size', 'color'${props.strokeWidth ? ", 'strokeWidth'" : ""}])`;
 
   // Build SVG attributes
   const svgAttrs: string[] = ['xmlns="http://www.w3.org/2000/svg"'];
@@ -59,10 +65,14 @@ export const generateVueComponent = (options: VueTemplateOptions): string => {
     svgAttrs.push(':stroke="color"');
   }
 
+  if (props.strokeWidth) {
+    svgAttrs.push(':stroke-width="strokeWidth"');
+  }
+
   svgAttrs.push('v-bind="$attrs"');
 
-  return `<template>
-  <svg 
+  return `${header}<template>
+  <svg
     ${svgAttrs.join("\n    ")}
   >
     ${svgInnerContent}

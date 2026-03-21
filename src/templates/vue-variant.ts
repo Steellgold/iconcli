@@ -7,10 +7,11 @@ export interface GenerateVueVariantOptions {
   variantData: VariantComponentData;
   typescript: boolean;
   props: PropsConfig;
+  header?: string;
 }
 
 export const generateVueVariantComponent = (options: GenerateVueVariantOptions): string => {
-  const { variantData, typescript, props } = options;
+  const { variantData, typescript, props, header = "" } = options;
   const { config, variants } = variantData;
 
   const hasDirections = config.directions && config.directions.length > 0;
@@ -21,6 +22,7 @@ export const generateVueVariantComponent = (options: GenerateVueVariantOptions):
 
   if (props.size) {propDefs.push("  size?: number | string;");}
   if (props.color) {propDefs.push("  color?: string;");}
+  if (props.strokeWidth) {propDefs.push("  strokeWidth?: number;");}
 
   if (hasDirections) {
     const directionType = config.directions!.map((d) => `'${d}'`).join(" | ");
@@ -39,6 +41,7 @@ export const generateVueVariantComponent = (options: GenerateVueVariantOptions):
   const defaultValues: Record<string, string | number> = {};
   if (props.size) {defaultValues.size = 24;}
   if (props.color) {defaultValues.color = "'currentColor'";}
+  if (props.strokeWidth) {defaultValues.strokeWidth = 2;}
   if (hasDirections) {defaultValues.direction = `'${config.directions![0]}'`;}
   if (hasStyles) {defaultValues.variant = `'${config.styles![0]}'`;}
 
@@ -84,9 +87,13 @@ export const generateVueVariantComponent = (options: GenerateVueVariantOptions):
     svgAttrs.push(':stroke="color"');
   }
 
+  if (props.strokeWidth) {
+    svgAttrs.push(':stroke-width="strokeWidth"');
+  }
+
   svgAttrs.push('v-bind="$attrs"');
 
-  return `<template>
+  return `${header}<template>
   <svg 
     ${svgAttrs.join("\n    ")}
   >

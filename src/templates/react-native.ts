@@ -6,6 +6,7 @@ interface ReactNativeTemplateOptions {
   viewBox: string;
   typescript: boolean;
   props: Config["props"];
+  header?: string;
 }
 
 const SVG_TAG_MAP: Record<string, string> = {
@@ -81,7 +82,7 @@ export const getUsedReactNativeSvgImports = (jsxContent: string): string[] => {
 };
 
 export const generateReactNativeComponent = (options: ReactNativeTemplateOptions): string => {
-  const { componentName, svgContent, viewBox, typescript, props } = options;
+  const { componentName, svgContent, viewBox, typescript, props, header = "" } = options;
 
   const svgInner = extractInnerSvg(svgContent);
   const rnJsxInner = convertSvgToReactNativeJsx(svgInner);
@@ -108,6 +109,11 @@ export const generateReactNativeComponent = (options: ReactNativeTemplateOptions
       defaultProps.push("  color = \"currentColor\"");
     }
 
+    if (props.strokeWidth) {
+      propsFields.push("  strokeWidth?: number;");
+      defaultProps.push("  strokeWidth = 2");
+    }
+
     if (props.style) {
       propsFields.push("  style?: SvgProps[\"style\"];");
     }
@@ -125,6 +131,7 @@ export const generateReactNativeComponent = (options: ReactNativeTemplateOptions
     const destructuredProps: string[] = [];
     if (props.size) {destructuredProps.push("size = 24");}
     if (props.color) {destructuredProps.push("color = \"currentColor\"");}
+    if (props.strokeWidth) {destructuredProps.push("strokeWidth = 2");}
     if (props.style) {destructuredProps.push("style");}
     destructuredProps.push("...props");
 
@@ -144,13 +151,17 @@ export const generateReactNativeComponent = (options: ReactNativeTemplateOptions
     svgAttrs.push("{...(color && { stroke: color })}");
   }
 
+  if (props.strokeWidth) {
+    svgAttrs.push("{...(strokeWidth && { strokeWidth })}");
+  }
+
   if (props.style) {
     svgAttrs.push("{...(style && { style })}");
   }
 
   svgAttrs.push("{...props}");
 
-  return `${typeImport}${valueImport}${propsInterface}export const ${componentName} = (${propsSignature}) => {
+  return `${header}${typeImport}${valueImport}${propsInterface}export const ${componentName} = (${propsSignature}) => {
   return (
     <Svg
       ${svgAttrs.join("\n      ")}
@@ -165,4 +176,3 @@ export const generateReactNativeComponent = (options: ReactNativeTemplateOptions
 export const getReactNativeFileExtension = (typescript: boolean): string => {
   return typescript ? ".tsx" : ".jsx";
 };
-

@@ -23,6 +23,7 @@ describe("ConfigSchema", () => {
       color: true,
       className: true,
       style: false,
+      strokeWidth: false,
     });
   });
 

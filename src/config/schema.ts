@@ -14,12 +14,14 @@ export const ConfigSchema = z.object({
       color: z.boolean().default(true),
       className: z.boolean().default(true),
       style: z.boolean().default(false),
+      strokeWidth: z.boolean().default(false),
     })
     .default({
       size: true,
       color: true,
       className: true,
       style: false,
+      strokeWidth: false,
     }),
   naming: z
     .object({

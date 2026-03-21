@@ -7,7 +7,7 @@ const extractInnerContent = (svgContent: string): string =>
     .trim();
 
 export const generateVueSpinnerComponent = (options: SpinnerTemplateOptions): string => {
-  const { svgContent, viewBox, typescript, animationLib, defaultDuration } = options;
+  const { svgContent, viewBox, typescript, animationLib, defaultDuration, header = "" } = options;
 
   const svgInner = extractInnerContent(svgContent);
   const scriptLang = typescript ? ' lang="ts"' : "";
@@ -23,7 +23,7 @@ export const generateVueSpinnerComponent = (options: SpinnerTemplateOptions): st
 })`
       : `defineProps(['size', 'color'])`;
 
-    return `<template>
+    return `${header}<template>
   <svg
     class="animate-spin"
     xmlns="http://www.w3.org/2000/svg"
@@ -57,7 +57,7 @@ ${propsCode}
 })`
     : `defineProps(['size', 'color', 'duration'])`;
 
-  return `<template>
+  return `${header}<template>
   <svg
     class="mkicon-spin"
     :style="{ animationDuration: duration + 'ms' }"

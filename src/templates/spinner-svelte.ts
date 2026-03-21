@@ -7,7 +7,7 @@ const extractInnerContent = (svgContent: string): string =>
     .trim();
 
 export const generateSvelteSpinnerComponent = (options: SpinnerTemplateOptions): string => {
-  const { svgContent, viewBox, typescript, animationLib, defaultDuration } = options;
+  const { svgContent, viewBox, typescript, animationLib, defaultDuration, header = "" } = options;
 
   const svgInner = extractInnerContent(svgContent);
   const scriptLang = typescript ? ' lang="ts"' : "";
@@ -19,7 +19,7 @@ export const generateSvelteSpinnerComponent = (options: SpinnerTemplateOptions):
       : `  export let size = 24;
   export let color = 'currentColor';`;
 
-    return `<script${scriptLang}>
+    return `${header}<script${scriptLang}>
 ${propsExports}
 </script>
 
@@ -47,7 +47,7 @@ ${propsExports}
   export let color = 'currentColor';
   export let duration = ${defaultDuration};`;
 
-  return `<script${scriptLang}>
+  return `${header}<script${scriptLang}>
 ${propsExports}
 </script>
 

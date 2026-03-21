@@ -16,6 +16,7 @@ export const generateReactNativeSpinnerComponent = (options: SpinnerTemplateOpti
     defaultDuration,
     lineWidth = 100,
     bracketSameLine = false,
+    header = "",
   } = options;
 
   const svgInner = extractInnerSvg(svgContent);
@@ -24,6 +25,7 @@ export const generateReactNativeSpinnerComponent = (options: SpinnerTemplateOpti
   const svgImports = ["Svg", ...extraImports];
 
   const typeImport = typescript ? `import type { SvgProps } from "react-native-svg";\n` : "";
+  const fileHeader = header;
   const svgImportLine = `${formatImportStatement(svgImports, "react-native-svg", lineWidth, '"')}\n`;
 
   const propsType = typescript
@@ -75,7 +77,7 @@ export const generateReactNativeSpinnerComponent = (options: SpinnerTemplateOpti
 `;
     const useEffectImport = `import { useEffect } from "react";\n`;
 
-    return `${typeImport}${useEffectImport}${reanimatedImport}${svgImportLine}
+    return `${fileHeader}${typeImport}${useEffectImport}${reanimatedImport}${svgImportLine}
 ${propsType}export const ${componentName} = ${propsSignature} => {
   const rotation = useSharedValue(0);
 
@@ -104,7 +106,7 @@ ${propsType}export const ${componentName} = ${propsSignature} => {
   const rnImport = `import { useRef, useEffect } from "react";\n`;
   const animatedImport = `import { Animated, Easing } from "react-native";\n`;
 
-  return `${typeImport}${rnImport}${animatedImport}${svgImportLine}
+  return `${fileHeader}${typeImport}${rnImport}${animatedImport}${svgImportLine}
 ${propsType}export const ${componentName} = ${propsSignature} => {
   const spinAnim = useRef(new Animated.Value(0)).current;
 

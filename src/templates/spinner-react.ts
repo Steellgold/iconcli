@@ -18,11 +18,13 @@ export const generateReactSpinnerComponent = (options: SpinnerTemplateOptions): 
     lineWidth = 100,
     jsxQuotes = "double",
     bracketSameLine = false,
+    header = "",
   } = options;
 
   const q = jsxQuotes === "single" ? "'" : '"';
   const svgInner = extractInnerContent(svgContent);
   const typeImport = typescript ? `import type { SVGProps } from 'react';\n` : "";
+  const fileHeader = header;
 
   const propsType = typescript
     ? `export interface ${componentName}Props extends SVGProps<SVGSVGElement> {
@@ -64,7 +66,7 @@ export const generateReactSpinnerComponent = (options: SpinnerTemplateOptions): 
     );
     const svgTag = formatJsxOpenTag("svg", cssAttrs, "      ", lineWidth, bracketSameLine);
 
-    return `${typeImport}${propsType}export const ${componentName} = ${sig} => {
+    return `${fileHeader}${typeImport}${propsType}export const ${componentName} = ${sig} => {
   return (
     <>
       ${keyframesStyle}
@@ -99,7 +101,7 @@ export const generateReactSpinnerComponent = (options: SpinnerTemplateOptions): 
     );
     const twSvgTag = formatJsxOpenTag("svg", twAttrs, "    ", lineWidth, bracketSameLine);
 
-    return `${typeImport}${twType}export const ${componentName} = ${twSig} => {
+    return `${fileHeader}${typeImport}${twType}export const ${componentName} = ${twSig} => {
   return (
     ${twSvgTag}
       ${svgInner}
@@ -139,7 +141,7 @@ export const generateReactSpinnerComponent = (options: SpinnerTemplateOptions): 
   );
   const framerSvgTag = formatJsxOpenTag("svg", framerAttrs, "      ", lineWidth, bracketSameLine);
 
-  return `${typeImport}${framerImport}${framerType}export const ${componentName} = ${framerSig} => {
+  return `${fileHeader}${typeImport}${framerImport}${framerType}export const ${componentName} = ${framerSig} => {
   return (
     <motion.div
       animate={{ rotate: 360 }}

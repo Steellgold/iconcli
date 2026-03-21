@@ -6,10 +6,11 @@ interface SvelteTemplateOptions {
   viewBox: string;
   typescript: boolean;
   props: Config["props"];
+  header?: string;
 }
 
 export const generateSvelteComponent = (options: SvelteTemplateOptions): string => {
-  const { svgContent, viewBox, typescript, props } = options;
+  const { svgContent, viewBox, typescript, props, header = "" } = options;
 
   // Extract the inner content of the SVG
   const svgInnerContent = svgContent
@@ -30,6 +31,10 @@ export const generateSvelteComponent = (options: SvelteTemplateOptions): string 
     propsExports.push("  export let color: string = 'currentColor';");
   }
 
+  if (props.strokeWidth) {
+    propsExports.push("  export let strokeWidth: number = 2;");
+  }
+
   // Build SVG attributes
   const svgAttrs: string[] = ['xmlns="http://www.w3.org/2000/svg"'];
 
@@ -45,6 +50,10 @@ export const generateSvelteComponent = (options: SvelteTemplateOptions): string 
     svgAttrs.push("stroke={color}");
   }
 
+  if (props.strokeWidth) {
+    svgAttrs.push("stroke-width={strokeWidth}");
+  }
+
   svgAttrs.push("{...$$restProps}");
 
   const scriptSection =
@@ -56,7 +65,7 @@ ${propsExports.join("\n")}
 `
       : "";
 
-  return `${scriptSection}<svg 
+  return `${header}${scriptSection}<svg
   ${svgAttrs.join("\n  ")}
 >
   ${svgInnerContent}

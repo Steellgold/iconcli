@@ -7,6 +7,7 @@ export interface GenerateReactNativeVariantOptions {
   variantData: VariantComponentData;
   typescript: boolean;
   props: PropsConfig;
+  header?: string;
 }
 
 const SVG_TAG_MAP: Record<string, string> = {
@@ -74,7 +75,7 @@ const getUsedReactNativeSvgImports = (jsxContent: string): string[] => {
 };
 
 export const generateReactNativeVariantComponent = (options: GenerateReactNativeVariantOptions): string => {
-  const { componentName, variantData, typescript, props } = options;
+  const { componentName, variantData, typescript, props, header = "" } = options;
   const { config, variants } = variantData;
 
   const hasDirections = !!(config.directions && config.directions.length > 0);
@@ -88,6 +89,7 @@ export const generateReactNativeVariantComponent = (options: GenerateReactNative
   const propsList: string[] = [];
   if (props.size) {propsList.push(`size = ${defaultSize}`);}
   if (props.color) {propsList.push(`color = ${defaultColor}`);}
+  if (props.strokeWidth) {propsList.push("strokeWidth = 2");}
   if (props.style) {propsList.push("style");}
   if (hasDirections) {propsList.push("direction");}
   if (hasStyles) {
@@ -108,6 +110,7 @@ export const generateReactNativeVariantComponent = (options: GenerateReactNative
     const customProps: string[] = [];
     if (props.size) {customProps.push("  size?: number | string;");}
     if (props.color) {customProps.push("  color?: string;");}
+    if (props.strokeWidth) {customProps.push("  strokeWidth?: number;");}
     if (props.style) {customProps.push("  style?: SvgProps[\"style\"];");}
 
     if (hasDirections) {
@@ -153,6 +156,9 @@ export const generateReactNativeVariantComponent = (options: GenerateReactNative
   if (props.color) {
     svgAttrs.push("{...(color && { stroke: color })}");
   }
+  if (props.strokeWidth) {
+    svgAttrs.push("{...(strokeWidth && { strokeWidth })}");
+  }
   if (props.style) {
     svgAttrs.push("{...(style && { style })}");
   }
@@ -164,11 +170,11 @@ export const generateReactNativeVariantComponent = (options: GenerateReactNative
   const used = getUsedReactNativeSvgImports(allInnerJsx);
   imports.push("Svg", ...used);
 
-  const header =
-    `${typescript ? `import type { ${importTypes.join(", ")} } from "react-native-svg";\n` : "" 
+  const rnImportBlock =
+    `${typescript ? `import type { ${importTypes.join(", ")} } from "react-native-svg";\n` : ""
     }import { ${Array.from(new Set(imports)).sort((a, b) => a.localeCompare(b)).join(", ")} } from "react-native-svg";\n\n`;
 
-  return `${header}${propsInterface}export const ${componentName} = (${propsDestructure}) => {
+  return `${header}${rnImportBlock}${propsInterface}export const ${componentName} = (${propsDestructure}) => {
   ${styleResolver}
   const renderContent = () => {
     ${variantSwitch}

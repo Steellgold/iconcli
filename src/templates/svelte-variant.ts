@@ -7,10 +7,11 @@ export interface GenerateSvelteVariantOptions {
   variantData: VariantComponentData;
   typescript: boolean;
   props: PropsConfig;
+  header?: string;
 }
 
 export const generateSvelteVariantComponent = (options: GenerateSvelteVariantOptions): string => {
-  const { variantData, typescript, props } = options;
+  const { variantData, typescript, props, header = "" } = options;
   const { config, variants } = variantData;
 
   const hasDirections = config.directions && config.directions.length > 0;
@@ -21,6 +22,7 @@ export const generateSvelteVariantComponent = (options: GenerateSvelteVariantOpt
 
   if (props.size) {exportProps.push("  export let size: number | string = 24;");}
   if (props.color) {exportProps.push("  export let color: string = 'currentColor';");}
+  if (props.strokeWidth) {exportProps.push("  export let strokeWidth: number = 2;");}
 
   if (hasDirections) {
     const directionType = typescript
@@ -72,9 +74,13 @@ export const generateSvelteVariantComponent = (options: GenerateSvelteVariantOpt
     svgAttrs.push("stroke={color}");
   }
 
+  if (props.strokeWidth) {
+    svgAttrs.push("stroke-width={strokeWidth}");
+  }
+
   svgAttrs.push("{...$$restProps}");
 
-  return `<script${scriptLang}>
+  return `${header}<script${scriptLang}>
 ${exportProps.join("\n")}
 
 ${styleResolver}${renderFunction}
