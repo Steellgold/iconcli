@@ -1,4 +1,5 @@
 import { applyFormatting, resolveFormatConfig } from "@/adapters/index";
+import { generateMkiconHeader } from "@/utils/header";
 import type { Config } from "@/config/schema";
 import { generateReactSpinnerComponent } from "@/templates/spinner-react";
 import { generateReactNativeSpinnerComponent } from "@/templates/spinner-react-native";
@@ -31,6 +32,7 @@ export const generateSpinnerComponent = async (
   const { componentName, svgContent, viewBox, config, animationLib, defaultDuration } = options;
 
   const cleanedSVG = cleanSVGAttributes(svgContent);
+  const header = generateMkiconHeader(config.framework);
 
   let content: string;
   let extension: string;
@@ -55,6 +57,7 @@ export const generateSpinnerComponent = async (
     typescript: config.typescript,
     animationLib,
     defaultDuration,
+    header,
     ...(config.adaptToProject && resolvedFormatConfig && {
       lineWidth: resolvedFormatConfig.lineWidth,
       jsxQuotes: resolvedFormatConfig.jsxQuotes,

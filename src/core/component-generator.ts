@@ -1,6 +1,7 @@
 import type { Config } from "@/config/schema";
 
 import { applyFormatting, resolveFormatConfig } from "@/adapters/index";
+import { generateMkiconHeader } from "@/utils/header";
 import { logger } from "@/utils/logger";
 import { generateReactComponent, getReactFileExtension } from "@/templates/react";
 import {
@@ -37,6 +38,7 @@ export const generateComponent = async (
   const { componentName, svgContent, viewBox, config } = options;
 
   const cleanedSVG = cleanSVGAttributes(svgContent);
+  const header = generateMkiconHeader(config.framework);
 
   let content: string;
   let extension: string;
@@ -49,6 +51,7 @@ export const generateComponent = async (
         viewBox,
         typescript: config.typescript,
         props: config.props,
+        header,
       });
       extension = getReactFileExtension(config.typescript);
       break;
@@ -60,6 +63,7 @@ export const generateComponent = async (
         viewBox,
         typescript: config.typescript,
         props: config.props,
+        header,
       });
       extension = getReactNativeFileExtension(config.typescript);
       break;
@@ -71,6 +75,7 @@ export const generateComponent = async (
         viewBox,
         typescript: config.typescript,
         props: config.props,
+        header,
       });
       extension = getVueFileExtension();
       break;
@@ -82,6 +87,7 @@ export const generateComponent = async (
         viewBox,
         typescript: config.typescript,
         props: config.props,
+        header,
       });
       extension = getSvelteFileExtension();
       break;

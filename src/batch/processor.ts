@@ -1,5 +1,6 @@
 import type { Config } from "@/config/schema";
 import { generateComponent } from "@/core/component-generator";
+import { trackGeneratedComponent } from "@/core/diff-checker";
 import { writeComponentFile } from "@/core/file-writer";
 import { updateIndexFile } from "@/core/index-maintainer";
 import { optimizeSVG } from "@/core/svg-processor";
@@ -184,6 +185,15 @@ export const processBatchIcons = async (options: BatchProcessOptions): Promise<v
         content: component.content,
         force: true, // Don't prompt in batch mode
       });
+
+      // Track for diff
+      await trackGeneratedComponent(
+        projectRoot,
+        component.filename,
+        componentName,
+        path.relative(projectRoot, svgPath),
+        svgContent
+      );
 
       processSpinner.text = `Processing: ${file} → ${component.filename}`;
       results.success++;

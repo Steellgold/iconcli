@@ -2,6 +2,7 @@ import type { Config } from "@/config/schema";
 import type { DirectionVariant, StyleVariant, VariantComponentData } from "@/types/variants";
 
 import { applyFormatting, resolveFormatConfig } from "@/adapters/index";
+import { generateMkiconHeader } from "@/utils/header";
 import {
   generateReactVariantComponent,
   getReactFileExtension,
@@ -38,6 +39,7 @@ export const generateVariantComponent = async (
   options: GenerateVariantComponentOptions
 ): Promise<GeneratedVariantComponent> => {
   const { variantData, config } = options;
+  const header = generateMkiconHeader(config.framework);
 
   // Generate component name
   const componentName = generateIconName(
@@ -56,6 +58,7 @@ export const generateVariantComponent = async (
         variantData,
         typescript: config.typescript,
         props: config.props,
+        header,
       });
       extension = getReactFileExtension(config.typescript);
       break;
@@ -66,6 +69,7 @@ export const generateVariantComponent = async (
         variantData,
         typescript: config.typescript,
         props: config.props,
+        header,
       });
       extension = getReactNativeFileExtension(config.typescript);
       break;
@@ -76,6 +80,7 @@ export const generateVariantComponent = async (
         variantData,
         typescript: config.typescript,
         props: config.props,
+        header,
       });
       extension = getVueFileExtension();
       break;
@@ -86,6 +91,7 @@ export const generateVariantComponent = async (
         variantData,
         typescript: config.typescript,
         props: config.props,
+        header,
       });
       extension = getSvelteFileExtension();
       break;
