@@ -1,4 +1,5 @@
 import type { Config } from "@/config/schema";
+import type { HeroiconSize, HeroiconStyle } from "@/library/heroicons";
 import enquirer from "enquirer";
 
 const { prompt } = enquirer;
@@ -202,6 +203,79 @@ export const promptCreateAnother = async (): Promise<boolean> => {
   });
 
   return answer.another;
+};
+
+/**
+ * Prompt for Heroicon size selection
+ */
+export const promptHeroiconSize = async (): Promise<HeroiconSize> => {
+  const answer = await prompt<{ size: string }>({
+    type: "select",
+    name: "size",
+    message: "Select icon size:",
+    choices: [
+      { name: "16", message: "16px (micro)" },
+      { name: "20", message: "20px (mini)" },
+      { name: "24", message: "24px (standard)" },
+    ],
+  });
+
+  return parseInt(answer.size, 10) as HeroiconSize;
+};
+
+/**
+ * Prompt for Heroicon style selection.
+ * If size is 16 or 20, only "solid" is available and returned immediately.
+ */
+export const promptHeroiconStyle = async (size: HeroiconSize): Promise<HeroiconStyle> => {
+  if (size !== 24) return "solid";
+
+  const answer = await prompt<{ style: HeroiconStyle }>({
+    type: "select",
+    name: "style",
+    message: "Select icon style:",
+    choices: [
+      { name: "solid", message: "Solid" },
+      { name: "outline", message: "Outline" },
+    ],
+  });
+
+  return answer.style;
+};
+
+/**
+ * Prompt for optional icon size metadata (for paste/url/file sources)
+ */
+export const promptIconSize = async (): Promise<number | null> => {
+  const answer = await prompt<{ size: string }>({
+    type: "select",
+    name: "size",
+    message: "What size is this icon? (optional, for metadata only)",
+    choices: [
+      { name: "skip", message: "Skip" },
+      { name: "16", message: "16px" },
+      { name: "20", message: "20px" },
+      { name: "24", message: "24px" },
+      { name: "custom", message: "Custom..." },
+    ],
+  });
+
+  if (answer.size === "skip") return null;
+  if (answer.size === "custom") {
+    const customAnswer = await prompt<{ customSize: string }>({
+      type: "input",
+      name: "customSize",
+      message: "Enter icon size (px):",
+      validate: (input: string) => {
+        const n = parseInt(input, 10);
+        if (isNaN(n) || n <= 0) return "Please enter a valid positive number";
+        return true;
+      },
+    });
+    return parseInt(customAnswer.customSize, 10);
+  }
+
+  return parseInt(answer.size, 10);
 };
 
 /**
