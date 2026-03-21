@@ -4,13 +4,19 @@ import { writeComponentFile } from "@/core/file-writer";
 import { updateIndexFile } from "@/core/index-maintainer";
 import { optimizeSVG } from "@/core/svg-processor";
 import { fetchLucideIcon, fetchLucideIcons, generateLucideCopyright } from "@/library/lucide";
+import {
+  fetchHeroicon,
+  fetchHeroiconList,
+  generateHeroiconsCopyright,
+  parseHeroiconURL,
+} from "@/library/heroicons";
 import type { IconMetadata } from "@/library/types";
 import { logger, spinner } from "@/utils/logger";
 import { extractLucideIconNameFromURL, generateIconName } from "@/utils/naming";
 import { insertHeaderComment } from "@/utils/header";
 import enquirer from "enquirer";
 import path from "path";
-import { promptMultipleURLs } from "./prompts";
+import { promptHeroiconSize, promptHeroiconStyle, promptMultipleURLs } from "./prompts";
 
 type EnquirerExt = {
   prompt: <T>(options: Record<string, unknown> | Record<string, unknown>[]) => Promise<T>;
@@ -58,11 +64,15 @@ export const runLibraryBrowser = async (options: LibraryOptions): Promise<void> 
     }
 
     if (method === "search") {
-      await importSingleFromSearch(projectRoot, config);
+      if (library === "heroicons") {
+        await importHeroiconFromSearch(projectRoot, config);
+      } else {
+        await importSingleFromSearch(projectRoot, config);
+      }
       return;
     }
 
-    await importMultipleFromURLs(projectRoot, config);
+    await importMultipleFromURLs(projectRoot, config, library);
   } catch (error) {
     if (error instanceof Error) {
       logger.error(error.message);
@@ -187,8 +197,122 @@ const importSingleFromSearch = async (projectRoot: string, config: Config): Prom
   logger.newline();
 };
 
-const importMultipleFromURLs = async (projectRoot: string, config: Config): Promise<void> => {
+const importHeroiconFromSearch = async (projectRoot: string, config: Config): Promise<void> => {
+  const fetchSpinner = spinner.start("Loading Heroicons...");
+  const icons = await fetchHeroiconList();
+  fetchSpinner.succeed(`Loaded ${icons.length} icons from Heroicons`);
   logger.newline();
+
+  const iconName = await promptIconSearchAndSelect(icons);
+  if (!iconName) {
+    logger.info("No icon selected");
+    return;
+  }
+
+  const size = await promptHeroiconSize();
+  const style = await promptHeroiconStyle(size);
+
+  logger.newline();
+  const { svgContent, metadata } = await fetchHeroicon(iconName, size, style);
+
+  const suggestedName = `${iconName}-${size}`;
+  const nameAnswer = (await prompt({
+    type: "confirm",
+    name: "useOriginalName",
+    message: `Use '${suggestedName}' as component name?`,
+    initial: true,
+  })) as { useOriginalName: boolean };
+
+  let componentBaseName = suggestedName;
+  if (!nameAnswer.useOriginalName) {
+    const customAnswer = (await prompt({
+      type: "input",
+      name: "customName",
+      message: "Enter custom component name:",
+      initial: suggestedName,
+    })) as { customName: string };
+    componentBaseName = customAnswer.customName;
+  }
+
+  const componentName = generateIconName(
+    componentBaseName,
+    config.naming.suffix,
+    config.naming.componentCase
+  );
+
+  logger.separator();
+  logger.newline();
+
+  const processSpinner = spinner.start("Processing SVG...");
+  const processed = await optimizeSVG(svgContent, config.optimize);
+  if (config.optimize && processed.optimizedSize < processed.originalSize) {
+    processSpinner.succeed(
+      `SVG optimized (${processed.originalSize} bytes → ${processed.optimizedSize} bytes)`
+    );
+  } else {
+    processSpinner.succeed("SVG processed");
+  }
+  logger.success(`ViewBox detected: ${processed.viewBox}`);
+
+  logger.newline();
+  const genSpinner = spinner.start("Generating component...");
+  const component = await generateComponent({
+    componentName,
+    svgContent: processed.content,
+    viewBox: processed.viewBox,
+    config,
+  });
+
+  const copyright = generateHeroiconsCopyright(iconName);
+  const contentWithCopyright = insertHeaderComment(component.content, copyright);
+  genSpinner.succeed(`${component.filename} generated`);
+
+  const iconsDir = path.join(projectRoot, config.baseDir, config.iconsFolder);
+  const filePath = await writeComponentFile({
+    projectRoot,
+    baseDir: config.baseDir,
+    iconsFolder: config.iconsFolder,
+    filename: component.filename,
+    content: contentWithCopyright,
+  });
+  logger.success(`${component.filename} created`);
+
+  if (config.maintainIndex) {
+    await updateIndexFile(iconsDir, component.extension);
+    logger.success("index.ts updated");
+  }
+
+  logger.separator();
+  logger.newline();
+  logger.title("Icon imported successfully! 🎉");
+  logger.newline();
+  logger.print(`📁 ${path.relative(projectRoot, filePath)}`);
+  logger.print(`📐 Size: ${size}px — Style: ${style}`);
+  logger.print(`📚 From: ${metadata.library.displayName} (${metadata.library.website})`);
+  logger.newline();
+  logger.print("Import:");
+  logger.print(`  import { ${componentName} } from '@/components/icons';`);
+  logger.newline();
+  logger.print("Usage:");
+  logger.print(`  <${componentName} size={${size}} />`);
+  logger.separator();
+  logger.newline();
+};
+
+const importMultipleFromURLs = async (
+  projectRoot: string,
+  config: Config,
+  library = "lucide"
+): Promise<void> => {
+  logger.newline();
+
+  if (library === "heroicons") {
+    logger.info(
+      "Heroicons URL format: https://raw.githubusercontent.com/tailwindlabs/heroicons/master/src/{size}/{style}/{name}.svg"
+    );
+    logger.newline();
+  }
+
   const urls = await promptMultipleURLs();
   if (urls.length === 0) {
     logger.info("No URL provided");
@@ -202,27 +326,54 @@ const importMultipleFromURLs = async (projectRoot: string, config: Config): Prom
 
   for (let i = 0; i < urls.length; i += 1) {
     const rawUrl = urls[i];
-    const iconName = extractLucideIconNameFromURL(rawUrl);
-    if (!iconName) {
-      failures.push({ url: rawUrl, reason: "Invalid Lucide icon URL" });
-      logger.error(`[${i + 1}/${urls.length}] Invalid Lucide URL: ${rawUrl}`);
+
+    // Try Heroicons URL first, then Lucide
+    const heroiconParsed = parseHeroiconURL(rawUrl);
+    const lucideIconName = !heroiconParsed ? extractLucideIconNameFromURL(rawUrl) : null;
+
+    if (!heroiconParsed && !lucideIconName) {
+      failures.push({ url: rawUrl, reason: "Unrecognized library URL" });
+      logger.error(`[${i + 1}/${urls.length}] Unrecognized URL: ${rawUrl}`);
       continue;
     }
 
     try {
-      const fetchSpinner = spinner.start(`[${i + 1}/${urls.length}] Fetching ${iconName}...`);
-      const { svgContent, metadata } = await fetchLucideIcon(iconName);
-      fetchSpinner.succeed(`[${i + 1}/${urls.length}] Fetched ${iconName}`);
+      let svgContent: string;
+      let iconDisplayName: string;
+      let copyright: string;
+
+      if (heroiconParsed) {
+        const { iconName, size, style } = heroiconParsed;
+        const fetchSpinner = spinner.start(
+          `[${i + 1}/${urls.length}] Fetching ${iconName} (${size}/${style})...`
+        );
+        const result = await fetchHeroicon(iconName, size, style);
+        svgContent = result.svgContent;
+        iconDisplayName = `${iconName}-${size}`;
+        copyright = generateHeroiconsCopyright(iconName);
+        fetchSpinner.succeed(`[${i + 1}/${urls.length}] Fetched ${iconDisplayName}`);
+      } else {
+        const fetchSpinner = spinner.start(
+          `[${i + 1}/${urls.length}] Fetching ${lucideIconName}...`
+        );
+        const result = await fetchLucideIcon(lucideIconName!);
+        svgContent = result.svgContent;
+        iconDisplayName = lucideIconName!;
+        copyright = generateLucideCopyright(lucideIconName!);
+        fetchSpinner.succeed(`[${i + 1}/${urls.length}] Fetched ${iconDisplayName}`);
+      }
 
       const componentName = generateIconName(
-        iconName,
+        iconDisplayName,
         config.naming.suffix,
         config.naming.componentCase
       );
 
-      const processSpinner = spinner.start(`[${i + 1}/${urls.length}] Processing ${iconName}...`);
+      const processSpinner = spinner.start(
+        `[${i + 1}/${urls.length}] Processing ${iconDisplayName}...`
+      );
       const processed = await optimizeSVG(svgContent, config.optimize);
-      processSpinner.succeed(`[${i + 1}/${urls.length}] Processed ${iconName}`);
+      processSpinner.succeed(`[${i + 1}/${urls.length}] Processed ${iconDisplayName}`);
 
       const component = await generateComponent({
         componentName,
@@ -231,7 +382,6 @@ const importMultipleFromURLs = async (projectRoot: string, config: Config): Prom
         config,
       });
 
-      const copyright = generateLucideCopyright(metadata.iconName);
       const contentWithCopyright = insertHeaderComment(component.content, copyright);
       const filePath = await writeComponentFile({
         projectRoot,
@@ -294,6 +444,7 @@ const promptLibrarySelection = async (): Promise<string | null> => {
       message: "Select an icon library:",
       choices: [
         { name: "lucide", message: "Lucide Icons (1700+ icons)", value: "lucide" },
+        { name: "heroicons", message: "Heroicons (300+ icons)", value: "heroicons" },
         { name: "", role: "separator" },
         { name: "request", message: "💡 Request a new library", value: "request" },
       ],
