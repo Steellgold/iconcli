@@ -93,6 +93,13 @@ export const createProgram = (): Command => {
     });
 
   program
+    .command("count")
+    .description("Count icons in your project or available in libraries")
+    .option("-p, --project", "Count icons tracked in this project")
+    .option("-a, --available", "Count icons available across all libraries")
+    .action(() => {});
+
+  program
     .command("spinner")
     .alias("spin")
     .description("Generate an animated loading spinner component")

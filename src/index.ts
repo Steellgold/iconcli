@@ -13,6 +13,7 @@ import { runLibraryBrowser } from "@/cli/library";
 import { runSemiInteractive } from "@/cli/semi-interactive";
 import { runSetup } from "@/cli/setup";
 import { runSpinner } from "@/cli/spinner";
+import { runCount } from "@/cli/count";
 import { runDiff } from "@/cli/diff";
 import { runSvgExport } from "@/cli/svg-export";
 import { runPreview } from "@/cli/preview";
@@ -153,6 +154,17 @@ const main = async (): Promise<void> => {
           ? process.argv[process.argv.indexOf("-o") + 1]
           : undefined;
       await runSvgExport({ projectRoot, componentPath, output: outputArg });
+      return;
+    }
+
+    if (subcommand === "count") {
+      const isAvailable =
+        process.argv.includes("-a") || process.argv.includes("--available");
+      if (isAvailable) {
+        await runCount({ projectRoot, mode: "available" });
+      } else {
+        await runCount({ projectRoot, config: requireConfig(projectRoot), mode: "project" });
+      }
       return;
     }
 
