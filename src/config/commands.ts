@@ -187,6 +187,11 @@ const modifyProps = async (projectRoot: string, config: Config): Promise<void> =
       { name: "size", message: "size (control size)", enabled: config.props.size },
       { name: "color", message: "color (control color)", enabled: config.props.color },
       {
+        name: "strokeWidth",
+        message: "strokeWidth (control stroke width)",
+        enabled: config.props.strokeWidth,
+      },
+      {
         name: "className",
         message: "className (add CSS classes)",
         enabled: config.props.className,
@@ -199,6 +204,7 @@ const modifyProps = async (projectRoot: string, config: Config): Promise<void> =
     props: {
       size: props.includes("size"),
       color: props.includes("color"),
+      strokeWidth: props.includes("strokeWidth"),
       className: props.includes("className"),
       style: props.includes("style"),
     },

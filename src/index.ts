@@ -13,7 +13,11 @@ import { runLibraryBrowser } from "@/cli/library";
 import { runSemiInteractive } from "@/cli/semi-interactive";
 import { runSetup } from "@/cli/setup";
 import { runSpinner } from "@/cli/spinner";
+import { runDiff } from "@/cli/diff";
+import { runSvgExport } from "@/cli/svg-export";
+import { runPreview } from "@/cli/preview";
 import { runConfigMenu, showConfig } from "@/config/commands";
+import path from "path";
 import { configExists, loadConfig } from "@/config/manager";
 import type { Config } from "@/config/schema";
 import { findProjectRoot } from "@/core/project";
@@ -43,8 +47,27 @@ const requireConfig = (projectRoot: string): Config => {
   return config;
 };
 
+/**
+ * Normalise flag syntax so that -flag and --flag both work.
+ * - `-output`  → `--output`  (single dash + multiple chars → double dash)
+ * - `--n`      → `-n`        (double dash + single char   → single dash)
+ */
+const normaliseArgv = (argv: string[]): string[] =>
+  argv.map((arg) => {
+    if (arg.startsWith("--") && !arg.startsWith("---")) {
+      const rest = arg.slice(2);
+      if (rest.length === 1) return `-${rest}`;
+    } else if (arg.startsWith("-") && !arg.startsWith("--")) {
+      const rest = arg.slice(1);
+      if (rest.length > 1 && !rest.startsWith("-")) return `--${rest}`;
+    }
+    return arg;
+  });
+
 const main = async (): Promise<void> => {
   try {
+    process.argv = [...process.argv.slice(0, 2), ...normaliseArgv(process.argv.slice(2))];
+
     const subcommand = process.argv[2];
     const hasAnyArgs = process.argv.length > 2;
 
@@ -92,6 +115,56 @@ const main = async (): Promise<void> => {
 
     if (subcommand === "spinner" || subcommand === "spin") {
       await runSpinner({ projectRoot, config: requireConfig(projectRoot) });
+      return;
+    }
+
+    if (subcommand === "batch") {
+      const config = requireConfig(projectRoot);
+      const isRefresh = process.argv.includes("--refresh") || process.argv.includes("-r");
+
+      if (isRefresh) {
+        const { rebuildLockFile } = await import("@/core/diff-checker");
+        const iconsDir = path.join(projectRoot, config.baseDir, config.iconsFolder);
+        logger.info("Rebuilding lock file from existing components...");
+        await rebuildLockFile(projectRoot, iconsDir);
+        logger.success("Lock file rebuilt successfully");
+        return;
+      }
+
+      const batchDir = process.argv[3];
+      if (!batchDir) {
+        logger.error("Usage: mkicon batch <dir>");
+        process.exit(1);
+      }
+      await processBatchFromArgs(batchDir, config, projectRoot);
+      return;
+    }
+
+    if (subcommand === "svg") {
+      const componentPath = process.argv[3];
+      if (!componentPath) {
+        logger.error("Usage: mkicon svg <path>");
+        logger.print("Example: mkicon svg src/components/icons/BananaIcon.tsx");
+        process.exit(1);
+      }
+      const outputArg = process.argv.indexOf("--output") !== -1
+        ? process.argv[process.argv.indexOf("--output") + 1]
+        : process.argv.indexOf("-o") !== -1
+          ? process.argv[process.argv.indexOf("-o") + 1]
+          : undefined;
+      await runSvgExport({ projectRoot, componentPath, output: outputArg });
+      return;
+    }
+
+    if (subcommand === "diff") {
+      await runDiff({ projectRoot, config: requireConfig(projectRoot) });
+      return;
+    }
+
+    if (subcommand === "preview") {
+      const componentName = process.argv[3] as string | undefined;
+      const previewConfig = configExists(projectRoot) ? loadConfig(projectRoot) ?? undefined : undefined;
+      await runPreview({ projectRoot, componentName, config: previewConfig });
       return;
     }
 

@@ -20,6 +20,7 @@ const DEFAULT_CONFIG: Omit<Config, "version"> = {
     color: true,
     className: true,
     style: false,
+    strokeWidth: false,
   },
   naming: {
     suffix: "Icon",

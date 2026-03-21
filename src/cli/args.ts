@@ -42,7 +42,7 @@ export const createProgram = (): Command => {
   program
     .name("mkicon")
     .description("Transform SVG icons into beautiful React, Vue, or Svelte components")
-    .version("0.5.0")
+    .version("0.6.0")
     .helpOption("-h, --help", "Display help");
 
   program
@@ -96,9 +96,47 @@ export const createProgram = (): Command => {
     .command("spinner")
     .alias("spin")
     .description("Generate an animated loading spinner component")
-    .action(() => {
-      // Handled in main index.ts
-    });
+    .action(() => {});
+
+  program
+    .command("batch [dir]")
+    .description("Batch process SVG files from a directory")
+    .option("-r, --refresh", "Rebuild the lock file from existing components without regenerating")
+    .action(() => {});
+
+  program
+    .command("paste [svg]")
+    .alias("p")
+    .description("Create icon from pasted SVG")
+    .action(() => {});
+
+  program
+    .command("url [url]")
+    .alias("u")
+    .description("Create icon from URL")
+    .action(() => {});
+
+  program
+    .command("file [path]")
+    .alias("f")
+    .description("Create icon from local SVG file")
+    .action(() => {});
+
+  program
+    .command("svg <path>")
+    .description("Export a component back to its original SVG file")
+    .option("-o, --output <path>", "Output path for the SVG file")
+    .action(() => {});
+
+  program
+    .command("diff")
+    .description("Check tracked components for SVG source changes")
+    .action(() => {});
+
+  program
+    .command("preview <component>")
+    .description("Preview a tracked icon component in the terminal")
+    .action(() => {});
 
   return program;
 };

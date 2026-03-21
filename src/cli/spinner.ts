@@ -9,6 +9,7 @@ import { fetchLucideIcon, generateLucideCopyright } from "@/library/lucide";
 import type { SpinnerAnimationLib } from "@/types/spinner";
 import { detectAnimationLibs } from "@/utils/detect-animation-libs";
 import { logger, spinner as spinnerIndicator } from "@/utils/logger";
+import { insertHeaderComment } from "@/utils/header";
 import { generateIconName } from "@/utils/naming";
 import { isValidSVG } from "@/utils/validation";
 import enquirer from "enquirer";
@@ -190,7 +191,7 @@ export const runSpinner = async (options: SpinnerFlowOptions): Promise<void> => 
   });
 
   const finalContent = copyrightHeader
-    ? `${copyrightHeader}\n\n${component.content}`
+    ? insertHeaderComment(component.content, copyrightHeader)
     : component.content;
 
   genSpin.succeed(`${component.filename} generated`);

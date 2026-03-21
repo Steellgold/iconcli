@@ -7,6 +7,7 @@ import { fetchLucideIcon, fetchLucideIcons, generateLucideCopyright } from "@/li
 import type { IconMetadata } from "@/library/types";
 import { logger, spinner } from "@/utils/logger";
 import { extractLucideIconNameFromURL, generateIconName } from "@/utils/naming";
+import { insertHeaderComment } from "@/utils/header";
 import enquirer from "enquirer";
 import path from "path";
 import { promptMultipleURLs } from "./prompts";
@@ -152,7 +153,7 @@ const importSingleFromSearch = async (projectRoot: string, config: Config): Prom
   });
 
   const copyright = generateLucideCopyright(metadata.iconName);
-  const contentWithCopyright = `${copyright}\n\n${component.content}`;
+  const contentWithCopyright = insertHeaderComment(component.content, copyright);
   genSpinner.succeed(`${component.filename} generated`);
 
   const iconsDir = path.join(projectRoot, config.baseDir, config.iconsFolder);
@@ -231,7 +232,7 @@ const importMultipleFromURLs = async (projectRoot: string, config: Config): Prom
       });
 
       const copyright = generateLucideCopyright(metadata.iconName);
-      const contentWithCopyright = `${copyright}\n\n${component.content}`;
+      const contentWithCopyright = insertHeaderComment(component.content, copyright);
       const filePath = await writeComponentFile({
         projectRoot,
         baseDir: config.baseDir,
