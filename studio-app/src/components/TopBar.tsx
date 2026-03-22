@@ -5,6 +5,7 @@ interface TopBarProps {
   searchQuery: string;
   onSearchChange: (q: string) => void;
   onNewIcon: () => void;
+  onPalette: () => void;
   searchHistory: string[];
   sortMode: SortMode;
   onSortChange: (mode: SortMode) => void;
@@ -15,6 +16,7 @@ export default function TopBar({
   searchQuery,
   onSearchChange,
   onNewIcon,
+  onPalette,
   searchHistory,
   sortMode,
   onSortChange,
@@ -160,6 +162,14 @@ export default function TopBar({
             Recent
           </button>
         </div>
+        <button className="palette-btn" onClick={onPalette} title="Palette Builder">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10" />
+            <circle cx="8.5" cy="10" r="1.5" fill="currentColor" />
+            <circle cx="15.5" cy="10" r="1.5" fill="currentColor" />
+            <circle cx="12" cy="15" r="1.5" fill="currentColor" />
+          </svg>
+        </button>
         <button className="add-btn" onClick={onNewIcon} title="Add icon">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M12 5v14M5 12h14" />

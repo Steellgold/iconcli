@@ -12,6 +12,7 @@ import ImportModal from './components/ImportModal';
 import RenameModal from './components/RenameModal';
 import ContextMenu from './components/ContextMenu';
 import SelectBar from './components/SelectBar';
+import PaletteBuilder from './components/PaletteBuilder';
 
 export default function App() {
   const [prefs, setPrefs] = usePrefs();
@@ -23,6 +24,7 @@ export default function App() {
   const [selectedFilenames, setSelectedFilenames] = useState<Set<string>>(new Set());
   const [selectedIcon, setSelectedIcon] = useState<IconEntry | null>(null);
   const [showImport, setShowImport] = useState(false);
+  const [showPalette, setShowPalette] = useState(false);
   const [renameTarget, setRenameTarget] = useState<IconEntry | null>(null);
   const [ctxMenu, setCtxMenu] = useState<CtxMenuState | null>(null);
 
@@ -167,6 +169,7 @@ export default function App() {
           searchQuery={searchQuery}
           onSearchChange={handleSearchChange}
           onNewIcon={() => setShowImport(true)}
+          onPalette={() => setShowPalette(true)}
           searchHistory={searchHistory}
           sortMode={sortMode}
           onSortChange={setSortMode}
@@ -193,6 +196,10 @@ export default function App() {
           />
         )}
       </div>
+
+      {showPalette && (
+        <PaletteBuilder icons={icons} onClose={() => setShowPalette(false)} />
+      )}
 
       {showImport && (
         <ImportModal
