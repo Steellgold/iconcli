@@ -239,6 +239,63 @@ export const processBatchIcons = async (options: BatchProcessOptions): Promise<v
 };
 
 /**
+ * Process a single SVG file and write the resulting component.
+ * Returns the generated component filename, or throws on failure.
+ */
+export const processSingleSvgFile = async (
+  svgPath: string,
+  projectRoot: string,
+  config: Config
+): Promise<string> => {
+  const svgContent = await fs.readFile(svgPath, "utf-8");
+
+  if (!isValidSVG(svgContent)) {
+    throw new Error("Invalid SVG content");
+  }
+
+  const file = path.basename(svgPath);
+  const baseName = extractIconNameFromFilename(file);
+  const componentName = generateIconName(
+    baseName,
+    config.naming.suffix,
+    config.naming.componentCase
+  );
+
+  const processed = await optimizeSVG(svgContent, config.optimize);
+
+  const component = await generateComponent({
+    componentName,
+    svgContent: processed.content,
+    viewBox: processed.viewBox,
+    config,
+  });
+
+  await writeComponentFile({
+    projectRoot,
+    baseDir: config.baseDir,
+    iconsFolder: config.iconsFolder,
+    filename: component.filename,
+    content: component.content,
+    force: true,
+  });
+
+  await trackGeneratedComponent(
+    projectRoot,
+    component.filename,
+    componentName,
+    path.relative(projectRoot, svgPath),
+    svgContent
+  );
+
+  if (config.maintainIndex) {
+    const iconsDir = path.join(projectRoot, config.baseDir, config.iconsFolder);
+    await updateIndexFile(iconsDir, component.extension);
+  }
+
+  return component.filename;
+};
+
+/**
  * Process a detected variant group
  */
 const processBatchVariantGroup = async (

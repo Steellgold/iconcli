@@ -19,6 +19,7 @@ import { command as previewCmd } from "./preview.command";
 import { command as pasteCmd } from "./paste.command";
 import { command as urlCmd } from "./url.command";
 import { command as fileCmd } from "./file.command";
+import { command as watchCmd } from "./watch.command";
 
 export const commands: CommandDef[] = [
   initCmd,
@@ -40,6 +41,7 @@ export const commands: CommandDef[] = [
   pasteCmd,
   urlCmd,
   fileCmd,
+  watchCmd,
 ];
 
 export const findCommand = (name: string | undefined): CommandDef | undefined => {
