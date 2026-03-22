@@ -21,6 +21,7 @@ import { command as urlCmd } from "./url.command";
 import { command as fileCmd } from "./file.command";
 import { command as watchCmd } from "./watch.command";
 import { command as spriteCmd } from "./sprite.command";
+import { command as aiCmd } from "./ai.command";
 
 export const commands: CommandDef[] = [
   initCmd,
@@ -44,6 +45,7 @@ export const commands: CommandDef[] = [
   fileCmd,
   watchCmd,
   spriteCmd,
+  aiCmd,
 ];
 
 export const findCommand = (name: string | undefined): CommandDef | undefined => {
