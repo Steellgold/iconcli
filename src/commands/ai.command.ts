@@ -10,6 +10,7 @@ export const command: CommandDef = {
       config: ctx.requireConfig(),
       description: ctx.args[0],
       model: ctx.flag("--model", "-m"),
+      provider: ctx.flag("--provider", "-p"),
       style: ctx.flag("--style", "-s"),
     });
   },
