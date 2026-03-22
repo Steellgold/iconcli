@@ -1,58 +1,14 @@
 #!/usr/bin/env node
 
-import {
-  createProgram,
-  processBatchFromArgs,
-  processIconFromArgs,
-  processVariantIconFromArgs,
-} from "@/cli/args";
-import { runInit } from "@/cli/init";
-import { runInspectConfig } from "@/cli/inspect-config";
+import { createProgram, processIconFromArgs, processVariantIconFromArgs, processBatchFromArgs } from "@/cli/args";
 import { runInteractive } from "@/cli/interactive";
-import { runLibraryBrowser } from "@/cli/library";
-import { runSemiInteractive } from "@/cli/semi-interactive";
 import { runSetup } from "@/cli/setup";
-import { runSpinner } from "@/cli/spinner";
-import { runCount } from "@/cli/count";
-import { runDiff } from "@/cli/diff";
-import { runSvgExport } from "@/cli/svg-export";
-import { runPreview } from "@/cli/preview";
-import { runConfigMenu, showConfig } from "@/config/commands";
-import { runDelete } from "@/cli/delete";
-import { runList } from "@/cli/list";
-import { runFigmaImport } from "@/cli/figma";
-import { runStudio } from "@/cli/studio";
-import { runPngExport } from "@/cli/png-export";
-import { runHook } from "@/cli/hook";
-import path from "path";
+import { findCommand } from "@/commands/registry";
+import type { CommandContext } from "@/commands/types";
 import { configExists, loadConfig } from "@/config/manager";
-import type { Config } from "@/config/schema";
 import { findProjectRoot } from "@/core/project";
 import { logger } from "@/utils/logger";
-
-const SEMI_INTERACTIVE_MODES: Record<string, "paste" | "url" | "file"> = {
-  paste: "paste",
-  p: "paste",
-  url: "url",
-  u: "url",
-  file: "file",
-  f: "file",
-};
-
-const requireConfig = (projectRoot: string, configPath?: string): Config => {
-  if (!configExists(projectRoot, configPath)) {
-    logger.error("No configuration found. Please run `mkicon` first to set up the project.");
-    process.exit(1);
-  }
-
-  const config = loadConfig(projectRoot, configPath);
-  if (!config) {
-    logger.error("Failed to load configuration");
-    process.exit(1);
-  }
-
-  return config;
-};
+import path from "path";
 
 /**
  * Normalise flag syntax so that -flag and --flag both work.
@@ -71,16 +27,49 @@ const normaliseArgv = (argv: string[]): string[] =>
     return arg;
   });
 
+const buildContext = (projectRoot: string): CommandContext => {
+  const configFlagIdx = process.argv.indexOf("--config");
+  const customConfigPath =
+    configFlagIdx !== -1 && process.argv[configFlagIdx + 1]
+      ? path.resolve(process.argv[configFlagIdx + 1])
+      : undefined;
+
+  const config =
+    configExists(projectRoot, customConfigPath)
+      ? (loadConfig(projectRoot, customConfigPath) ?? undefined)
+      : undefined;
+
+  const requireConfig = () => {
+    if (!config) {
+      logger.error("No configuration found. Please run `mkicon` first to set up the project.");
+      process.exit(1);
+    }
+    return config;
+  };
+
+  const flag = (...names: string[]): string | undefined => {
+    for (const name of names) {
+      const idx = process.argv.indexOf(name);
+      if (idx !== -1 && process.argv[idx + 1] && !process.argv[idx + 1].startsWith("-")) {
+        return process.argv[idx + 1];
+      }
+    }
+    return undefined;
+  };
+
+  return {
+    projectRoot,
+    config,
+    requireConfig,
+    args: process.argv.slice(3),
+    flag,
+    hasFlag: (...names) => names.some((n) => process.argv.includes(n)),
+  };
+};
+
 const main = async (): Promise<void> => {
   try {
     process.argv = [...process.argv.slice(0, 2), ...normaliseArgv(process.argv.slice(2))];
-
-    const subcommand = process.argv[2];
-    const hasAnyArgs = process.argv.length > 2;
-
-    const program = createProgram();
-    if (hasAnyArgs) {program.parse(process.argv);}
-    const options = program.opts();
 
     const projectRoot = findProjectRoot();
     if (!projectRoot) {
@@ -89,205 +78,22 @@ const main = async (): Promise<void> => {
       process.exit(1);
     }
 
-    // Resolve custom config path for monorepo support (--config <path>)
-    const configFlagIdx = process.argv.indexOf("--config");
-    const customConfigPath =
-      configFlagIdx !== -1 && process.argv[configFlagIdx + 1] && subcommand !== "init"
-        ? path.resolve(process.argv[configFlagIdx + 1])
-        : undefined;
+    const subcommand = process.argv[2];
 
-    // Subcommands that don't need config
-    if (subcommand === "init") {
-      if (configExists(projectRoot)) {
-        logger.warning("Configuration already exists (.mkicon.json)");
-        logger.info("Use `mkicon config` to modify settings");
-        process.exit(1);
-      }
-      const presetIdx = process.argv.indexOf("--preset");
-      const preset = presetIdx !== -1 ? process.argv[presetIdx + 1] : undefined;
-      await runInit(projectRoot, preset);
+    // ── Subcommand routing (registry) ──────────────────────────────────────
+    const cmd = findCommand(subcommand);
+    if (cmd) {
+      await cmd.handler(buildContext(projectRoot));
       return;
     }
 
-    if (subcommand === "config") {
-      if (process.argv.includes("--show")) {
-        showConfig(requireConfig(projectRoot, customConfigPath));
-      } else {
-        await runConfigMenu(projectRoot);
-      }
-      return;
-    }
+    // ── CLI flags / interactive mode (Commander) ────────────────────────────
+    const program = createProgram();
+    if (process.argv.length > 2) program.parse(process.argv);
+    const options = program.opts();
 
-    if (subcommand === "inspect-config") {
-      await runInspectConfig(projectRoot);
-      return;
-    }
+    const ctx = buildContext(projectRoot);
 
-    if (subcommand === "studio") {
-      await runStudio({ projectRoot, config: requireConfig(projectRoot, customConfigPath) });
-      return;
-    }
-
-    if (subcommand === "list" || subcommand === "ls") {
-      await runList({ projectRoot, config: requireConfig(projectRoot, customConfigPath) });
-      return;
-    }
-
-    if (subcommand === "delete" || subcommand === "remove" || subcommand === "rm") {
-      const nameArg = process.argv[3] && !process.argv[3].startsWith("-") ? process.argv[3] : undefined;
-      await runDelete({ projectRoot, config: requireConfig(projectRoot, customConfigPath), componentName: nameArg });
-      return;
-    }
-
-    if (subcommand === "figma") {
-      const urlArg = process.argv[3] && !process.argv[3].startsWith("-") ? process.argv[3] : undefined;
-      await runFigmaImport({ projectRoot, config: requireConfig(projectRoot, customConfigPath), url: urlArg });
-      return;
-    }
-
-    // Subcommands that need config
-    if (subcommand === "library" || subcommand === "browse") {
-      await runLibraryBrowser({ projectRoot, config: requireConfig(projectRoot, customConfigPath) });
-      return;
-    }
-
-    if (subcommand === "spinner" || subcommand === "spin") {
-      await runSpinner({ projectRoot, config: requireConfig(projectRoot, customConfigPath) });
-      return;
-    }
-
-    if (subcommand === "batch") {
-      const config = requireConfig(projectRoot, customConfigPath);
-      const isRefresh = process.argv.includes("--refresh") || process.argv.includes("-r");
-
-      if (isRefresh) {
-        const { rebuildLockFile } = await import("@/core/diff-checker");
-        const iconsDir = path.join(projectRoot, config.baseDir, config.iconsFolder);
-        logger.info("Rebuilding lock file from existing components...");
-        await rebuildLockFile(projectRoot, iconsDir);
-        logger.success("Lock file rebuilt successfully");
-        return;
-      }
-
-      const batchDir = process.argv[3];
-      if (!batchDir) {
-        logger.error("Usage: mkicon batch <dir>");
-        process.exit(1);
-      }
-      await processBatchFromArgs(batchDir, config, projectRoot);
-      return;
-    }
-
-    if (subcommand === "hook") {
-      const hookSub = process.argv[3] as "install" | "uninstall" | "status" | "run" | undefined;
-      if (!hookSub || !["install", "uninstall", "status", "run"].includes(hookSub)) {
-        logger.error("Usage: mkicon hook <install|uninstall|status|run>");
-        process.exit(1);
-      }
-
-      const config = configExists(projectRoot, customConfigPath)
-        ? loadConfig(projectRoot, customConfigPath) ?? undefined
-        : undefined;
-
-      await runHook({
-        projectRoot,
-        config,
-        subcommand: hookSub,
-        husky: process.argv.includes("--husky"),
-        warn: process.argv.includes("--warn"),
-        fix: process.argv.includes("--fix"),
-      });
-      return;
-    }
-
-    if (subcommand === "png") {
-      const isAll = process.argv.includes("--all");
-      const componentArg = !isAll && process.argv[3] && !process.argv[3].startsWith("-")
-        ? process.argv[3]
-        : undefined;
-
-      const getFlag = (flags: string[]): string | undefined => {
-        for (const flag of flags) {
-          const idx = process.argv.indexOf(flag);
-          if (idx !== -1 && process.argv[idx + 1]) return process.argv[idx + 1];
-        }
-        return undefined;
-      };
-
-      const sizesArg = getFlag(["--sizes"]);
-      const sizeArg = getFlag(["--size", "-s"]);
-      const sizes = sizesArg
-        ? sizesArg.split(",").map(Number).filter((n) => !isNaN(n) && n > 0)
-        : sizeArg
-          ? [Number(sizeArg)].filter((n) => !isNaN(n) && n > 0)
-          : [24];
-
-      const scaleArg = getFlag(["--scale", "-r"]);
-      const scale = scaleArg ? parseFloat(scaleArg.replace("x", "")) || 1 : 1;
-
-      const config = configExists(projectRoot, customConfigPath)
-        ? loadConfig(projectRoot, customConfigPath) ?? undefined
-        : undefined;
-
-      await runPngExport({
-        projectRoot,
-        config,
-        componentPath: componentArg,
-        all: isAll,
-        sizes,
-        scale,
-        background: getFlag(["--background"]),
-        output: getFlag(["--output", "-o"]),
-      });
-      return;
-    }
-
-    if (subcommand === "svg") {
-      const componentPath = process.argv[3];
-      if (!componentPath) {
-        logger.error("Usage: mkicon svg <path>");
-        logger.print("Example: mkicon svg src/components/icons/BananaIcon.tsx");
-        process.exit(1);
-      }
-      const outputArg = process.argv.indexOf("--output") !== -1
-        ? process.argv[process.argv.indexOf("--output") + 1]
-        : process.argv.indexOf("-o") !== -1
-          ? process.argv[process.argv.indexOf("-o") + 1]
-          : undefined;
-      await runSvgExport({ projectRoot, componentPath, output: outputArg });
-      return;
-    }
-
-    if (subcommand === "count") {
-      const isAvailable =
-        process.argv.includes("-a") || process.argv.includes("--available");
-      if (isAvailable) {
-        await runCount({ projectRoot, mode: "available" });
-      } else {
-        await runCount({ projectRoot, config: requireConfig(projectRoot, customConfigPath), mode: "project" });
-      }
-      return;
-    }
-
-    if (subcommand === "diff") {
-      await runDiff({ projectRoot, config: requireConfig(projectRoot, customConfigPath) });
-      return;
-    }
-
-    if (subcommand === "preview") {
-      const componentName = process.argv[3] as string | undefined;
-      const previewConfig = configExists(projectRoot, customConfigPath) ? loadConfig(projectRoot, customConfigPath) ?? undefined : undefined;
-      await runPreview({ projectRoot, componentName, config: previewConfig });
-      return;
-    }
-
-    const semiMode = SEMI_INTERACTIVE_MODES[subcommand];
-    if (semiMode) {
-      await runSemiInteractive({ projectRoot, config: requireConfig(projectRoot, customConfigPath), mode: semiMode });
-      return;
-    }
-
-    // CLI / interactive mode
     const hasCliArgs =
       options.name ||
       typeof options.paste === "string" ||
@@ -303,15 +109,15 @@ const main = async (): Promise<void> => {
       logger.newline();
     }
 
-    let config: Config;
-    if (!configExists(projectRoot, customConfigPath)) {
+    let config = ctx.config;
+    if (!configExists(projectRoot)) {
       if (hasCliArgs) {
         logger.error("No configuration found. Please run `mkicon` first to set up the project.");
         process.exit(1);
       }
       config = await runSetup(projectRoot);
     } else {
-      config = requireConfig(projectRoot, customConfigPath);
+      config = ctx.requireConfig();
       if (!hasCliArgs) {
         logger.title("🎨 mkicon");
         logger.success("Configuration loaded: .mkicon.json");
