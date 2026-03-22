@@ -1810,3 +1810,129 @@ pre.raw-svg {
   white-space: pre;
   overflow: auto;
 }
+
+/* ── SVG Editor ─────────────────────────────────────────── */
+.svg-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 260px;
+}
+.svg-editor-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+.svg-editor-title { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+.svg-editor-actions { display: flex; gap: 6px; }
+.svg-editor-btn {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.svg-editor-btn:hover { color: var(--text); }
+.svg-editor-body {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  flex: 1;
+  overflow: hidden;
+  min-height: 200px;
+}
+.svg-editor-cm {
+  overflow: auto;
+  border-right: 1px solid var(--border);
+  background: #1a1a1a;
+}
+.svg-editor-cm .cm-editor { height: 100%; }
+.svg-editor-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  position: relative;
+  background: #111;
+}
+.svg-editor-preview-inner svg {
+  width: 56px;
+  height: 56px;
+  color: var(--icon-color, #fff);
+}
+.svg-editor-error {
+  position: absolute;
+  top: 6px;
+  font-size: 10px;
+  color: #f87171;
+  background: #f8717118;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.svg-editor-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  background: var(--surface2);
+}
+.svg-editor-cancel {
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 7px;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.svg-editor-save {
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  background: var(--accent);
+  color: #0d0d0d;
+  cursor: pointer;
+}
+.svg-editor-save:disabled { opacity: .4; cursor: not-allowed; }
+
+/* Edit SVG button in raw-svg-wrap */
+.raw-svg-wrap { position: relative; }
+.raw-svg-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.edit-svg-btn {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.edit-svg-btn:hover { color: var(--text); }
+.svg-edited-badge {
+  margin-left: 6px;
+  font-size: 10px;
+  color: var(--accent);
+  background: var(--accent-dim);
+  padding: 1px 6px;
+  border-radius: 4px;
+}

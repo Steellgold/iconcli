@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { IconEntry, StudioConfig } from '../types';
+import SvgEditor from './SvgEditor';
 
 const FRAMEWORK_LABELS: Record<string, string> = {
   react: 'React',
@@ -70,10 +71,14 @@ interface BottomPanelProps {
 export default function BottomPanel({ icon, config, onClose }: BottomPanelProps) {
   const [activeDir, setActiveDir] = useState<string | null>(icon.directions?.[0] ?? null);
   const [activeTab, setActiveTab] = useState<string>(config.activeFrameworks[0] ?? 'react');
+  const [editMode, setEditMode] = useState(false);
+  const [editedSvg, setEditedSvg] = useState<string | null>(null);
 
   useEffect(() => {
     setActiveDir(icon.directions?.[0] ?? null);
     setActiveTab(config.activeFrameworks[0] ?? 'react');
+    setEditMode(false);
+    setEditedSvg(null);
   }, [icon, config.activeFrameworks]);
 
   useEffect(() => {
@@ -84,9 +89,10 @@ export default function BottomPanel({ icon, config, onClose }: BottomPanelProps)
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  const currentSvg = activeDir && icon.variantSvgs?.[activeDir]
+  const baseSvg = activeDir && icon.variantSvgs?.[activeDir]
     ? icon.variantSvgs[activeDir]
     : icon.svgContent || '';
+  const currentSvg = editedSvg ?? baseSvg;
 
   const snippets = getSnippets(icon.componentName, activeDir, config.iconsPath);
 
@@ -182,13 +188,30 @@ export default function BottomPanel({ icon, config, onClose }: BottomPanelProps)
             );
           })}
           <div className={'snippet-block' + (activeTab === '__svg__' ? ' active' : '')}>
-            <div className="snippet-section">
-              <div className="snippet-label">Raw SVG</div>
-              <div className="raw-svg-wrap">
-                <pre className="raw-svg">{currentSvg}</pre>
-                <CopyButton text={currentSvg} />
+            {editMode ? (
+              <SvgEditor
+                initialSvg={baseSvg}
+                onSave={svg => { setEditedSvg(svg); setEditMode(false); }}
+                onCancel={() => setEditMode(false)}
+              />
+            ) : (
+              <div className="snippet-section">
+                <div className="snippet-label">
+                  Raw SVG
+                  {editedSvg && <span className="svg-edited-badge">edited</span>}
+                </div>
+                <div className="raw-svg-wrap">
+                  <pre className="raw-svg">{currentSvg}</pre>
+                  <div className="raw-svg-actions">
+                    <button className="edit-svg-btn" onClick={() => setEditMode(true)}>Edit</button>
+                    {editedSvg && (
+                      <button className="edit-svg-btn" onClick={() => setEditedSvg(null)}>Reset</button>
+                    )}
+                    <CopyButton text={currentSvg} />
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
