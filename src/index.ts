@@ -22,6 +22,7 @@ import { runDelete } from "@/cli/delete";
 import { runList } from "@/cli/list";
 import { runFigmaImport } from "@/cli/figma";
 import { runStudio } from "@/cli/studio";
+import { runPngExport } from "@/cli/png-export";
 import path from "path";
 import { configExists, loadConfig } from "@/config/manager";
 import type { Config } from "@/config/schema";
@@ -173,6 +174,48 @@ const main = async (): Promise<void> => {
         process.exit(1);
       }
       await processBatchFromArgs(batchDir, config, projectRoot);
+      return;
+    }
+
+    if (subcommand === "png") {
+      const isAll = process.argv.includes("--all");
+      const componentArg = !isAll && process.argv[3] && !process.argv[3].startsWith("-")
+        ? process.argv[3]
+        : undefined;
+
+      const getFlag = (flags: string[]): string | undefined => {
+        for (const flag of flags) {
+          const idx = process.argv.indexOf(flag);
+          if (idx !== -1 && process.argv[idx + 1]) return process.argv[idx + 1];
+        }
+        return undefined;
+      };
+
+      const sizesArg = getFlag(["--sizes"]);
+      const sizeArg = getFlag(["--size", "-s"]);
+      const sizes = sizesArg
+        ? sizesArg.split(",").map(Number).filter((n) => !isNaN(n) && n > 0)
+        : sizeArg
+          ? [Number(sizeArg)].filter((n) => !isNaN(n) && n > 0)
+          : [24];
+
+      const scaleArg = getFlag(["--scale", "-r"]);
+      const scale = scaleArg ? parseFloat(scaleArg.replace("x", "")) || 1 : 1;
+
+      const config = configExists(projectRoot, customConfigPath)
+        ? loadConfig(projectRoot, customConfigPath) ?? undefined
+        : undefined;
+
+      await runPngExport({
+        projectRoot,
+        config,
+        componentPath: componentArg,
+        all: isAll,
+        sizes,
+        scale,
+        background: getFlag(["--background"]),
+        output: getFlag(["--output", "-o"]),
+      });
       return;
     }
 
