@@ -13,6 +13,13 @@ import {
   fetchHeroiconList,
   generateHeroiconsCopyright,
 } from "@/library/heroicons";
+import {
+  fetchTablerIcon,
+  fetchTablerIconList,
+  generateTablerCopyright,
+  parseTablerURL,
+} from "@/library/tabler";
+import type { TablerStroke, TablerStyle } from "@/library/tabler";
 import type { IconMetadata } from "@/library/types";
 import { logger, spinner } from "@/utils/logger";
 import {
@@ -36,6 +43,8 @@ import {
   promptSVGContent,
   promptSVGSource,
   promptSVGURL,
+  promptTablerStroke,
+  promptTablerStyle,
 } from "./prompts";
 import { runFigmaImport } from "./figma";
 import { detectIconNameFromSvg } from "@/utils/svg-detector";
@@ -75,7 +84,8 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
   let previousLibraryMode: "search" | "urls" | null = null;
   let cachedLucideIcons: IconMetadata[] | null = null;
   let cachedHeroicons: IconMetadata[] | null = null;
-  let selectedLibrary: "lucide" | "heroicons" = "lucide";
+  let cachedTablerIcons: IconMetadata[] | null = null;
+  let selectedLibrary: "lucide" | "heroicons" | "tabler" = "lucide";
 
   while (createAnother) {
     try {
@@ -125,12 +135,15 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
             choices: [
               { name: "lucide", message: "Lucide Icons (1700+ icons)", value: "lucide" },
               { name: "heroicons", message: "Heroicons (300+ icons)", value: "heroicons" },
+              { name: "tabler", message: "Tabler Icons (5500+ icons)", value: "tabler" },
               { name: "separator", role: "separator" },
               { name: "request", message: "💡 Request a new library", value: "request" },
             ],
           })) as { library: string };
 
-          selectedLibrary = libraryAnswer.library === "heroicons" ? "heroicons" : "lucide";
+          selectedLibrary =
+            libraryAnswer.library === "heroicons" ? "heroicons" :
+            libraryAnswer.library === "tabler" ? "tabler" : "lucide";
 
           if (libraryAnswer.library === "request") {
             const issueUrl =
@@ -185,12 +198,13 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
           for (let i = 0; i < urls.length; i += 1) {
             const url = urls[i];
 
-            // Try Heroicons URL first, then Lucide
+            // Try Heroicons URL first, then Tabler, then Lucide
             const { parseHeroiconURL } = await import("@/library/heroicons");
             const heroiconParsed = parseHeroiconURL(url);
-            const lucideIconName = !heroiconParsed ? extractLucideIconNameFromURL(url) : null;
+            const tablerParsed = !heroiconParsed ? parseTablerURL(url) : null;
+            const lucideIconName = !heroiconParsed && !tablerParsed ? extractLucideIconNameFromURL(url) : null;
 
-            if (!heroiconParsed && !lucideIconName) {
+            if (!heroiconParsed && !tablerParsed && !lucideIconName) {
               failures.push({ url, reason: "Unrecognized library URL" });
               logger.error(`[${i + 1}/${urls.length}] Unrecognized URL: ${url}`);
               continue;
@@ -211,6 +225,16 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
                 iconDisplayName = `${iconName}-${size}`;
                 copyright = generateHeroiconsCopyright(iconName);
                 fetchSpinner.succeed(`[${i + 1}/${urls.length}] Fetched ${iconDisplayName}`);
+              } else if (tablerParsed) {
+                const { iconName, style } = tablerParsed;
+                const fetchSpinner = spinner.start(
+                  `[${i + 1}/${urls.length}] Fetching ${iconName} (${style})...`
+                );
+                const result = await fetchTablerIcon(iconName, style, 2);
+                libSvg = result.svgContent;
+                iconDisplayName = style === "filled" ? `${iconName}-filled` : iconName;
+                copyright = generateTablerCopyright(iconName);
+                fetchSpinner.succeed(`[${i + 1}/${urls.length}] Fetched ${iconDisplayName}`);
               } else {
                 const fetchSpinner = spinner.start(
                   `[${i + 1}/${urls.length}] Fetching ${lucideIconName}...`
@@ -222,7 +246,11 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
                 fetchSpinner.succeed(`[${i + 1}/${urls.length}] Fetched ${iconDisplayName}`);
               }
 
-              const iconName = heroiconParsed ? `${heroiconParsed.iconName}-${heroiconParsed.size}` : lucideIconName!;
+              const iconName = heroiconParsed
+                ? `${heroiconParsed.iconName}-${heroiconParsed.size}`
+                : tablerParsed
+                  ? (tablerParsed.style === "filled" ? `${tablerParsed.iconName}-filled` : tablerParsed.iconName)
+                  : lucideIconName!;
 
               const componentName = generateIconName(
                 iconName,
@@ -260,8 +288,12 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
                 url,
                 processed.content,
                 {
-                  library: heroiconParsed ? "heroicons" : "lucide",
-                  libraryIconName: heroiconParsed ? heroiconParsed.iconName : lucideIconName!,
+                  library: heroiconParsed ? "heroicons" : tablerParsed ? "tabler" : "lucide",
+                  libraryIconName: heroiconParsed
+                    ? heroiconParsed.iconName
+                    : tablerParsed
+                      ? tablerParsed.iconName
+                      : lucideIconName!,
                   ...(heroiconParsed ? { iconSize: heroiconParsed.size } : {}),
                 }
               );
@@ -323,6 +355,16 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
             logger.newline();
             cachedHeroicons = icons;
           }
+        } else if (selectedLibrary === "tabler") {
+          if (cachedTablerIcons) {
+            icons = cachedTablerIcons;
+          } else {
+            const fetchSpinner = spinner.start("Loading Tabler Icons...");
+            icons = await fetchTablerIconList();
+            fetchSpinner.succeed(`Loaded ${icons.length} icons from Tabler Icons`);
+            logger.newline();
+            cachedTablerIcons = icons;
+          }
         } else {
           if (cachedLucideIcons) {
             icons = cachedLucideIcons;
@@ -341,6 +383,17 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
         if (selectedLibrary === "heroicons") {
           heroiconBulkSize = await promptHeroiconSize();
           heroiconBulkStyle = await promptHeroiconStyle(heroiconBulkSize as Parameters<typeof promptHeroiconStyle>[0]);
+          logger.newline();
+        }
+
+        // ── For Tabler Icons, ask style/stroke once for the whole batch ─────
+        let tablerBulkStyle: TablerStyle | undefined;
+        let tablerBulkStroke: TablerStroke | undefined;
+        if (selectedLibrary === "tabler") {
+          tablerBulkStyle = await promptTablerStyle();
+          if (tablerBulkStyle === "outline") {
+            tablerBulkStroke = await promptTablerStroke();
+          }
           logger.newline();
         }
 
@@ -442,6 +495,18 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
               iconNameForComponent = iconDisplayName;
               iconSizeForEntry = heroiconBulkSize;
               fetchSpinner.succeed(`${prefix} Fetched ${iconDisplayName}`);
+            } else if (selectedLibrary === "tabler") {
+              const fetchSpinner = spinner.start(`${prefix} Fetching ${iconName}...`);
+              const result = await fetchTablerIcon(
+                iconName,
+                tablerBulkStyle!,
+                tablerBulkStroke ?? 2
+              );
+              libSvg = result.svgContent;
+              iconDisplayName = tablerBulkStyle === "filled" ? `${iconName}-filled` : iconName;
+              copyright = generateTablerCopyright(iconName);
+              iconNameForComponent = iconDisplayName;
+              fetchSpinner.succeed(`${prefix} Fetched ${iconDisplayName}`);
             } else {
               const fetchSpinner = spinner.start(`${prefix} Fetching ${iconName}...`);
               const result = await fetchLucideIcon(iconName);
@@ -530,6 +595,7 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
           previousLibraryMode = null;
           cachedLucideIcons = null;
           cachedHeroicons = null;
+        cachedTablerIcons = null;
         }
         if (createAnother) logger.newline();
         continue;
@@ -696,6 +762,7 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
         previousLibraryMode = null;
         cachedLucideIcons = null;
         cachedHeroicons = null;
+        cachedTablerIcons = null;
       }
 
       if (createAnother) {

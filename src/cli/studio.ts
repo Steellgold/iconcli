@@ -8,6 +8,8 @@ import { generateVariantComponent } from "@/core/variant-generator";
 import { fetchSVGFromURL } from "@/core/url-fetcher";
 import { fetchLucideIcon, fetchLucideIcons, generateLucideCopyright } from "@/library/lucide";
 import { fetchHeroicon, fetchHeroiconList, generateHeroiconsCopyright } from "@/library/heroicons";
+import { fetchTablerIcon, fetchTablerIconList, generateTablerCopyright } from "@/library/tabler";
+import type { TablerStroke, TablerStyle } from "@/library/tabler";
 import { generateIconName } from "@/utils/naming";
 import { isValidSVG } from "@/utils/validation";
 import { insertHeaderComment } from "@/utils/header";
@@ -56,6 +58,7 @@ const json = (res: http.ServerResponse, data: unknown, status = 200): void => {
 // Server-side library cache
 let cachedLucideIcons: Awaited<ReturnType<typeof fetchLucideIcons>> | null = null;
 let cachedHeroicons: Awaited<ReturnType<typeof fetchHeroiconList>> | null = null;
+let cachedTablerIcons: Awaited<ReturnType<typeof fetchTablerIconList>> | null = null;
 
 export const runStudio = async ({ projectRoot, config }: StudioOptions): Promise<void> => {
   const html = generateStudioHTML(config);
@@ -87,6 +90,9 @@ export const runStudio = async ({ projectRoot, config }: StudioOptions): Promise
         if (lib === "heroicons") {
           if (!cachedHeroicons) cachedHeroicons = await fetchHeroiconList();
           json(res, cachedHeroicons);
+        } else if (lib === "tabler") {
+          if (!cachedTablerIcons) cachedTablerIcons = await fetchTablerIconList();
+          json(res, cachedTablerIcons);
         } else {
           if (!cachedLucideIcons) cachedLucideIcons = await fetchLucideIcons();
           json(res, cachedLucideIcons);
@@ -107,6 +113,11 @@ export const runStudio = async ({ projectRoot, config }: StudioOptions): Promise
           const style = (url.searchParams.get("style") ?? "outline") as "solid" | "outline";
           const { svgContent } = await fetchHeroicon(name, size, style);
           json(res, { svgContent });
+        } else if (lib === "tabler") {
+          const style = (url.searchParams.get("style") ?? "outline") as TablerStyle;
+          const stroke = parseFloat(url.searchParams.get("stroke") ?? "2") as TablerStroke;
+          const { svgContent } = await fetchTablerIcon(name, style, stroke);
+          json(res, { svgContent });
         } else {
           const { svgContent } = await fetchLucideIcon(name);
           json(res, { svgContent });
@@ -125,6 +136,8 @@ export const runStudio = async ({ projectRoot, config }: StudioOptions): Promise
           libraryIconName?: string;
           heroiconSize?: number;
           heroiconStyle?: string;
+          tablerStyle?: string;
+          tablerStroke?: number;
           componentName: string;
           iconSize?: number;
         };
@@ -146,6 +159,15 @@ export const runStudio = async ({ projectRoot, config }: StudioOptions): Promise
             copyright = generateHeroiconsCopyright(iconName);
             svgSourcePath = `library:heroicons/${iconName}-${size}`;
             libMeta = { library: "heroicons", libraryIconName: iconName, iconSize: size };
+          } else if (lib === "tabler") {
+            const style = (body.tablerStyle ?? "outline") as TablerStyle;
+            const stroke = (body.tablerStroke ?? 2) as TablerStroke;
+            const computedName = style === "filled" ? `${iconName}-filled` : iconName;
+            const result = await fetchTablerIcon(iconName, style, stroke);
+            svgContent = result.svgContent;
+            copyright = generateTablerCopyright(iconName);
+            svgSourcePath = `library:tabler/${computedName}`;
+            libMeta = { library: "tabler", libraryIconName: iconName };
           } else {
             const result = await fetchLucideIcon(iconName);
             svgContent = result.svgContent;
@@ -251,6 +273,7 @@ export const runStudio = async ({ projectRoot, config }: StudioOptions): Promise
         const lib = (entry as Record<string, string>).library;
         if (lib === "lucide") finalContent = insertHeaderComment(component.content, generateLucideCopyright(newComponentName));
         else if (lib === "heroicons") finalContent = insertHeaderComment(component.content, generateHeroiconsCopyright(newComponentName));
+        else if (lib === "tabler") finalContent = insertHeaderComment(component.content, generateTablerCopyright(newComponentName));
 
         const iconsDir = path.join(projectRoot, config.baseDir, config.iconsFolder);
         await writeComponentFile({ projectRoot, baseDir: config.baseDir, iconsFolder: config.iconsFolder, filename: component.filename, content: finalContent });
@@ -281,6 +304,8 @@ export const runStudio = async ({ projectRoot, config }: StudioOptions): Promise
             libraryIconName: string;
             heroiconSize?: number;
             heroiconStyle?: string;
+            tablerStyle?: string;
+            tablerStroke?: number;
           }>;
         };
 
@@ -296,6 +321,11 @@ export const runStudio = async ({ projectRoot, config }: StudioOptions): Promise
             const size = (slot.heroiconSize ?? 24) as 16 | 20 | 24;
             const style = (slot.heroiconStyle ?? "outline") as "solid" | "outline";
             const result = await fetchHeroicon(slot.libraryIconName, size, style);
+            svgContent = result.svgContent;
+          } else if (slot.library === "tabler") {
+            const style = (slot.tablerStyle ?? "outline") as TablerStyle;
+            const stroke = (slot.tablerStroke ?? 2) as TablerStroke;
+            const result = await fetchTablerIcon(slot.libraryIconName, style, stroke);
             svgContent = result.svgContent;
           } else {
             const result = await fetchLucideIcon(slot.libraryIconName);

@@ -655,6 +655,7 @@ export const generateStudioHTML = (config: Config): string => {
         <div class="lib-toggle">
           <button class="lib-btn active" data-lib="lucide">Lucide Icons</button>
           <button class="lib-btn" data-lib="heroicons">Heroicons</button>
+          <button class="lib-btn" data-lib="tabler">Tabler Icons</button>
         </div>
         <div class="hero-opts" id="hero-opts" style="display:none">
           <select id="hero-size">
@@ -665,6 +666,19 @@ export const generateStudioHTML = (config: Config): string => {
           <select id="hero-style">
             <option value="outline">Outline</option>
             <option value="solid">Solid</option>
+          </select>
+        </div>
+        <div class="hero-opts" id="tabler-opts" style="display:none">
+          <select id="tabler-style">
+            <option value="outline">Outline</option>
+            <option value="filled">Filled</option>
+          </select>
+          <select id="tabler-stroke">
+            <option value="1">Stroke 1</option>
+            <option value="1.25">Stroke 1.25</option>
+            <option value="1.5">Stroke 1.5</option>
+            <option value="1.75">Stroke 1.75</option>
+            <option value="2" selected>Stroke 2 (default)</option>
           </select>
         </div>
         <div class="import-search-wrap">
@@ -1262,6 +1276,7 @@ export const generateStudioHTML = (config: Config): string => {
       iLib = btn.dataset.lib;
       document.querySelectorAll('.lib-btn').forEach(b => b.classList.toggle('active', b.dataset.lib === iLib));
       document.getElementById('hero-opts').style.display = iLib === 'heroicons' ? 'flex' : 'none';
+      document.getElementById('tabler-opts').style.display = iLib === 'tabler' ? 'flex' : 'none';
       iSelectedIcons = [];
       document.getElementById('import-name').value = '';
       updateLibFooter();
@@ -1279,6 +1294,16 @@ export const generateStudioHTML = (config: Config): string => {
     if (iLibCache[iLib]) renderLibGrid(iLibCache[iLib], document.getElementById('lib-search').value);
   });
   document.getElementById('hero-style').addEventListener('change', function() {
+    iSelectedIcons = [];
+    updateLibFooter();
+    if (iLibCache[iLib]) renderLibGrid(iLibCache[iLib], document.getElementById('lib-search').value);
+  });
+  document.getElementById('tabler-style').addEventListener('change', function() {
+    iSelectedIcons = [];
+    updateLibFooter();
+    if (iLibCache[iLib]) renderLibGrid(iLibCache[iLib], document.getElementById('lib-search').value);
+  });
+  document.getElementById('tabler-stroke').addEventListener('change', function() {
     iSelectedIcons = [];
     updateLibFooter();
     if (iLibCache[iLib]) renderLibGrid(iLibCache[iLib], document.getElementById('lib-search').value);
@@ -1341,9 +1366,11 @@ export const generateStudioHTML = (config: Config): string => {
   async function fetchPreviewForCard(name, el) {
     const size = document.getElementById('hero-size').value;
     const style = document.getElementById('hero-style').value;
-    const cacheKey = iLib === 'heroicons' ? \`\${iLib}:\${name}:\${size}:\${style}\` : \`\${iLib}:\${name}\`;
+    const tablerStyle = document.getElementById('tabler-style').value;
+    const tablerStroke = document.getElementById('tabler-stroke').value;
+    const cacheKey = iLib === 'heroicons' ? \`\${iLib}:\${name}:\${size}:\${style}\` : iLib === 'tabler' ? \`\${iLib}:\${name}:\${tablerStyle}:\${tablerStroke}\` : \`\${iLib}:\${name}\`;
     if (svgPreviewCache[cacheKey]) { el.innerHTML = svgPreviewCache[cacheKey]; return; }
-    const params = iLib === 'heroicons' ? \`&size=\${size}&style=\${style}\` : '';
+    const params = iLib === 'heroicons' ? \`&size=\${size}&style=\${style}\` : iLib === 'tabler' ? \`&style=\${tablerStyle}&stroke=\${tablerStroke}\` : '';
     try {
       const { svgContent } = await fetch(\`/api/library/svg?lib=\${iLib}&name=\${encodeURIComponent(name)}\${params}\`).then(r => r.json());
       svgPreviewCache[cacheKey] = svgContent;
@@ -1356,10 +1383,12 @@ export const generateStudioHTML = (config: Config): string => {
     if (activeSlotDir) {
       const size = document.getElementById('hero-size').value;
       const style = document.getElementById('hero-style').value;
-      const cacheKey = iLib === 'heroicons' ? \`\${iLib}:\${name}:\${size}:\${style}\` : \`\${iLib}:\${name}\`;
+      const tablerStyle = document.getElementById('tabler-style').value;
+      const tablerStroke = document.getElementById('tabler-stroke').value;
+      const cacheKey = iLib === 'heroicons' ? \`\${iLib}:\${name}:\${size}:\${style}\` : iLib === 'tabler' ? \`\${iLib}:\${name}:\${tablerStyle}:\${tablerStroke}\` : \`\${iLib}:\${name}\`;
       let svg = svgPreviewCache[cacheKey] || null;
       if (!svg) {
-        const params = iLib === 'heroicons' ? \`&size=\${size}&style=\${style}\` : '';
+        const params = iLib === 'heroicons' ? \`&size=\${size}&style=\${style}\` : iLib === 'tabler' ? \`&style=\${tablerStyle}&stroke=\${tablerStroke}\` : '';
         try {
           const r = await fetch(\`/api/library/svg?lib=\${iLib}&name=\${encodeURIComponent(name)}\${params}\`).then(r => r.json());
           svg = r.svgContent;
@@ -1520,6 +1549,8 @@ export const generateStudioHTML = (config: Config): string => {
     if (iTab === 'library' && iSelectedIcons.length > 1) {
       const heroSize = parseInt(document.getElementById('hero-size').value, 10);
       const heroStyle = document.getElementById('hero-style').value;
+      const tablerStyle = document.getElementById('tabler-style').value;
+      const tablerStroke = parseFloat(document.getElementById('tabler-stroke').value);
       let done = 0;
       let failed = 0;
       btn.textContent = \`Importing 0/\${iSelectedIcons.length}…\`;
@@ -1531,7 +1562,9 @@ export const generateStudioHTML = (config: Config): string => {
             libraryIconName: icon.name,
             heroiconSize: heroSize,
             heroiconStyle: heroStyle,
-            componentName: icon.name,
+            tablerStyle,
+            tablerStroke,
+            componentName: iLib === 'tabler' && tablerStyle === 'filled' ? \`\${icon.name}-filled\` : icon.name,
           };
           const res = await fetch('/api/import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
           const data = await res.json();
@@ -1567,11 +1600,13 @@ export const generateStudioHTML = (config: Config): string => {
       if (!filledSlots.length) { showStatus('Fill at least one direction slot.', false); btn.disabled = false; return; }
       const heroSize = parseInt(document.getElementById('hero-size').value, 10);
       const heroStyle = document.getElementById('hero-style').value;
+      const tablerStyle = document.getElementById('tabler-style').value;
+      const tablerStroke = parseFloat(document.getElementById('tabler-stroke').value);
       btn.textContent = 'Generating…';
       // Build slots payload
       const slotsPayload = {};
       for (const [dir, slot] of filledSlots) {
-        slotsPayload[dir] = { library: iLib, libraryIconName: slot.name, heroiconSize: heroSize, heroiconStyle: heroStyle };
+        slotsPayload[dir] = { library: iLib, libraryIconName: slot.name, heroiconSize: heroSize, heroiconStyle: heroStyle, tablerStyle, tablerStroke };
       }
       try {
         const res = await fetch('/api/import-directive', {
@@ -1610,6 +1645,8 @@ export const generateStudioHTML = (config: Config): string => {
         libraryIconName: iSelectedIcons[0].name,
         heroiconSize: parseInt(document.getElementById('hero-size').value, 10),
         heroiconStyle: document.getElementById('hero-style').value,
+        tablerStyle: document.getElementById('tabler-style').value,
+        tablerStroke: parseFloat(document.getElementById('tabler-stroke').value),
       });
     } else if (iTab === 'paste') {
       const svg = document.getElementById('paste-input').value.trim();

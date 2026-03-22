@@ -1,5 +1,6 @@
 import type { Config } from "@/config/schema";
 import type { HeroiconSize, HeroiconStyle } from "@/library/heroicons";
+import type { TablerStyle, TablerStroke } from "@/library/tabler";
 import enquirer from "enquirer";
 
 const { prompt } = enquirer;
@@ -244,6 +245,43 @@ export const promptHeroiconStyle = async (size: HeroiconSize): Promise<HeroiconS
   });
 
   return answer.style;
+};
+
+/**
+ * Prompt for Tabler Icon style selection
+ */
+export const promptTablerStyle = async (): Promise<TablerStyle> => {
+  const answer = await prompt<{ style: TablerStyle }>({
+    type: "select",
+    name: "style",
+    message: "Select icon style:",
+    choices: [
+      { name: "outline", message: "Outline" },
+      { name: "filled", message: "Filled" },
+    ],
+  });
+
+  return answer.style;
+};
+
+/**
+ * Prompt for Tabler Icon stroke-width selection (outline only).
+ */
+export const promptTablerStroke = async (): Promise<TablerStroke> => {
+  const answer = await prompt<{ stroke: string }>({
+    type: "select",
+    name: "stroke",
+    message: "Select stroke width:",
+    choices: [
+      { name: "1", message: "1" },
+      { name: "1.25", message: "1.25" },
+      { name: "1.5", message: "1.5" },
+      { name: "1.75", message: "1.75" },
+      { name: "2", message: "2 (default)" },
+    ],
+  });
+
+  return parseFloat(answer.stroke) as TablerStroke;
 };
 
 /**

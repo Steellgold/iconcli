@@ -10,13 +10,20 @@ import {
   generateHeroiconsCopyright,
   parseHeroiconURL,
 } from "@/library/heroicons";
+import {
+  fetchTablerIcon,
+  fetchTablerIconList,
+  generateTablerCopyright,
+  parseTablerURL,
+} from "@/library/tabler";
+import type { TablerStroke, TablerStyle } from "@/library/tabler";
 import type { IconMetadata } from "@/library/types";
 import { logger, spinner } from "@/utils/logger";
 import { extractLucideIconNameFromURL, generateIconName } from "@/utils/naming";
 import { insertHeaderComment } from "@/utils/header";
 import enquirer from "enquirer";
 import path from "path";
-import { promptHeroiconSize, promptHeroiconStyle, promptMultipleURLs } from "./prompts";
+import { promptHeroiconSize, promptHeroiconStyle, promptMultipleURLs, promptTablerStroke, promptTablerStyle } from "./prompts";
 
 type EnquirerExt = {
   prompt: <T>(options: Record<string, unknown> | Record<string, unknown>[]) => Promise<T>;
@@ -66,6 +73,8 @@ export const runLibraryBrowser = async (options: LibraryOptions): Promise<void> 
     if (method === "search") {
       if (library === "heroicons") {
         await importHeroiconFromSearch(projectRoot, config);
+      } else if (library === "tabler") {
+        await importTablerIconFromSearch(projectRoot, config);
       } else {
         await importSingleFromSearch(projectRoot, config);
       }
@@ -299,6 +308,111 @@ const importHeroiconFromSearch = async (projectRoot: string, config: Config): Pr
   logger.newline();
 };
 
+const importTablerIconFromSearch = async (projectRoot: string, config: Config): Promise<void> => {
+  const fetchSpinner = spinner.start("Loading Tabler Icons...");
+  const icons = await fetchTablerIconList();
+  fetchSpinner.succeed(`Loaded ${icons.length} icons from Tabler Icons`);
+  logger.newline();
+
+  const iconName = await promptIconSearchAndSelect(icons);
+  if (!iconName) {
+    logger.info("No icon selected");
+    return;
+  }
+
+  const style: TablerStyle = await promptTablerStyle();
+  let stroke: TablerStroke = 2;
+  if (style === "outline") {
+    stroke = await promptTablerStroke();
+  }
+
+  logger.newline();
+  const suggestedName = style === "filled" ? `${iconName}-filled` : iconName;
+  const { svgContent, metadata } = await fetchTablerIcon(iconName, style, stroke);
+
+  const nameAnswer = (await prompt({
+    type: "confirm",
+    name: "useOriginalName",
+    message: `Use '${suggestedName}' as component name?`,
+    initial: true,
+  })) as { useOriginalName: boolean };
+
+  let componentBaseName = suggestedName;
+  if (!nameAnswer.useOriginalName) {
+    const customAnswer = (await prompt({
+      type: "input",
+      name: "customName",
+      message: "Enter custom component name:",
+      initial: suggestedName,
+    })) as { customName: string };
+    componentBaseName = customAnswer.customName;
+  }
+
+  const componentName = generateIconName(
+    componentBaseName,
+    config.naming.suffix,
+    config.naming.componentCase
+  );
+
+  logger.separator();
+  logger.newline();
+
+  const processSpinner = spinner.start("Processing SVG...");
+  const processed = await optimizeSVG(svgContent, config.optimize);
+  if (config.optimize && processed.optimizedSize < processed.originalSize) {
+    processSpinner.succeed(
+      `SVG optimized (${processed.originalSize} bytes → ${processed.optimizedSize} bytes)`
+    );
+  } else {
+    processSpinner.succeed("SVG processed");
+  }
+  logger.success(`ViewBox detected: ${processed.viewBox}`);
+
+  logger.newline();
+  const genSpinner = spinner.start("Generating component...");
+  const component = await generateComponent({
+    componentName,
+    svgContent: processed.content,
+    viewBox: processed.viewBox,
+    config,
+  });
+
+  const copyright = generateTablerCopyright(iconName);
+  const contentWithCopyright = insertHeaderComment(component.content, copyright);
+  genSpinner.succeed(`${component.filename} generated`);
+
+  const iconsDir = path.join(projectRoot, config.baseDir, config.iconsFolder);
+  const filePath = await writeComponentFile({
+    projectRoot,
+    baseDir: config.baseDir,
+    iconsFolder: config.iconsFolder,
+    filename: component.filename,
+    content: contentWithCopyright,
+  });
+  logger.success(`${component.filename} created`);
+
+  if (config.maintainIndex) {
+    await updateIndexFile(iconsDir, component.extension);
+    logger.success("index.ts updated");
+  }
+
+  logger.separator();
+  logger.newline();
+  logger.title("Icon imported successfully! 🎉");
+  logger.newline();
+  logger.print(`📁 ${path.relative(projectRoot, filePath)}`);
+  logger.print(`🎨 Style: ${style}${style === "outline" ? ` — Stroke: ${stroke}` : ""}`);
+  logger.print(`📚 From: ${metadata.library.displayName} (${metadata.library.website})`);
+  logger.newline();
+  logger.print("Import:");
+  logger.print(`  import { ${componentName} } from '@/components/icons';`);
+  logger.newline();
+  logger.print("Usage:");
+  logger.print(`  <${componentName} size={24} />`);
+  logger.separator();
+  logger.newline();
+};
+
 const importMultipleFromURLs = async (
   projectRoot: string,
   config: Config,
@@ -309,6 +423,11 @@ const importMultipleFromURLs = async (
   if (library === "heroicons") {
     logger.info(
       "Heroicons URL format: https://raw.githubusercontent.com/tailwindlabs/heroicons/master/src/{size}/{style}/{name}.svg"
+    );
+    logger.newline();
+  } else if (library === "tabler") {
+    logger.info(
+      "Tabler Icons URL format: https://raw.githubusercontent.com/tabler/tabler-icons/main/icons/{style}/{name}.svg"
     );
     logger.newline();
   }
@@ -327,11 +446,12 @@ const importMultipleFromURLs = async (
   for (let i = 0; i < urls.length; i += 1) {
     const rawUrl = urls[i];
 
-    // Try Heroicons URL first, then Lucide
+    // Try Heroicons URL first, then Tabler, then Lucide
     const heroiconParsed = parseHeroiconURL(rawUrl);
-    const lucideIconName = !heroiconParsed ? extractLucideIconNameFromURL(rawUrl) : null;
+    const tablerParsed = !heroiconParsed ? parseTablerURL(rawUrl) : null;
+    const lucideIconName = !heroiconParsed && !tablerParsed ? extractLucideIconNameFromURL(rawUrl) : null;
 
-    if (!heroiconParsed && !lucideIconName) {
+    if (!heroiconParsed && !tablerParsed && !lucideIconName) {
       failures.push({ url: rawUrl, reason: "Unrecognized library URL" });
       logger.error(`[${i + 1}/${urls.length}] Unrecognized URL: ${rawUrl}`);
       continue;
@@ -351,6 +471,16 @@ const importMultipleFromURLs = async (
         svgContent = result.svgContent;
         iconDisplayName = `${iconName}-${size}`;
         copyright = generateHeroiconsCopyright(iconName);
+        fetchSpinner.succeed(`[${i + 1}/${urls.length}] Fetched ${iconDisplayName}`);
+      } else if (tablerParsed) {
+        const { iconName, style } = tablerParsed;
+        const fetchSpinner = spinner.start(
+          `[${i + 1}/${urls.length}] Fetching ${iconName} (${style})...`
+        );
+        const result = await fetchTablerIcon(iconName, style, 2);
+        svgContent = result.svgContent;
+        iconDisplayName = style === "filled" ? `${iconName}-filled` : iconName;
+        copyright = generateTablerCopyright(iconName);
         fetchSpinner.succeed(`[${i + 1}/${urls.length}] Fetched ${iconDisplayName}`);
       } else {
         const fetchSpinner = spinner.start(
@@ -445,6 +575,7 @@ const promptLibrarySelection = async (): Promise<string | null> => {
       choices: [
         { name: "lucide", message: "Lucide Icons (1700+ icons)", value: "lucide" },
         { name: "heroicons", message: "Heroicons (300+ icons)", value: "heroicons" },
+        { name: "tabler", message: "Tabler Icons (5500+ icons)", value: "tabler" },
         { name: "", role: "separator" },
         { name: "request", message: "💡 Request a new library", value: "request" },
       ],
