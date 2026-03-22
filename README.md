@@ -5,7 +5,7 @@ Transform SVG icons into beautiful React, React Native, Vue, or Svelte component
 [![npm version](https://img.shields.io/npm/v/@steellgold/mkicon)](https://www.npmjs.com/package/@steellgold/mkicon)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**[📖 Full documentation →](https://steellgold.github.io/mkicon/)**
+**[📖 Full documentation →](https://mkicon.vercel.app)**
 
 ---
 
@@ -60,7 +60,7 @@ mkicon -n UserPlus -p '<svg>...</svg>'
 | `mkicon config` | Manage configuration |
 | `mkicon inspect-config` | Show detected project formatting |
 
-For detailed usage, flags, and examples see the **[documentation](https://steellgold.github.io/mkicon/)**.
+For detailed usage, flags, and examples see the **[documentation](https://mkicon.vercel.app)**.
 
 ## Configuration
 
@@ -82,7 +82,7 @@ mkicon stores its config in `.mkicon.json` at your project root (commit it!):
 }
 ```
 
-See the [configuration reference](https://steellgold.github.io/mkicon/configuration) for all options.
+See the [configuration reference](https://mkicon.vercel.appconfiguration) for all options.
 
 ## Contributing
 
