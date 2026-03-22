@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import OpenAI from "openai";
+import enquirer from "enquirer";
 import { logger } from "@/utils/logger";
 import { toPascalCase } from "@/utils/naming";
 import { generateComponent } from "@/core/component-generator";
@@ -8,9 +9,10 @@ import { updateIndexFile } from "@/core/index-maintainer";
 import { trackGeneratedComponent } from "@/core/diff-checker";
 import { optimizeSVG } from "@/core/svg-processor";
 import type { Config } from "@/config/schema";
-import { createInterface } from "readline";
 import fs from "fs/promises";
 import path from "path";
+
+const { prompt } = enquirer;
 
 // ── System prompt ─────────────────────────────────────────────────────────────
 
@@ -31,11 +33,11 @@ Start directly with <svg and end directly with </svg>.`;
 // ── Style hints ───────────────────────────────────────────────────────────────
 
 const STYLE_HINTS: Record<string, string> = {
-  outline: "stroke-based, no fill, stroke-width 1.5, thin lines",
-  solid: "filled shapes, fill=currentColor, no stroke",
-  minimal: "very thin strokes, stroke-width 1, extremely simple paths",
-  bold: "thick strokes, stroke-width 2.5, strong visual weight",
-  duotone: "two-tone with main stroke and a subtle semi-transparent fill (opacity 0.2)",
+  outline:  "stroke-based, no fill, stroke-width 1.5, thin lines",
+  solid:    "filled shapes, fill=currentColor, no stroke",
+  minimal:  "very thin strokes, stroke-width 1, extremely simple paths",
+  bold:     "thick strokes, stroke-width 2.5, strong visual weight",
+  duotone:  "two-tone with main stroke and subtle semi-transparent fill (opacity 0.2)",
 };
 
 // ── Model registry ────────────────────────────────────────────────────────────
@@ -46,34 +48,28 @@ interface ModelEntry {
   id: string;
   provider: Provider;
   label: string;
+  alias: string;
 }
 
-const MODEL_REGISTRY: Record<string, ModelEntry> = {
-  // Claude
-  opus:     { id: "claude-opus-4-6",           provider: "claude", label: "Claude Opus 4.6 — Most capable" },
-  sonnet:   { id: "claude-sonnet-4-6",          provider: "claude", label: "Claude Sonnet 4.6 — Best balance (default)" },
-  haiku:    { id: "claude-haiku-4-5-20251001",  provider: "claude", label: "Claude Haiku 4.5 — Fastest" },
-  // OpenAI
-  "gpt-5":      { id: "gpt-4o",       provider: "openai", label: "GPT-5.4 — Most capable" },
-  o3:           { id: "o3",           provider: "openai", label: "o3 — Reasoning model" },
-  "gpt-5-mini": { id: "gpt-4o-mini",  provider: "openai", label: "GPT-5.4 mini — Fast, economical" },
-  "o4-mini":    { id: "o4-mini",      provider: "openai", label: "o4-mini — Small reasoning" },
-  codex:        { id: "codex-mini-latest", provider: "openai", label: "GPT-5 Codex — Coding specialized" },
-  "gpt-oss":    { id: "gpt-4o",       provider: "openai", label: "gpt-oss-120b — Open-weight" },
-  // Shortcuts
-  best:     { id: "claude-opus-4-6",  provider: "claude", label: "Claude Opus 4.6" },
-  fast:     { id: "claude-haiku-4-5-20251001", provider: "claude", label: "Claude Haiku 4.5" },
-  balanced: { id: "claude-sonnet-4-6", provider: "claude", label: "Claude Sonnet 4.6" },
-};
+const CLAUDE_MODELS: ModelEntry[] = [
+  { alias: "opus",    id: "claude-opus-4-6",          provider: "claude", label: "Opus 4.6    — Most powerful" },
+  { alias: "sonnet",  id: "claude-sonnet-4-6",         provider: "claude", label: "Sonnet 4.6  — Best balance (Recommended)" },
+  { alias: "haiku",   id: "claude-haiku-4-5-20251001", provider: "claude", label: "Haiku 4.5   — Fastest, economical" },
+];
 
-const resolveEntry = (m: string | undefined, provider: Provider | undefined): ModelEntry => {
-  const key = m?.toLowerCase() ?? "sonnet";
-  const entry = MODEL_REGISTRY[key];
-  if (entry) return entry;
-  // Raw model ID: infer provider from name
-  const inferredProvider: Provider = key.startsWith("claude") ? "claude" : "openai";
-  return { id: key, provider: provider ?? inferredProvider, label: key };
-};
+const OPENAI_MODELS: ModelEntry[] = [
+  { alias: "gpt-5",      id: "gpt-4o",            provider: "openai", label: "GPT-5.4      — Most capable" },
+  { alias: "o3",         id: "o3",                 provider: "openai", label: "o3           — Reasoning powerhouse" },
+  { alias: "gpt-5-mini", id: "gpt-4o-mini",        provider: "openai", label: "GPT-5.4 mini — Fast, cheap" },
+  { alias: "o4-mini",    id: "o4-mini",             provider: "openai", label: "o4-mini      — Small reasoning" },
+  { alias: "codex",      id: "codex-mini-latest",   provider: "openai", label: "GPT-5 Codex  — Coding specialized" },
+  { alias: "gpt-oss",    id: "gpt-4o",              provider: "openai", label: "gpt-oss-120b — Open-weight" },
+];
+
+const ALL_MODELS = [...CLAUDE_MODELS, ...OPENAI_MODELS];
+
+const findModel = (alias: string): ModelEntry | undefined =>
+  ALL_MODELS.find(m => m.alias === alias.toLowerCase());
 
 // ── API key helpers ───────────────────────────────────────────────────────────
 
@@ -82,7 +78,6 @@ const credsDirPath = () =>
 
 const getApiKey = async (provider: Provider): Promise<string> => {
   const envKey = provider === "claude" ? "ANTHROPIC_API_KEY" : "OPENAI_API_KEY";
-
   if (process.env[envKey]) return process.env[envKey]!;
 
   try {
@@ -98,9 +93,7 @@ const getApiKey = async (provider: Provider): Promise<string> => {
     if (match) return match[1].trim();
   } catch { /* no creds */ }
 
-  throw new Error(
-    `No ${envKey} found. Set it in your environment, .env file, or run mkicon ai --setup`
-  );
+  throw new Error(`No ${envKey} found. Run: mkicon ai --setup`);
 };
 
 const saveApiKey = async (envKey: string, value: string): Promise<void> => {
@@ -108,8 +101,7 @@ const saveApiKey = async (envKey: string, value: string): Promise<void> => {
   await fs.mkdir(dir, { recursive: true });
   const credsPath = path.join(dir, "credentials");
   let existing = "";
-  try { existing = await fs.readFile(credsPath, "utf-8"); } catch { /* new file */ }
-  // Replace or append
+  try { existing = await fs.readFile(credsPath, "utf-8"); } catch { /* new */ }
   const regex = new RegExp(`^${envKey}=.*$`, "m");
   const updated = regex.test(existing)
     ? existing.replace(regex, `${envKey}=${value}`)
@@ -117,61 +109,101 @@ const saveApiKey = async (envKey: string, value: string): Promise<void> => {
   await fs.writeFile(credsPath, updated, "utf-8");
 };
 
-// ── Provider-agnostic chat call ───────────────────────────────────────────────
+// ── Provider-agnostic chat ────────────────────────────────────────────────────
 
 interface ChatMessage { role: "user" | "assistant"; content: string; }
 
-const chatWithClaude = async (
-  apiKey: string,
-  modelId: string,
-  messages: ChatMessage[],
-): Promise<string> => {
+const chatWithClaude = async (apiKey: string, modelId: string, messages: ChatMessage[]): Promise<string> => {
   const client = new Anthropic({ apiKey });
-  const response = await client.messages.create({
-    model: modelId,
-    max_tokens: 1024,
-    system: AI_SYSTEM_PROMPT,
+  const res = await client.messages.create({
+    model: modelId, max_tokens: 1024, system: AI_SYSTEM_PROMPT,
     messages: messages.map(m => ({ role: m.role, content: m.content })),
   });
-  return response.content.map(b => b.type === "text" ? b.text : "").join("");
+  return res.content.map(b => b.type === "text" ? b.text : "").join("");
 };
 
-const chatWithOpenAI = async (
-  apiKey: string,
-  modelId: string,
-  messages: ChatMessage[],
-): Promise<string> => {
+const chatWithOpenAI = async (apiKey: string, modelId: string, messages: ChatMessage[]): Promise<string> => {
   const client = new OpenAI({ apiKey });
   const isReasoning = modelId === "o3" || modelId.startsWith("o4");
-  const systemMsg = isReasoning
-    ? []  // o3/o4 don't use system role
-    : [{ role: "system" as const, content: AI_SYSTEM_PROMPT }];
-  const response = await client.chat.completions.create({
-    model: modelId,
-    max_completion_tokens: 1024,
-    messages: [
-      ...systemMsg,
-      ...messages.map(m => ({ role: m.role, content: m.content })),
-    ],
+  const systemMsgs = isReasoning ? [] : [{ role: "system" as const, content: AI_SYSTEM_PROMPT }];
+  const res = await client.chat.completions.create({
+    model: modelId, max_completion_tokens: 1024,
+    messages: [...systemMsgs, ...messages.map(m => ({ role: m.role, content: m.content }))],
   });
-  return response.choices[0]?.message?.content ?? "";
+  return res.choices[0]?.message?.content ?? "";
 };
 
-const chat = async (
-  provider: Provider,
-  apiKey: string,
-  modelId: string,
-  messages: ChatMessage[],
-): Promise<string> =>
+const chat = (provider: Provider, apiKey: string, modelId: string, messages: ChatMessage[]) =>
   provider === "claude"
     ? chatWithClaude(apiKey, modelId, messages)
     : chatWithOpenAI(apiKey, modelId, messages);
 
-// ── SVG extraction ────────────────────────────────────────────────────────────
-
 const extractSvg = (text: string): string | null => {
   const m = text.match(/<svg[\s\S]*?<\/svg>/i);
   return m ? m[0].trim() : null;
+};
+
+// ── Generate + save component ─────────────────────────────────────────────────
+
+const saveComponent = async (svg: string, componentName: string, projectRoot: string, config: Config) => {
+  const processed = await optimizeSVG(svg, config.optimize);
+  const components = await generateComponent({
+    componentName, svgContent: processed.content, config, svgSourcePath: "ai-generated",
+  });
+  if (config.activeFrameworks.length === 1) {
+    const comp = components[0];
+    const { filePath } = await writeComponentFile({ component: comp, projectRoot, config });
+    await updateIndexFile({ filePath, componentName: comp.componentName, projectRoot, config });
+    await trackGeneratedComponent({ projectRoot, componentName: comp.componentName, filePath, svgContent: processed.content });
+  } else {
+    const paths = await writeMultiFrameworkComponents({ components, projectRoot, config });
+    for (const p of paths) {
+      await updateIndexFile({ filePath: p, componentName: components[0].componentName, projectRoot, config });
+    }
+    await trackGeneratedComponent({ projectRoot, componentName, filePath: paths[0], svgContent: processed.content });
+  }
+};
+
+// ── Setup flow ────────────────────────────────────────────────────────────────
+
+const runSetup = async () => {
+  logger.info("AI Icon Generator — Setup");
+  logger.newline();
+
+  const { provider } = await prompt<{ provider: Provider }>({
+    type: "select",
+    name: "provider",
+    message: "Select your AI provider:",
+    choices: [
+      { name: "claude", message: "Claude (Anthropic) — Recommended for icons" },
+      { name: "openai", message: "OpenAI GPT" },
+    ],
+  });
+
+  const envKey = provider === "claude" ? "ANTHROPIC_API_KEY" : "OPENAI_API_KEY";
+  const hint   = provider === "claude" ? "sk-ant-..." : "sk-...";
+
+  const { apiKey } = await prompt<{ apiKey: string }>({
+    type: "input",
+    name: "apiKey",
+    message: `Enter your ${provider === "claude" ? "Anthropic" : "OpenAI"} API key:`,
+    hint,
+    validate: (v: string) => v.trim().startsWith("sk-") ? true : "Key must start with sk-",
+  } as never);
+
+  const { saveGlobal } = await prompt<{ saveGlobal: boolean }>({
+    type: "confirm",
+    name: "saveGlobal",
+    message: "Save to global credentials (~/.mkicon/credentials)?",
+    initial: true,
+  });
+
+  if (saveGlobal) {
+    await saveApiKey(envKey, apiKey.trim());
+    logger.success(`API key saved to ~/.mkicon/credentials`);
+  } else {
+    logger.print(`Export manually: export ${envKey}="${apiKey.trim()}"`);
+  }
 };
 
 // ── Main export ───────────────────────────────────────────────────────────────
@@ -186,75 +218,44 @@ export interface AiOptions {
 }
 
 export const runAi = async (options: AiOptions): Promise<void> => {
-  const { projectRoot, config, style } = options;
-
-  const rl = createInterface({ input: process.stdin, output: process.stdout });
-  const ask = (prompt: string): Promise<string> =>
-    new Promise(resolve => rl.question(prompt, ans => resolve(ans.trim())));
-
-  // ── Setup mode ──────────────────────────────────────────────────────────────
   if (process.argv.includes("--setup")) {
-    logger.info("AI Icon Generator Setup");
-    logger.newline();
-    logger.print("[1] Claude (Anthropic) — Recommended for icons");
-    logger.print("[2] OpenAI GPT");
-    logger.newline();
-    const pChoice = await ask("Select provider [1/2]: ");
-    const isOpenAI = pChoice === "2";
-
-    const envKey = isOpenAI ? "OPENAI_API_KEY" : "ANTHROPIC_API_KEY";
-    const prefix = isOpenAI ? "sk-" : "sk-ant-";
-    const key = await ask(`Enter your ${isOpenAI ? "OpenAI" : "Anthropic"} API key (${prefix}...): `);
-    if (!key.startsWith("sk-")) { logger.error("Invalid API key format."); rl.close(); return; }
-
-    const where = await ask("Save to global credentials (~/.mkicon/credentials)? [Y/n]: ");
-    if (where.toLowerCase() !== "n") {
-      await saveApiKey(envKey, key);
-      logger.success(`API key saved to ~/.mkicon/credentials`);
-    } else {
-      logger.print(`Export manually: export ${envKey}="${key}"`);
-    }
-    rl.close();
+    await runSetup();
     return;
   }
 
-  // ── Resolve model + provider ────────────────────────────────────────────────
+  // ── Resolve model entry ─────────────────────────────────────────────────────
   let modelEntry: ModelEntry;
 
-  if (!options.model && !options.provider) {
-    // Interactive selection
-    logger.print("\nSelect provider:");
-    logger.print("  [1] Claude (Anthropic)");
-    logger.print("  [2] OpenAI");
-    logger.newline();
-    const pChoice = await ask("Provider [1/2, default 1]: ");
-    const chosenProvider: Provider = pChoice === "2" ? "openai" : "claude";
-
-    if (chosenProvider === "claude") {
-      logger.print("\n  [1] Opus 4.6    — Most powerful");
-      logger.print("  [2] Sonnet 4.6  — Best balance (Recommended)");
-      logger.print("  [3] Haiku 4.5   — Fastest, economical");
-    } else {
-      logger.print("\n  [1] GPT-5.4      — Most capable");
-      logger.print("  [2] o3           — Reasoning powerhouse");
-      logger.print("  [3] GPT-5.4 mini — Fast, cheap");
-      logger.print("  [4] o4-mini      — Small reasoning");
-      logger.print("  [5] GPT-5 Codex  — Coding specialized");
-      logger.print("  [6] gpt-oss-120b — Open-weight");
+  if (options.model) {
+    const found = findModel(options.model);
+    if (!found) {
+      logger.error(`Unknown model "${options.model}". Valid: ${ALL_MODELS.map(m => m.alias).join(", ")}`);
+      return;
     }
-    logger.newline();
-    const mChoice = await ask("Model [default 2]: ");
-
-    if (chosenProvider === "claude") {
-      const m = ["opus", "sonnet", "haiku"][parseInt(mChoice || "2") - 1] ?? "sonnet";
-      modelEntry = MODEL_REGISTRY[m];
-    } else {
-      const keys = ["gpt-5", "o3", "gpt-5-mini", "o4-mini", "codex", "gpt-oss"];
-      const m = keys[parseInt(mChoice || "2") - 1] ?? "gpt-5";
-      modelEntry = MODEL_REGISTRY[m];
-    }
+    modelEntry = found;
   } else {
-    modelEntry = resolveEntry(options.model, options.provider as Provider | undefined);
+    // Interactive: pick provider then model
+    const { provider } = await prompt<{ provider: Provider }>({
+      type: "select",
+      name: "provider",
+      message: "Select AI provider:",
+      choices: [
+        { name: "claude", message: "Claude (Anthropic)" },
+        { name: "openai", message: "OpenAI" },
+      ],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    const models = provider === "claude" ? CLAUDE_MODELS : OPENAI_MODELS;
+    const { modelAlias } = await prompt<{ modelAlias: string }>({
+      type: "select",
+      name: "modelAlias",
+      message: "Select model:",
+      choices: models.map(m => ({ name: m.alias, message: m.label })),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    modelEntry = models.find(m => m.alias === modelAlias)!;
   }
 
   // ── Get API key ─────────────────────────────────────────────────────────────
@@ -263,20 +264,25 @@ export const runAi = async (options: AiOptions): Promise<void> => {
     apiKey = await getApiKey(modelEntry.provider);
   } catch (err) {
     logger.error(String(err));
-    rl.close();
     return;
   }
 
-  const styleHint = style ? STYLE_HINTS[style] ?? style : STYLE_HINTS["outline"];
-  logger.print(`\n✨ AI Icon Generator — ${modelEntry.label}`);
+  // ── Style ───────────────────────────────────────────────────────────────────
+  let styleHint = options.style ? STYLE_HINTS[options.style] ?? options.style : STYLE_HINTS["outline"];
+
+  logger.print(`\n✨ AI Icon Generator — ${modelEntry.label.trim()}`);
   logger.newline();
 
-  // ── Get description ─────────────────────────────────────────────────────────
-  let description = options.description;
-  if (!description) {
-    description = await ask("Icon description: ");
-    if (!description) { logger.warning("No description provided."); rl.close(); return; }
-  }
+  // ── Description ─────────────────────────────────────────────────────────────
+  let { description } = options.description
+    ? { description: options.description }
+    : await prompt<{ description: string }>({
+        type: "input",
+        name: "description",
+        message: "Describe the icon:",
+        hint: "e.g. a bell with a notification dot",
+        validate: (v: string) => v.trim() ? true : "Description cannot be empty",
+      } as never);
 
   const messages: ChatMessage[] = [];
   let currentSvg: string | null = null;
@@ -284,153 +290,155 @@ export const runAi = async (options: AiOptions): Promise<void> => {
 
   // ── Generation loop ─────────────────────────────────────────────────────────
   while (iterating) {
-    const userMessage = messages.length === 0
+    const userMsg = messages.length === 0
       ? `Create an SVG icon: "${description}". Style: ${styleHint}.`
-      : `Refine the icon based on this feedback: "${description}". Keep the same style.`;
+      : `Refine the icon: "${description}". Keep same style.`;
 
-    messages.push({ role: "user", content: userMessage });
-    logger.info("Generating icon…");
+    messages.push({ role: "user", content: userMsg });
+    logger.info("Generating…");
 
     try {
       const text = await chat(modelEntry.provider, apiKey, modelEntry.id, messages);
       messages.push({ role: "assistant", content: text });
-
       const svg = extractSvg(text);
-      if (!svg) { logger.error("AI returned invalid SVG. Try again."); break; }
-
+      if (!svg) { logger.error("AI returned no valid SVG."); break; }
       currentSvg = svg;
-      logger.success("Icon generated!");
+
+      logger.success("Done!");
       logger.newline();
-      logger.print("─".repeat(40));
-      logger.print(svg.slice(0, 300) + (svg.length > 300 ? "…" : ""));
-      logger.print("─".repeat(40));
+      logger.print("─".repeat(48));
+      logger.print(svg.slice(0, 320) + (svg.length > 320 ? "…" : ""));
+      logger.print("─".repeat(48));
       logger.newline();
     } catch (err) {
       logger.error("Generation failed: " + String(err));
       break;
     }
 
-    logger.print("[1] Looks good! Generate component");
-    logger.print("[2] Modify the icon (describe changes)");
-    logger.print("[3] Change style (outline/solid/minimal/bold/duotone)");
-    logger.print("[4] Start over with new description");
-    logger.print("[5] Switch model");
-    logger.print("[6] Show raw SVG code");
-    logger.print("[7] Save SVG file only (no component)");
-    logger.print("[8] Exit");
-    logger.newline();
+    const { action } = await prompt<{ action: string }>({
+      type: "select",
+      name: "action",
+      message: "What do you want to do?",
+      choices: [
+        { name: "accept",   message: "✓  Looks good — generate component" },
+        { name: "modify",   message: "✏  Modify (describe changes)" },
+        { name: "style",    message: "🎨  Change style" },
+        { name: "model",    message: "🔄  Switch model" },
+        { name: "restart",  message: "↩  Start over with new description" },
+        { name: "show",     message: "👁  Show full SVG code" },
+        { name: "save-svg", message: "💾  Save as .svg file (no component)" },
+        { name: "exit",     message: "✕  Exit" },
+      ],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
 
-    const choice = await ask("Choice: ");
-
-    switch (choice) {
-      case "1": {
+    switch (action) {
+      case "accept": {
         if (!currentSvg) break;
-        let iconName = await ask("Component name (e.g. BellNotification): ");
-        if (!iconName) iconName = toPascalCase(description.split(" ").slice(0, 3).join("-"));
-        if (!iconName.endsWith("Icon")) iconName += "Icon";
-
-        logger.info(`Generating component ${iconName}…`);
+        const suggested = toPascalCase(description.split(" ").slice(0, 3).join("-"));
+        const { name } = await prompt<{ name: string }>({
+          type: "input",
+          name: "name",
+          message: "Component name:",
+          initial: suggested.endsWith("Icon") ? suggested : suggested + "Icon",
+          hint: "[TAB to accept]",
+        } as never);
+        const componentName = name.trim().endsWith("Icon") ? name.trim() : name.trim() + "Icon";
+        logger.info(`Generating ${componentName}…`);
         try {
-          const processed = await optimizeSVG(currentSvg, config.optimize);
-          const components = await generateComponent({
-            componentName: iconName,
-            svgContent: processed.content,
-            config,
-            svgSourcePath: "ai-generated",
-          });
-          if (config.activeFrameworks.length === 1) {
-            const comp = components[0];
-            const { filePath } = await writeComponentFile({ component: comp, projectRoot, config });
-            await updateIndexFile({ filePath, componentName: comp.componentName, projectRoot, config });
-            await trackGeneratedComponent({ projectRoot, componentName: comp.componentName, filePath, svgContent: processed.content });
-          } else {
-            const paths = await writeMultiFrameworkComponents({ components, projectRoot, config });
-            for (const p of paths) {
-              await updateIndexFile({ filePath: p, componentName: components[0].componentName, projectRoot, config });
-            }
-            await trackGeneratedComponent({ projectRoot, componentName: iconName, filePath: paths[0], svgContent: processed.content });
-          }
-          logger.success(`${iconName} created!`);
+          await saveComponent(currentSvg, componentName, options.projectRoot, options.config);
+          logger.success(`${componentName} created!`);
         } catch (err) {
-          logger.error("Component generation failed: " + String(err));
+          logger.error("Failed: " + String(err));
         }
         iterating = false;
         break;
       }
 
-      case "2": {
-        description = await ask("Describe the changes: ");
+      case "modify": {
+        const { feedback } = await prompt<{ feedback: string }>({
+          type: "input",
+          name: "feedback",
+          message: "Describe the changes:",
+          validate: (v: string) => v.trim() ? true : "Cannot be empty",
+        } as never);
+        description = feedback;
         break;
       }
 
-      case "3": {
-        const s = await ask("Style (outline/solid/minimal/bold/duotone): ");
-        const hint = STYLE_HINTS[s] ?? s;
-        messages.push({ role: "user", content: `Change the style to: ${hint}. Keep the same icon concept.` });
+      case "style": {
+        const { s } = await prompt<{ s: string }>({
+          type: "select",
+          name: "s",
+          message: "Select style:",
+          choices: Object.entries(STYLE_HINTS).map(([k, v]) => ({ name: k, message: `${k} — ${v}` })),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any);
+        styleHint = STYLE_HINTS[s];
+        messages.push({ role: "user", content: `Change style to: ${styleHint}. Keep same concept.` });
         logger.info("Applying style…");
         try {
           const text2 = await chat(modelEntry.provider, apiKey, modelEntry.id, messages);
           messages.push({ role: "assistant", content: text2 });
           const svg2 = extractSvg(text2);
-          if (svg2) {
-            currentSvg = svg2;
-            logger.success("Style applied!");
-            logger.print(svg2.slice(0, 200) + "…");
-          }
-        } catch (err) {
-          logger.error("Failed: " + String(err));
-        }
+          if (svg2) { currentSvg = svg2; logger.success("Style applied!"); logger.print(svg2.slice(0, 200) + "…"); }
+        } catch (err) { logger.error("Failed: " + String(err)); }
         break;
       }
 
-      case "4": {
-        description = await ask("New icon description: ");
+      case "model": {
+        const providerChoice = modelEntry.provider === "claude" ? CLAUDE_MODELS : OPENAI_MODELS;
+        const otherProvider  = modelEntry.provider === "claude" ? OPENAI_MODELS : CLAUDE_MODELS;
+        const { newAlias } = await prompt<{ newAlias: string }>({
+          type: "select",
+          name: "newAlias",
+          message: "Switch to:",
+          choices: [
+            ...providerChoice.map(m => ({ name: m.alias, message: `[claude] ${m.label}` })),
+            ...otherProvider.map(m =>  ({ name: m.alias, message: `[openai] ${m.label}` })),
+          ],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any);
+        const newEntry = findModel(newAlias)!;
+        try {
+          apiKey = await getApiKey(newEntry.provider);
+          modelEntry = newEntry;
+          logger.success(`Switched to ${modelEntry.label.trim()}`);
+        } catch (err) { logger.error(String(err)); }
+        break;
+      }
+
+      case "restart": {
+        const { newDesc } = await prompt<{ newDesc: string }>({
+          type: "input",
+          name: "newDesc",
+          message: "New icon description:",
+          validate: (v: string) => v.trim() ? true : "Cannot be empty",
+        } as never);
+        description = newDesc;
         messages.length = 0;
         currentSvg = null;
         break;
       }
 
-      case "5": {
-        // Switch model
-        logger.print("\nClaude: opus / sonnet / haiku");
-        logger.print("OpenAI: gpt-5 / o3 / gpt-5-mini / o4-mini / codex / gpt-oss");
-        logger.newline();
-        const newModel = await ask("Model alias: ");
-        const newEntry = MODEL_REGISTRY[newModel.toLowerCase()];
-        if (!newEntry) { logger.warning(`Unknown model "${newModel}".`); break; }
-        try {
-          apiKey = await getApiKey(newEntry.provider);
-        } catch (err) {
-          logger.error(String(err));
-          break;
-        }
-        modelEntry = newEntry;
-        logger.success(`Switched to ${modelEntry.label}`);
-        break;
-      }
-
-      case "6": {
+      case "show":
         logger.newline();
         logger.print(currentSvg ?? "(no SVG yet)");
         logger.newline();
         break;
-      }
 
-      case "7": {
+      case "save-svg": {
         if (!currentSvg) break;
         const outPath = path.resolve(process.cwd(), `icon-${Date.now()}.svg`);
         await fs.writeFile(outPath, currentSvg, "utf-8");
-        logger.success(`SVG saved: ${path.relative(process.cwd(), outPath)}`);
+        logger.success(`Saved: ${path.relative(process.cwd(), outPath)}`);
         iterating = false;
         break;
       }
 
-      case "8":
       default:
         iterating = false;
         break;
     }
   }
-
-  rl.close();
 };
