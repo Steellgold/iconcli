@@ -186,6 +186,7 @@ export const runPngExport = async (options: PngExportOptions): Promise<void> => 
           sizes,
           scale,
           background,
+          color,
           outputDir
         );
         ok++;
@@ -218,5 +219,5 @@ export const runPngExport = async (options: PngExportOptions): Promise<void> => 
       : path.resolve(process.cwd(), output)
     : path.dirname(absPath);
 
-  await exportComponent(absPath, projectRoot, sizes, scale, background, singleOutputDir);
+  await exportComponent(absPath, projectRoot, sizes, scale, background, color, singleOutputDir);
 };
