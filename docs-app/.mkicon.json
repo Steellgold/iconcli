@@ -1,0 +1,17 @@
+{
+  "$schema": "https://unpkg.com/@steellgold/mkicon/schema.json",
+  "version": "1.0.0",
+  "baseDir": "src/components",
+  "iconsFolder": "icons",
+  "framework": "react",
+  "typescript": true,
+  "optimize": true,
+  "maintainIndex": true,
+  "props": {
+    "size": true,
+    "color": true,
+    "className": true
+  },
+  "suffix": true,
+  "fileCase": "PascalCase"
+}

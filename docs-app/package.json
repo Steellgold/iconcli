@@ -1,0 +1,29 @@
+{
+  "name": "mkicon-docs",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@mdx-js/react": "^3.1.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.0"
+  },
+  "devDependencies": {
+    "@mdx-js/rollup": "^3.1.0",
+    "@types/mdx": "^2.0.13",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.5.2",
+    "@shikijs/rehype": "^3.0.0",
+    "shiki": "^3.0.0",
+    "remark-gfm": "^4.0.1",
+    "typescript": "~5.8.3",
+    "vite": "^6.3.5"
+  }
+}
