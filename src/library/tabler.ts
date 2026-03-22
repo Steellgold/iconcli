@@ -32,8 +32,8 @@ const RAW_BASE =
  * 1. GET /repos/.../contents/icons  → find the SHA of the "outline" subtree
  * 2. GET /repos/.../git/trees/{sha} → list all SVGs without truncation
  */
-export const fetchTablerIconList = async (): Promise<IconMetadata[]> => {
-  // Step 1 — resolve the SHA of icons/outline
+export const fetchTablerIconList = async (style: TablerStyle = "outline"): Promise<IconMetadata[]> => {
+  // Step 1 — resolve the SHA of icons/{style} directory
   const contentsRes = await fetch(GITHUB_ICONS_CONTENTS_API, {
     headers: { Accept: "application/vnd.github.v3+json" },
   });
@@ -43,14 +43,14 @@ export const fetchTablerIconList = async (): Promise<IconMetadata[]> => {
   }
 
   const dirs = (await contentsRes.json()) as Array<{ name: string; type: string; sha: string }>;
-  const outlineEntry = dirs.find((d) => d.name === "outline" && d.type === "dir");
+  const dirEntry = dirs.find((d) => d.name === style && d.type === "dir");
 
-  if (!outlineEntry) {
-    throw new Error("Could not find Tabler Icons outline directory");
+  if (!dirEntry) {
+    throw new Error(`Could not find Tabler Icons ${style} directory`);
   }
 
-  // Step 2 — list all files in the outline tree (no 1000-item cap)
-  const treeRes = await fetch(GITHUB_TREE_API(outlineEntry.sha), {
+  // Step 2 — list all files in the tree (no 1000-item cap)
+  const treeRes = await fetch(GITHUB_TREE_API(dirEntry.sha), {
     headers: { Accept: "application/vnd.github.v3+json" },
   });
 
@@ -83,9 +83,7 @@ export const fetchTablerIcon = async (
   style: TablerStyle,
   stroke: TablerStroke = 2
 ): Promise<FetchIconResult> => {
-  // Tabler filled icons are stored as "{name}-filled.svg" in the filled/ folder
-  const filename = style === "filled" ? `${iconName}-filled` : iconName;
-  const url = `${RAW_BASE}/${style}/${filename}.svg`;
+  const url = `${RAW_BASE}/${style}/${iconName}.svg`;
 
   const response = await fetch(url);
 

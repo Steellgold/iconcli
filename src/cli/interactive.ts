@@ -86,7 +86,8 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
   let previousLibraryMode: "search" | "urls" | null = null;
   let cachedLucideIcons: IconMetadata[] | null = null;
   let cachedHeroicons: IconMetadata[] | null = null;
-  let cachedTablerIcons: IconMetadata[] | null = null;
+  let cachedTablerOutline: IconMetadata[] | null = null;
+  let cachedTablerFilled: IconMetadata[] | null = null;
   let selectedLibrary: "lucide" | "heroicons" | "tabler" = "lucide";
 
   while (createAnother) {
@@ -358,14 +359,23 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
             cachedHeroicons = icons;
           }
         } else if (selectedLibrary === "tabler") {
-          if (cachedTablerIcons) {
-            icons = cachedTablerIcons;
+          // Ask style before loading — filled/outline are separate icon sets
+          tablerBulkStyle = await promptTablerStyle();
+          if (tablerBulkStyle === "outline") {
+            tablerBulkStroke = await promptTablerStroke();
+          }
+          logger.newline();
+
+          const cache = tablerBulkStyle === "filled" ? cachedTablerFilled : cachedTablerOutline;
+          if (cache) {
+            icons = cache;
           } else {
-            const fetchSpinner = spinner.start("Loading Tabler Icons...");
-            icons = await fetchTablerIconList();
-            fetchSpinner.succeed(`Loaded ${icons.length} icons from Tabler Icons`);
+            const fetchSpinner = spinner.start(`Loading Tabler Icons (${tablerBulkStyle})...`);
+            icons = await fetchTablerIconList(tablerBulkStyle);
+            fetchSpinner.succeed(`Loaded ${icons.length} ${tablerBulkStyle} icons from Tabler Icons`);
             logger.newline();
-            cachedTablerIcons = icons;
+            if (tablerBulkStyle === "filled") cachedTablerFilled = icons;
+            else cachedTablerOutline = icons;
           }
         } else {
           if (cachedLucideIcons) {
@@ -388,16 +398,9 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
           logger.newline();
         }
 
-        // ── For Tabler Icons, ask style/stroke once for the whole batch ─────
-        let tablerBulkStyle: TablerStyle | undefined;
-        let tablerBulkStroke: TablerStroke | undefined;
-        if (selectedLibrary === "tabler") {
-          tablerBulkStyle = await promptTablerStyle();
-          if (tablerBulkStyle === "outline") {
-            tablerBulkStroke = await promptTablerStroke();
-          }
-          logger.newline();
-        }
+        // tablerBulkStyle/Stroke are set above when loading the Tabler icon list
+        let tablerBulkStyle: TablerStyle | undefined = selectedLibrary === "tabler" ? tablerBulkStyle : undefined;
+        let tablerBulkStroke: TablerStroke | undefined = selectedLibrary === "tabler" ? tablerBulkStroke : undefined;
 
         // ── Multi-select loop ────────────────────────────────────────────────
         const selectedIconNames: string[] = [];
@@ -597,7 +600,7 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
           previousLibraryMode = null;
           cachedLucideIcons = null;
           cachedHeroicons = null;
-        cachedTablerIcons = null;
+        cachedTablerOutline = null; cachedTablerFilled = null;
         }
         if (createAnother) logger.newline();
         continue;
@@ -765,7 +768,7 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
         previousLibraryMode = null;
         cachedLucideIcons = null;
         cachedHeroicons = null;
-        cachedTablerIcons = null;
+        cachedTablerOutline = null; cachedTablerFilled = null;
       }
 
       if (createAnother) {

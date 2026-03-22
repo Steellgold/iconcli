@@ -309,21 +309,22 @@ const importHeroiconFromSearch = async (projectRoot: string, config: Config): Pr
 };
 
 const importTablerIconFromSearch = async (projectRoot: string, config: Config): Promise<void> => {
-  const fetchSpinner = spinner.start("Loading Tabler Icons...");
-  const icons = await fetchTablerIconList();
-  fetchSpinner.succeed(`Loaded ${icons.length} icons from Tabler Icons`);
+  // Ask style first — filled/outline have different icon sets, not all icons have a filled variant
+  const style: TablerStyle = await promptTablerStyle();
+  let stroke: TablerStroke = 2;
+  if (style === "outline") {
+    stroke = await promptTablerStroke();
+  }
+
+  const fetchSpinner = spinner.start(`Loading Tabler Icons (${style})...`);
+  const icons = await fetchTablerIconList(style);
+  fetchSpinner.succeed(`Loaded ${icons.length} ${style} icons from Tabler Icons`);
   logger.newline();
 
   const iconName = await promptIconSearchAndSelect(icons);
   if (!iconName) {
     logger.info("No icon selected");
     return;
-  }
-
-  const style: TablerStyle = await promptTablerStyle();
-  let stroke: TablerStroke = 2;
-  if (style === "outline") {
-    stroke = await promptTablerStroke();
   }
 
   logger.newline();
