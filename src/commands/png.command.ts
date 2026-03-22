@@ -29,6 +29,7 @@ export const command: CommandDef = {
       sizes,
       scale,
       background: ctx.flag("--background"),
+      color: ctx.flag("--color", "-c"),
       output: ctx.flag("--output", "-o"),
     });
   },

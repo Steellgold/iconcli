@@ -14,23 +14,36 @@ export interface PngExportOptions {
   sizes?: number[];
   scale?: number;
   background?: string;
+  color?: string;
   output?: string;
 }
 
 const SUPPORTED_EXTS = [".tsx", ".ts", ".jsx", ".js", ".vue", ".svelte"];
 
+/**
+ * Resolve `currentColor` to a concrete hex value so resvg renders correctly.
+ * Icons use currentColor for stroke/fill — resvg defaults it to black (#000)
+ * which is invisible on dark backgrounds. We replace it with white by default,
+ * or with whatever the caller specifies via --color.
+ */
+const resolveCurrentColor = (svg: string, color: string): string =>
+  svg.replace(/currentColor/g, color);
+
 const renderSvgToPng = async (
   svgContent: string,
   size: number,
   scale: number,
-  background?: string
+  background?: string,
+  color = "#ffffff"
 ): Promise<Buffer> => {
   const { Resvg } = await import("@resvg/resvg-js");
 
   const pixelSize = Math.round(size * scale);
 
+  // Replace currentColor before rendering
+  let svg = resolveCurrentColor(svgContent, color);
+
   // Inject explicit dimensions so resvg knows the viewport
-  let svg = svgContent;
   if (!svg.includes('width="') || !svg.includes('height="')) {
     svg = svg.replace(/<svg/, `<svg width="${pixelSize}" height="${pixelSize}"`);
   } else {
@@ -41,6 +54,7 @@ const renderSvgToPng = async (
 
   const opts: ConstructorParameters<typeof Resvg>[1] = {
     fitTo: { mode: "width", value: pixelSize },
+    shapeRendering: 2, // geometricPrecision
   };
 
   if (background && background !== "transparent") {
@@ -96,6 +110,7 @@ const exportComponent = async (
   sizes: number[],
   scale: number,
   background: string | undefined,
+  color: string,
   outputDir: string
 ): Promise<void> => {
   const ext = path.extname(absPath);
@@ -109,7 +124,7 @@ const exportComponent = async (
   await fs.mkdir(outputDir, { recursive: true });
 
   for (const size of sizes) {
-    const png = await renderSvgToPng(svg, size, scale, background);
+    const png = await renderSvgToPng(svg, size, scale, background, color);
     const suffix = sizes.length > 1 ? `-${size}` : "";
     const scaleStr = scale !== 1 ? `@${scale}x` : "";
     const filename = `${baseName}${suffix}${scaleStr}.png`;
@@ -128,6 +143,7 @@ export const runPngExport = async (options: PngExportOptions): Promise<void> => 
     sizes = [24],
     scale = 1,
     background,
+    color = "#000000",
     output,
   } = options;
 
