@@ -16,7 +16,7 @@ export const scoreIcon = (icon: IconMetadata, query: string): number => {
   const name = icon.name.toLowerCase();
 
   if (name === q) return 4;
-  if (name.startsWith(q + "-") || name.startsWith(q + "_") || name === q) return 3;
+  if (name.startsWith(q + "-") || name.startsWith(q + "_")) return 3;
   // word boundary: query matches a full segment separated by - or _
   const segments = name.split(/[-_]/);
   if (segments.some((s) => s === q)) return 2;

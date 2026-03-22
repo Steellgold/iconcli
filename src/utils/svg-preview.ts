@@ -1,5 +1,8 @@
 import chalk from "chalk";
 
+const PREVIEW_BG = "#111111";
+const PREVIEW_FG = "#ffffff";
+
 /**
  * Render an SVG to a terminal image string (no output — caller decides placement).
  * Returns null if rendering fails or the terminal doesn't support images.
@@ -14,11 +17,13 @@ export const renderSVGToString = async (
       import("terminal-image"),
     ]);
 
-    const svgWithSize = ensureSvgDimensions(svgContent, 512);
+    // Replace currentColor with a visible white color for dark background rendering
+    const svgResolved = svgContent.replace(/currentColor/g, PREVIEW_FG);
+    const svgWithSize = ensureSvgDimensions(svgResolved, 512);
 
     const resvg = new Resvg(svgWithSize, {
       fitTo: { mode: "width", value: 512 },
-      background: "white",
+      background: PREVIEW_BG,
     });
 
     const pngData = resvg.render();
@@ -123,27 +128,39 @@ export const previewSVGSideBySide = async (
 };
 
 /**
- * Fallback: print a minimal text summary of the SVG structure.
+ * Fallback: print a styled SVG summary box when terminal images aren't supported.
  */
 const printAsciiPreview = (svgContent: string): void => {
-  const viewBox = svgContent.match(/viewBox="([^"]+)"/)?.[1] ?? "unknown";
-  const pathCount = (svgContent.match(/<path/g) ?? []).length;
-  const circleCount = (svgContent.match(/<circle/g) ?? []).length;
-  const rectCount = (svgContent.match(/<rect/g) ?? []).length;
-  const polylineCount = (svgContent.match(/<polyline/g) ?? []).length;
+  const viewBox = svgContent.match(/viewBox="([^"]+)"/)?.[1] ?? "0 0 24 24";
+  const pathCount   = (svgContent.match(/<path/g)     ?? []).length;
+  const circleCount = (svgContent.match(/<circle/g)   ?? []).length;
+  const rectCount   = (svgContent.match(/<rect/g)     ?? []).length;
+  const polyCount   = (svgContent.match(/<polyline/g) ?? []).length;
+  const lineCount   = (svgContent.match(/<line/g)     ?? []).length;
 
   const elements = [
-    pathCount > 0 && `${pathCount} path${pathCount > 1 ? "s" : ""}`,
+    pathCount   > 0 && `${pathCount} path${pathCount > 1 ? "s" : ""}`,
     circleCount > 0 && `${circleCount} circle${circleCount > 1 ? "s" : ""}`,
-    rectCount > 0 && `${rectCount} rect${rectCount > 1 ? "s" : ""}`,
-    polylineCount > 0 && `${polylineCount} polyline${polylineCount > 1 ? "s" : ""}`,
-  ]
-    .filter(Boolean)
-    .join(", ");
+    rectCount   > 0 && `${rectCount} rect${rectCount > 1 ? "s" : ""}`,
+    polyCount   > 0 && `${polyCount} polyline${polyCount > 1 ? "s" : ""}`,
+    lineCount   > 0 && `${lineCount} line${lineCount > 1 ? "s" : ""}`,
+  ].filter(Boolean).join(", ");
 
-  process.stdout.write(
-    chalk.dim(`  SVG preview: viewBox=${viewBox}${elements ? `, ${elements}` : ""}\n`)
-  );
+  const W = 36;
+  const top    = chalk.dim("  ╭" + "─".repeat(W) + "╮");
+  const bottom = chalk.dim("  ╰" + "─".repeat(W) + "╯");
+  const row = (label: string, value: string) => {
+    const line = ` ${chalk.dim(label.padEnd(10))} ${chalk.white(value)}`;
+    const visible = label.length + 1 + value.length + 2;
+    const pad = " ".repeat(Math.max(0, W - visible));
+    return chalk.dim("  │") + line + pad + chalk.dim("│");
+  };
+
+  process.stdout.write("\n");
+  process.stdout.write(top + "\n");
+  process.stdout.write(row("viewBox", viewBox) + "\n");
+  if (elements) process.stdout.write(row("elements", elements) + "\n");
+  process.stdout.write(bottom + "\n\n");
 };
 
 /**
