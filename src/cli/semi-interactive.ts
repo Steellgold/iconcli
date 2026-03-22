@@ -7,11 +7,12 @@ import { optimizeSVG } from "@/core/svg-processor";
 import { fetchSVGFromURL } from "@/core/url-fetcher";
 import { logger, spinner } from "@/utils/logger";
 import { previewSVGSideBySide } from "@/utils/svg-preview";
-import { extractIconNameFromURL, generateIconName } from "@/utils/naming";
+import { extractIconNameFromFilename, extractIconNameFromURL, generateIconName } from "@/utils/naming";
 import { isValidSVG } from "@/utils/validation";
 import fs from "fs/promises";
 import path from "path";
 import {
+  promptFilePath,
   promptIconName,
   promptSVGContent,
   promptSVGURL,
@@ -62,9 +63,12 @@ export const runSemiInteractive = async (options: SemiInteractiveOptions): Promi
       }
     } else {
       // file mode
-      const filePath = value || (await promptSVGContent()); // TODO: Add file prompt
+      const filePath = value
+        ? path.isAbsolute(value) ? value : path.resolve(process.cwd(), value)
+        : await promptFilePath();
       svgContent = await fs.readFile(filePath, "utf-8");
       svgSourcePath = filePath;
+      suggestedName = extractIconNameFromFilename(path.basename(filePath));
     }
 
     // Validate SVG

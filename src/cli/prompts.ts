@@ -125,6 +125,38 @@ export const promptSVGSource = async (): Promise<{
 };
 
 /**
+ * Prompt for an SVG file path with existence and extension validation.
+ * Returns the resolved absolute path.
+ */
+export const promptFilePath = async (): Promise<string> => {
+  const { existsSync } = await import("fs");
+  const path = await import("path");
+
+  const answer = await prompt<{ filePath: string }>({
+    type: "input",
+    name: "filePath",
+    message: "Enter path to SVG file:",
+    hint: "e.g. ./icons/arrow.svg",
+    validate: (input: string) => {
+      const trimmed = input.trim();
+      if (!trimmed) return "Path cannot be empty";
+
+      const abs = path.isAbsolute(trimmed) ? trimmed : path.resolve(process.cwd(), trimmed);
+      if (!existsSync(abs)) return `File not found: ${trimmed}`;
+
+      const ext = path.extname(abs).toLowerCase();
+      if (ext !== ".svg") return `Expected an .svg file, got: ${ext || "(no extension)"}`;
+
+      return true;
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any);
+
+  const trimmed = answer.filePath.trim();
+  return path.isAbsolute(trimmed) ? trimmed : path.resolve(process.cwd(), trimmed);
+};
+
+/**
  * Prompt for SVG content (paste)
  */
 export const promptSVGContent = async (): Promise<string> => {

@@ -23,6 +23,7 @@ import type { TablerStroke, TablerStyle } from "@/library/tabler";
 import type { IconMetadata } from "@/library/types";
 import { logger, spinner } from "@/utils/logger";
 import {
+  extractIconNameFromFilename,
   extractIconNameFromURL,
   extractLucideIconNameFromURL,
   generateIconName,
@@ -40,6 +41,7 @@ import {
   promptIconName,
   promptIconSize,
   promptMultipleURLs,
+  promptFilePath,
   promptSVGContent,
   promptSVGSource,
   promptSVGURL,
@@ -627,9 +629,10 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
         cachedLucideIcons = null;
       } else {
         // file source
-        const filePath = await promptSVGContent(); // TODO: Use file prompt
+        const filePath = await promptFilePath();
         svgContent = await fs.readFile(filePath, "utf-8");
         svgSourcePath = filePath;
+        suggestedName = extractIconNameFromFilename(path.basename(filePath));
         previousSource = null;
         previousLibraryMode = null;
         cachedLucideIcons = null;
