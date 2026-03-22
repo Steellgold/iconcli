@@ -16,6 +16,7 @@ import { insertHeaderComment } from "@/utils/header";
 import { logger } from "@/utils/logger";
 import type { DirectionVariant, VariantComponentData } from "@/types/variants";
 import http from "node:http";
+import type { Socket } from "node:net";
 import { exec } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -100,13 +101,13 @@ export const runStudio = async ({ projectRoot, config }: StudioOptions): Promise
       if (method === "GET" && pathname === "/api/library") {
         const lib = url.searchParams.get("lib") ?? "lucide";
         if (lib === "heroicons") {
-          if (!cachedHeroicons) cachedHeroicons = await fetchHeroiconList();
+          if (!cachedHeroicons) {cachedHeroicons = await fetchHeroiconList();}
           json(res, cachedHeroicons);
         } else if (lib === "tabler") {
-          if (!cachedTablerIcons) cachedTablerIcons = await fetchTablerIconList();
+          if (!cachedTablerIcons) {cachedTablerIcons = await fetchTablerIconList();}
           json(res, cachedTablerIcons);
         } else {
-          if (!cachedLucideIcons) cachedLucideIcons = await fetchLucideIcons();
+          if (!cachedLucideIcons) {cachedLucideIcons = await fetchLucideIcons();}
           json(res, cachedLucideIcons);
         }
         return;
@@ -261,7 +262,7 @@ export const runStudio = async ({ projectRoot, config }: StudioOptions): Promise
           delete lock[filename];
         }
         await writeLockFile(projectRoot, lock);
-        if (config.maintainIndex && ext) await updateIndexFile(iconsDir, ext);
+        if (config.maintainIndex && ext) {await updateIndexFile(iconsDir, ext);}
         json(res, { success: true, deleted: filenames.length });
         return;
       }
@@ -283,9 +284,9 @@ export const runStudio = async ({ projectRoot, config }: StudioOptions): Promise
 
         let finalContent = component.content;
         const lib = (entry as Record<string, string>).library;
-        if (lib === "lucide") finalContent = insertHeaderComment(component.content, generateLucideCopyright(newComponentName));
-        else if (lib === "heroicons") finalContent = insertHeaderComment(component.content, generateHeroiconsCopyright(newComponentName));
-        else if (lib === "tabler") finalContent = insertHeaderComment(component.content, generateTablerCopyright(newComponentName));
+        if (lib === "lucide") {finalContent = insertHeaderComment(component.content, generateLucideCopyright(newComponentName));}
+        else if (lib === "heroicons") {finalContent = insertHeaderComment(component.content, generateHeroiconsCopyright(newComponentName));}
+        else if (lib === "tabler") {finalContent = insertHeaderComment(component.content, generateTablerCopyright(newComponentName));}
 
         const iconsDir = path.join(projectRoot, config.baseDir, config.iconsFolder);
         await writeComponentFile({ projectRoot, baseDir: config.baseDir, iconsFolder: config.iconsFolder, filename: component.filename, content: finalContent });
@@ -294,7 +295,7 @@ export const runStudio = async ({ projectRoot, config }: StudioOptions): Promise
         delete lock[filename];
         lock[component.filename] = { ...(entry as object), componentName: newComponentName, filename: component.filename } as typeof lock[string];
         await writeLockFile(projectRoot, lock);
-        if (config.maintainIndex) await updateIndexFile(iconsDir, component.extension);
+        if (config.maintainIndex) {await updateIndexFile(iconsDir, component.extension);}
 
         json(res, { success: true, oldFilename: filename, newFilename: component.filename, componentName: newComponentName });
         return;
@@ -326,7 +327,7 @@ export const runStudio = async ({ projectRoot, config }: StudioOptions): Promise
 
         for (const [dir, slot] of Object.entries(body.slots)) {
           const variant = DIR_TO_VARIANT[dir];
-          if (!variant) continue;
+          if (!variant) {continue;}
 
           let svgContent: string;
           if (slot.library === "heroicons") {
@@ -378,7 +379,7 @@ export const runStudio = async ({ projectRoot, config }: StudioOptions): Promise
         );
 
         const iconsDir = path.join(projectRoot, config.baseDir, config.iconsFolder);
-        if (config.maintainIndex) await updateIndexFile(iconsDir, component.extension);
+        if (config.maintainIndex) {await updateIndexFile(iconsDir, component.extension);}
 
         // Store variant metadata in lock for studio display
         const lock2 = await readLockFile(projectRoot);
@@ -437,16 +438,16 @@ export const runStudio = async ({ projectRoot, config }: StudioOptions): Promise
     process.exit(1);
   });
 
-  const sockets = new Set<import("node:net").Socket>();
+  const sockets = new Set<Socket>();
   server.on("connection", (socket) => {
     sockets.add(socket);
     socket.once("close", () => sockets.delete(socket));
   });
 
-  const shutdown = () => {
+  const shutdown = (): void => {
     logger.newline();
     logger.info("Stopping mkicon studio...");
-    for (const socket of sockets) socket.destroy();
+    for (const socket of sockets) {socket.destroy();}
     server.close(() => process.exit(0));
     setTimeout(() => process.exit(0), 500).unref();
   };

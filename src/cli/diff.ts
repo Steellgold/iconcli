@@ -141,7 +141,7 @@ export const runDiff = async (options: DiffOptions): Promise<void> => {
     logger.print(chalk.dim(`  Source: ${r.sourcePath}\n`));
 
     const diffLines = computeLineDiff(r.currentContent, r.regeneratedContent);
-    process.stdout.write(renderDiff(diffLines) + "\n");
+    process.stdout.write(`${renderDiff(diffLines)  }\n`);
 
     const { action } = await prompt<{ action: string }>({
       type: "select",
@@ -155,7 +155,7 @@ export const runDiff = async (options: DiffOptions): Promise<void> => {
     });
 
     if (action === "show-full") {
-      process.stdout.write(renderDiff(diffLines, true) + "\n");
+      process.stdout.write(`${renderDiff(diffLines, true)  }\n`);
 
       const { after } = await prompt<{ after: string }>({
         type: "select",

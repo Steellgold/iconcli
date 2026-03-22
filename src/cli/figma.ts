@@ -31,14 +31,14 @@ const GLOBAL_CREDENTIALS_PATH = path.join(os.homedir(), ".mkicon", "credentials"
 
 /** Read FIGMA_TOKEN from an .env-style file (project or global). */
 const readTokenFromFile = async (filePath: string): Promise<string | undefined> => {
-  if (!existsSync(filePath)) return undefined;
+  if (!existsSync(filePath)) {return undefined;}
   try {
     const content = await fs.readFile(filePath, "utf-8");
     for (const line of content.split("\n")) {
       const trimmed = line.trim();
       if (trimmed.startsWith("FIGMA_TOKEN=")) {
         const value = trimmed.slice("FIGMA_TOKEN=".length).replace(/^["']|["']$/g, "").trim();
-        if (value) return value;
+        if (value) {return value;}
       }
     }
   } catch { /* ignore */ }
@@ -61,7 +61,7 @@ const writeTokenToFile = async (filePath: string, token: string): Promise<void> 
   if (idx !== -1) {
     lines[idx] = `FIGMA_TOKEN=${token}`;
   } else {
-    if (content && !content.endsWith("\n")) lines.push("");
+    if (content && !content.endsWith("\n")) {lines.push("");}
     lines.push(`FIGMA_TOKEN=${token}`);
   }
 
@@ -76,7 +76,7 @@ const ensureEnvInGitignore = async (projectRoot: string): Promise<boolean> => {
   if (existsSync(gitignorePath)) {
     content = await fs.readFile(gitignorePath, "utf-8");
     const lines = content.split("\n").map((l) => l.trim());
-    if (lines.includes(".env") || lines.includes("*.env")) return false;
+    if (lines.includes(".env") || lines.includes("*.env")) {return false;}
   }
 
   const toAppend = content && !content.endsWith("\n") ? "\n.env\n" : ".env\n";
@@ -92,8 +92,8 @@ const promptFigmaURL = async (): Promise<string> => {
     name: "url",
     message: "Figma URL:",
     validate: (value: string) => {
-      if (!value.trim()) return "URL is required";
-      if (!value.includes("figma.com")) return "Must be a valid Figma URL";
+      if (!value.trim()) {return "URL is required";}
+      if (!value.includes("figma.com")) {return "Must be a valid Figma URL";}
       return true;
     },
   });
@@ -111,17 +111,17 @@ const runTokenSetup = async (projectRoot: string): Promise<string> => {
   logger.newline();
   logger.print(chalk.bold("  How to get your Figma Personal Access Token:"));
   logger.newline();
-  logger.print("  1. Open Figma → click your " + chalk.bold("profile icon") + " (top left) → " + chalk.bold("Settings"));
-  logger.print("  2. Scroll to " + chalk.bold('"Personal access tokens"'));
-  logger.print('  3. Click ' + chalk.bold('"Generate new token"'));
-  logger.print("  4. Give it a name (e.g. " + chalk.cyan("mkicon") + ")");
+  logger.print(`  1. Open Figma → click your ${  chalk.bold("profile icon")  } (top left) → ${  chalk.bold("Settings")}`);
+  logger.print(`  2. Scroll to ${  chalk.bold('"Personal access tokens"')}`);
+  logger.print(`  3. Click ${  chalk.bold('"Generate new token"')}`);
+  logger.print(`  4. Give it a name (e.g. ${  chalk.cyan("mkicon")  })`);
   logger.print("  5. Set the following scope:");
   logger.newline();
-  logger.print("       " + chalk.green("✓") + " " + chalk.bold("File content") + "  →  " + chalk.cyan("file_content:read"));
+  logger.print(`       ${  chalk.green("✓")  } ${  chalk.bold("File content")  }  →  ${  chalk.cyan("file_content:read")}`);
   logger.newline();
   logger.print(chalk.gray("     All other scopes can be left off."));
   logger.newline();
-  logger.print('  6. Click ' + chalk.bold('"Generate token"') + " and copy it");
+  logger.print(`  6. Click ${  chalk.bold('"Generate token"')  } and copy it`);
   logger.newline();
   logger.print(chalk.gray("  ⚠  The token is only shown once — copy it before closing the dialog."));
   logger.newline();
@@ -193,13 +193,13 @@ const runTokenSetup = async (projectRoot: string): Promise<string> => {
  * 4. First-time guided setup
  */
 const resolveToken = async (projectRoot: string): Promise<string> => {
-  if (process.env.FIGMA_TOKEN) return process.env.FIGMA_TOKEN;
+  if (process.env.FIGMA_TOKEN) {return process.env.FIGMA_TOKEN;}
 
   const fromProject = await readTokenFromFile(path.join(projectRoot, ".env"));
-  if (fromProject) return fromProject;
+  if (fromProject) {return fromProject;}
 
   const fromGlobal = await readTokenFromFile(GLOBAL_CREDENTIALS_PATH);
-  if (fromGlobal) return fromGlobal;
+  if (fromGlobal) {return fromGlobal;}
 
   return runTokenSetup(projectRoot);
 };

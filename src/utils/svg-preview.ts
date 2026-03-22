@@ -60,7 +60,7 @@ export const previewSVGInTerminal = async (svgContent: string): Promise<void> =>
  * Strip ANSI escape codes from a string to get the visible character count.
  */
 export const stripAnsi = (str: string): string =>
-  // eslint-disable-next-line no-control-regex
+   
   str.replace(/\x1B\[[0-9;]*m/g, "");
 
 /**
@@ -75,9 +75,9 @@ export const padVisible = (str: string, width: number): string => {
  * Truncate a string to a max visible length, adding "…" if needed.
  */
 const truncate = (str: string, max: number): string => {
-  if (str.length <= max) return str;
+  if (str.length <= max) {return str;}
   // For paths, keep the end (filename) rather than the beginning
-  return "…" + str.slice(-(max - 1));
+  return `…${  str.slice(-(max - 1))}`;
 };
 
 /**
@@ -105,7 +105,7 @@ export const previewSVGSideBySide = async (
   // Build info lines — truncate values so they never overflow INFO_WIDTH
   const infoLines: string[] = [
     chalk.bold("  Preview"),
-    chalk.dim("  " + "─".repeat(INFO_WIDTH - 2)),
+    chalk.dim(`  ${  "─".repeat(INFO_WIDTH - 2)}`),
     ...info.map(({ label, value }) => {
       const truncatedValue = truncate(value, VALUE_MAX);
       return `  ${chalk.dim(label.padEnd(LABEL_WIDTH))} ${chalk.white(truncatedValue)}`;
@@ -147,9 +147,9 @@ const printAsciiPreview = (svgContent: string): void => {
   ].filter(Boolean).join(", ");
 
   const W = 36;
-  const top    = chalk.dim("  ╭" + "─".repeat(W) + "╮");
-  const bottom = chalk.dim("  ╰" + "─".repeat(W) + "╯");
-  const row = (label: string, value: string) => {
+  const top    = chalk.dim(`  ╭${  "─".repeat(W)  }╮`);
+  const bottom = chalk.dim(`  ╰${  "─".repeat(W)  }╯`);
+  const row = (label: string, value: string): string => {
     const line = ` ${chalk.dim(label.padEnd(10))} ${chalk.white(value)}`;
     const visible = label.length + 1 + value.length + 2;
     const pad = " ".repeat(Math.max(0, W - visible));
@@ -157,10 +157,10 @@ const printAsciiPreview = (svgContent: string): void => {
   };
 
   process.stdout.write("\n");
-  process.stdout.write(top + "\n");
-  process.stdout.write(row("viewBox", viewBox) + "\n");
-  if (elements) process.stdout.write(row("elements", elements) + "\n");
-  process.stdout.write(bottom + "\n\n");
+  process.stdout.write(`${top  }\n`);
+  process.stdout.write(`${row("viewBox", viewBox)  }\n`);
+  if (elements) {process.stdout.write(`${row("elements", elements)  }\n`);}
+  process.stdout.write(`${bottom  }\n\n`);
 };
 
 /**

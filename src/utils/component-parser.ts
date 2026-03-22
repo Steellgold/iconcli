@@ -31,13 +31,13 @@ const removeJsxExpressions = (str: string): string => {
 
 export const extractSvgFromComponent = (content: string): string | null => {
   const svgMatch = content.match(/<svg[\s\S]*?<\/svg>/);
-  if (!svgMatch) return null;
+  if (!svgMatch) {return null;}
 
-  let svg = svgMatch[0];
+  const svg = svgMatch[0];
 
   // --- Fix the opening <svg ...> tag ---
   const openTagEnd = svg.indexOf(">");
-  if (openTagEnd === -1) return null;
+  if (openTagEnd === -1) {return null;}
 
   let openTag = svg.slice(0, openTagEnd + 1);
 
@@ -52,19 +52,19 @@ export const extractSvgFromComponent = (content: string): string | null => {
 
   // Add essential missing attributes with safe defaults
   if (!openTag.includes("width="))
-    openTag = openTag.replace("<svg", `<svg width="24"`);
+    {openTag = openTag.replace("<svg", `<svg width="24"`);}
   if (!openTag.includes("height="))
-    openTag = openTag.replace("<svg", `<svg height="24"`);
+    {openTag = openTag.replace("<svg", `<svg height="24"`);}
   if (!openTag.includes("stroke="))
-    openTag = openTag.replace("<svg", `<svg stroke="currentColor"`);
+    {openTag = openTag.replace("<svg", `<svg stroke="currentColor"`);}
   if (!openTag.includes("stroke-width="))
-    openTag = openTag.replace("<svg", `<svg stroke-width="2"`);
+    {openTag = openTag.replace("<svg", `<svg stroke-width="2"`);}
   if (!openTag.includes("stroke-linecap="))
-    openTag = openTag.replace("<svg", `<svg stroke-linecap="round"`);
+    {openTag = openTag.replace("<svg", `<svg stroke-linecap="round"`);}
   if (!openTag.includes("stroke-linejoin="))
-    openTag = openTag.replace("<svg", `<svg stroke-linejoin="round"`);
+    {openTag = openTag.replace("<svg", `<svg stroke-linejoin="round"`);}
   if (!openTag.includes("fill="))
-    openTag = openTag.replace("<svg", `<svg fill="none"`);
+    {openTag = openTag.replace("<svg", `<svg fill="none"`);}
 
   // Normalise whitespace in the opening tag
   openTag = openTag.replace(/\s+/g, " ").replace("< svg", "<svg");

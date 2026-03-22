@@ -6,7 +6,6 @@ import { generateComponent, generateComponents } from "@/core/component-generato
 import { writeComponentFile, writeMultiFrameworkComponents } from "@/core/file-writer";
 import { updateIndexFile } from "@/core/index-maintainer";
 import { trackGeneratedComponent } from "@/core/diff-checker";
-import { optimizeSVG } from "@/core/svg-processor";
 import { previewSVGSideBySide } from "@/utils/svg-preview";
 import type { Config } from "@/config/schema";
 import fs from "fs/promises";
@@ -66,30 +65,30 @@ const OPENAI_MODELS: ModelEntry[] = [
   { alias: "gpt-oss",    id: "gpt-4o",            provider: "openai", label: "gpt-oss-120b — Open-weight" },
 ];
 const ALL_MODELS = [...CLAUDE_MODELS, ...OPENAI_MODELS];
-const findModel = (alias: string) => ALL_MODELS.find(m => m.alias === alias.toLowerCase());
+const findModel = (alias: string): ModelEntry | undefined => ALL_MODELS.find(m => m.alias === alias.toLowerCase());
 
 // ── API key helpers ───────────────────────────────────────────────────────────
 
-const credsDirPath = () => path.join(process.env.HOME ?? process.env.USERPROFILE ?? "~", ".mkicon");
+const credsDirPath = (): string => path.join(process.env.HOME ?? process.env.USERPROFILE ?? "~", ".mkicon");
 
 const getApiKey = async (provider: Provider): Promise<string> => {
   const envKey = provider === "claude" ? "ANTHROPIC_API_KEY" : "OPENAI_API_KEY";
-  if (process.env[envKey]) return process.env[envKey]!;
+  if (process.env[envKey]) {return process.env[envKey]!;}
   try {
     const envFile = await fs.readFile(path.join(process.cwd(), ".env"), "utf-8");
     const m = envFile.match(new RegExp(`^${envKey}=(.+)$`, "m"));
-    if (m) return m[1].trim();
+    if (m) {return m[1].trim();}
   } catch { /* */ }
   const credsPath = path.join(credsDirPath(), "credentials");
   try {
     const creds = await fs.readFile(credsPath, "utf-8");
     const m = creds.match(new RegExp(`^${envKey}=(.+)$`, "m"));
-    if (m) return m[1].trim();
+    if (m) {return m[1].trim();}
   } catch { /* */ }
   throw new Error(`No ${envKey} found. Run: mkicon ai --setup`);
 };
 
-const saveApiKey = async (envKey: string, value: string) => {
+const saveApiKey = async (envKey: string, value: string): Promise<void> => {
   const dir = credsDirPath();
   await fs.mkdir(dir, { recursive: true });
   const credsPath = path.join(dir, "credentials");
@@ -98,7 +97,7 @@ const saveApiKey = async (envKey: string, value: string) => {
   const regex = new RegExp(`^${envKey}=.*$`, "m");
   const updated = regex.test(existing)
     ? existing.replace(regex, `${envKey}=${value}`)
-    : existing + `${envKey}=${value}\n`;
+    : `${existing  }${envKey}=${value}\n`;
   await fs.writeFile(credsPath, updated, "utf-8");
 };
 
@@ -126,7 +125,7 @@ const callOpenAI = async (apiKey: string, modelId: string, system: string, messa
   return res.choices[0]?.message?.content ?? "";
 };
 
-const call = (provider: Provider, apiKey: string, modelId: string, system: string, messages: ChatMessage[]) =>
+const call = (provider: Provider, apiKey: string, modelId: string, system: string, messages: ChatMessage[]): Promise<string> =>
   provider === "claude"
     ? callClaude(apiKey, modelId, system, messages)
     : callOpenAI(apiKey, modelId, system, messages);
@@ -138,9 +137,9 @@ interface ParsedGeneration { name: string; svg: string; }
 const parseGeneration = (text: string): ParsedGeneration | null => {
   const nameMatch = text.match(/^NAME:\s*([A-Za-z][A-Za-z0-9]*)Icon?\b/m);
   const svgMatch  = text.match(/<svg[\s\S]*?<\/svg>/i);
-  if (!svgMatch) return null;
+  if (!svgMatch) {return null;}
   const rawName = nameMatch?.[1] ?? "Custom";
-  const name = rawName.endsWith("Icon") ? rawName : rawName + "Icon";
+  const name = rawName.endsWith("Icon") ? rawName : `${rawName  }Icon`;
   return { name, svg: svgMatch[0].trim() };
 };
 
@@ -149,7 +148,7 @@ const parseGeneration = (text: string): ParsedGeneration | null => {
 const saveComponent = async (
   svg: string, viewBox: string, componentName: string,
   projectRoot: string, config: Config,
-) => {
+): Promise<string[]> => {
   const isMulti = config.frameworks && config.frameworks.length > 1;
   const svgSourcePath = "ai-generated";
 
@@ -185,7 +184,7 @@ const saveComponent = async (
 
 // ── Setup flow ────────────────────────────────────────────────────────────────
 
-const runSetup = async () => {
+const runSetup = async (): Promise<void> => {
   logger.info("AI Icon Generator — Setup");
   logger.newline();
 
@@ -297,10 +296,10 @@ export const runAi = async (options: AiOptions): Promise<void> => {
         [{ role: "user", content: `Icon idea: "${userInput}". Style hint: ${styleHint}.` }],
       );
       logger.newline();
-      logger.print("  " + expandedConcept.split("\n").join("\n  "));
+      logger.print(`  ${  expandedConcept.split("\n").join("\n  ")}`);
       logger.newline();
     } catch (err) {
-      logger.error("Concept expansion failed: " + String(err));
+      logger.error(`Concept expansion failed: ${  String(err)}`);
       return;
     }
 
@@ -322,7 +321,7 @@ export const runAi = async (options: AiOptions): Promise<void> => {
       currentViewBox = vbMatch?.[1] ?? "0 0 24 24";
 
     } catch (err) {
-      logger.error("Generation failed: " + String(err));
+      logger.error(`Generation failed: ${  String(err)}`);
       return;
     }
 
@@ -352,7 +351,7 @@ export const runAi = async (options: AiOptions): Promise<void> => {
           hint: "[TAB to accept suggestion]",
           validate: (v: string) => v.trim() ? true : "Cannot be empty",
         } as never);
-        const componentName = name.trim().endsWith("Icon") ? name.trim() : name.trim() + "Icon";
+        const componentName = name.trim().endsWith("Icon") ? name.trim() : `${name.trim()  }Icon`;
         logger.info(`Creating ${componentName}…`);
         try {
           const filePaths = await saveComponent(
@@ -367,7 +366,7 @@ export const runAi = async (options: AiOptions): Promise<void> => {
           logger.print(`  import { ${componentName} } from '@/components/icons';`);
           logger.print(`  <${componentName} size={24} />`);
         } catch (err) {
-          logger.error("Failed: " + String(err));
+          logger.error(`Failed: ${  String(err)}`);
         }
         keepGoing = false;
         break;
@@ -410,13 +409,13 @@ export const runAi = async (options: AiOptions): Promise<void> => {
               initial: suggestedName, hint: "[TAB to accept]",
               validate: (v: string) => v.trim() ? true : "Cannot be empty",
             } as never);
-            const componentName = name.trim().endsWith("Icon") ? name.trim() : name.trim() + "Icon";
+            const componentName = name.trim().endsWith("Icon") ? name.trim() : `${name.trim()  }Icon`;
             logger.info(`Creating ${componentName}…`);
             try {
               const filePaths = await saveComponent(currentSvg!, currentViewBox, componentName, options.projectRoot, options.config);
               logger.success(`${componentName} created!`);
-              for (const fp of filePaths) logger.print(`  📁 ${path.relative(options.projectRoot, fp)}`);
-            } catch (err) { logger.error("Failed: " + String(err)); }
+              for (const fp of filePaths) {logger.print(`  📁 ${path.relative(options.projectRoot, fp)}`);}
+            } catch (err) { logger.error(`Failed: ${  String(err)}`); }
             keepGoing = false;
           } else if (action2 === "restart") {
             const { newDesc } = await prompt<{ newDesc: string }>({
@@ -429,7 +428,7 @@ export const runAi = async (options: AiOptions): Promise<void> => {
           }
           // if "refine" again — fall through to top of while loop (messages carry context)
         } catch (err) {
-          logger.error("Refinement failed: " + String(err));
+          logger.error(`Refinement failed: ${  String(err)}`);
         }
         break;
       }

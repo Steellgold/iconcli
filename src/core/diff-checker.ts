@@ -54,10 +54,10 @@ export const writeLockFile = async (projectRoot: string, lock: LockFile): Promis
 const addToGitignore = async (projectRoot: string): Promise<void> => {
   const gitignorePath = path.join(projectRoot, ".gitignore");
 
-  if (!existsSync(gitignorePath)) return;
+  if (!existsSync(gitignorePath)) {return;}
 
   const content = await fs.readFile(gitignorePath, "utf-8");
-  if (content.includes(LOCK_FILENAME)) return;
+  if (content.includes(LOCK_FILENAME)) {return;}
 
   const newline = content.endsWith("\n") ? "" : "\n";
   await fs.appendFile(gitignorePath, `${newline}# mkicon\n${LOCK_FILENAME}\n`);
@@ -137,12 +137,12 @@ export const rebuildLockFile = async (projectRoot: string, iconsDir: string): Pr
 
   const supported = [".tsx", ".ts", ".jsx", ".js", ".vue", ".svelte"];
 
-  if (!existsSync(iconsDir)) return;
+  if (!existsSync(iconsDir)) {return;}
 
   const files = await fs.readdir(iconsDir);
   const components = files.filter((f) => supported.includes(path.extname(f)));
 
-  if (components.length === 0) return;
+  if (components.length === 0) {return;}
 
   // Collect all SVG files in the project for source matching
   const allSvgFiles = await findSvgFiles(projectRoot);
@@ -175,7 +175,7 @@ export const rebuildLockFile = async (projectRoot: string, iconsDir: string): Pr
       // No SVG source found — use the component file itself.
       // Store hash of the full component content so the source-changed check stays accurate.
       svgContent = extractSvgFromComponent(content);
-      if (!svgContent) continue;
+      if (!svgContent) {continue;}
 
       sourcePath = path.relative(projectRoot, filePath);
       lock[filename] = {
@@ -194,7 +194,7 @@ export const rebuildLockFile = async (projectRoot: string, iconsDir: string): Pr
 };
 
 const findSvgFiles = async (dir: string, depth = 0): Promise<string[]> => {
-  if (depth > 4) return [];
+  if (depth > 4) {return [];}
   const results: string[] = [];
   let entries: string[];
   try {
@@ -203,7 +203,7 @@ const findSvgFiles = async (dir: string, depth = 0): Promise<string[]> => {
     return [];
   }
   for (const entry of entries) {
-    if (entry.startsWith(".") || entry === "node_modules" || entry === "dist") continue;
+    if (entry.startsWith(".") || entry === "node_modules" || entry === "dist") {continue;}
     const full = path.join(dir, entry);
     try {
       const stat = await fs.stat(full);
@@ -236,13 +236,13 @@ const findMatchingSvg = (componentName: string, svgFiles: string[]): string | nu
 
   for (const svgPath of svgFiles) {
     const stem = path.basename(svgPath, ".svg").toLowerCase();
-    if (candidates.includes(stem)) return svgPath;
+    if (candidates.includes(stem)) {return svgPath;}
   }
 
   // Looser match: component name contains the svg stem
   for (const svgPath of svgFiles) {
     const stem = path.basename(svgPath, ".svg").toLowerCase();
-    if (kebab.includes(stem) || stem.includes(kebab)) return svgPath;
+    if (kebab.includes(stem) || stem.includes(kebab)) {return svgPath;}
   }
 
   return null;

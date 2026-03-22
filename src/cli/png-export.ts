@@ -74,12 +74,12 @@ const getSvgForComponent = async (
   // Prefer lock file — original clean SVG
   const lock = await readLockFile(projectRoot);
   const entry = lock[filename];
-  if (entry?.svgContent) return entry.svgContent;
+  if (entry?.svgContent) {return entry.svgContent;}
 
   // Fallback: extract from component source
   const content = await fs.readFile(absPath, "utf-8");
   const svg = extractSvgFromComponent(content);
-  if (!svg) throw new Error(`Could not extract SVG from ${filename}`);
+  if (!svg) {throw new Error(`Could not extract SVG from ${filename}`);}
   return svg;
 };
 
@@ -90,14 +90,14 @@ const resolveComponentPath = async (
 ): Promise<string> => {
   // Absolute or relative path
   const abs = path.isAbsolute(input) ? input : path.resolve(process.cwd(), input);
-  if (existsSync(abs)) return abs;
+  if (existsSync(abs)) {return abs;}
 
   // Try as component name in the icons folder
   if (config) {
     const iconsDir = path.join(projectRoot, config.baseDir, config.iconsFolder);
     for (const ext of SUPPORTED_EXTS) {
       const candidate = path.join(iconsDir, `${input}${ext}`);
-      if (existsSync(candidate)) return candidate;
+      if (existsSync(candidate)) {return candidate;}
     }
   }
 

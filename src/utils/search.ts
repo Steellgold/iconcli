@@ -15,13 +15,13 @@ export const scoreIcon = (icon: IconMetadata, query: string): number => {
   const q = query.toLowerCase();
   const name = icon.name.toLowerCase();
 
-  if (name === q) return 4;
-  if (name.startsWith(q + "-") || name.startsWith(q + "_")) return 3;
+  if (name === q) {return 4;}
+  if (name.startsWith(`${q  }-`) || name.startsWith(`${q  }_`)) {return 3;}
   // word boundary: query matches a full segment separated by - or _
   const segments = name.split(/[-_]/);
-  if (segments.some((s) => s === q)) return 2;
-  if (name.includes(q)) return 1;
-  if (icon.tags?.some((t) => t.toLowerCase().includes(q))) return 0;
+  if (segments.some((s) => s === q)) {return 2;}
+  if (name.includes(q)) {return 1;}
+  if (icon.tags?.some((t) => t.toLowerCase().includes(q))) {return 0;}
   return -1;
 };
 
@@ -30,7 +30,7 @@ export const scoreIcon = (icon: IconMetadata, query: string): number => {
  * Icons with no match (score -1) are excluded.
  */
 export const rankIcons = (icons: IconMetadata[], query: string): IconMetadata[] => {
-  if (!query) return icons;
+  if (!query) {return icons;}
   return icons
     .map((icon) => ({ icon, score: scoreIcon(icon, query) }))
     .filter(({ score }) => score >= 0)

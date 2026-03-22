@@ -49,6 +49,6 @@ export const commands: CommandDef[] = [
 ];
 
 export const findCommand = (name: string | undefined): CommandDef | undefined => {
-  if (!name) return undefined;
+  if (!name) {return undefined;}
   return commands.find((c) => c.name === name || c.aliases?.includes(name));
 };

@@ -43,9 +43,9 @@ export const runPreview = async (options: PreviewOptions): Promise<void> => {
     if (existsSync(iconsDir)) {
       const files = await fs.readdir(iconsDir);
       for (const file of files) {
-        if (allComponents.some((c) => c.name.toLowerCase() === file.toLowerCase())) continue;
+        if (allComponents.some((c) => c.name.toLowerCase() === file.toLowerCase())) {continue;}
         const ext = path.extname(file);
-        if (![".tsx", ".ts", ".jsx", ".js", ".vue", ".svelte"].includes(ext)) continue;
+        if (![".tsx", ".ts", ".jsx", ".js", ".vue", ".svelte"].includes(ext)) {continue;}
         const filePath = path.join(iconsDir, file);
         const content = await fs.readFile(filePath, "utf-8");
         const svgContent = extractSvgFromComponent(content);
@@ -91,7 +91,7 @@ export const runPreview = async (options: PreviewOptions): Promise<void> => {
     initial: componentName ?? "",
     choices,
     suggest(input: string, choiceList: Record<string, unknown>[]) {
-      if (!input) return choiceList;
+      if (!input) {return choiceList;}
       const lower = input.toLowerCase();
       return choiceList.filter((c) => String(c.name ?? "").toLowerCase().includes(lower));
     },

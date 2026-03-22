@@ -30,19 +30,19 @@ export const runList = async ({ projectRoot, config }: ListOptions): Promise<voi
   const nameWidth = Math.max(9, ...entries.map(([, e]) => e.componentName.length));
   const fileWidth = Math.max(4, ...entries.map(([f]) => f.length));
 
-  const pad = (s: string, n: number) => s.padEnd(n);
+  const pad = (s: string, n: number): string => s.padEnd(n);
 
   // Header
   logger.print(
-    chalk.bold(pad("Component", nameWidth)) +
-    "  " +
-    chalk.bold(pad("File", fileWidth)) +
-    "  " +
-    chalk.bold(pad("Library", 12)) +
-    "  " +
-    chalk.bold(pad("Size", 6)) +
-    "  " +
-    chalk.bold("Added")
+    `${chalk.bold(pad("Component", nameWidth)) 
+    }  ${ 
+    chalk.bold(pad("File", fileWidth)) 
+    }  ${ 
+    chalk.bold(pad("Library", 12)) 
+    }  ${ 
+    chalk.bold(pad("Size", 6)) 
+    }  ${ 
+    chalk.bold("Added")}`
   );
   logger.print(chalk.gray("─".repeat(nameWidth + fileWidth + 40)));
 

@@ -105,7 +105,7 @@ export const runDelete = async ({ projectRoot, config, componentName }: DeleteOp
   for (const filename of answer.filenames) {
     const entry = lock[filename];
     await deleteOne(projectRoot, iconsDir, lock, filename);
-    if (entry) logger.success(`Deleted ${entry.componentName}`);
+    if (entry) {logger.success(`Deleted ${entry.componentName}`);}
     ext = path.extname(filename);
   }
 

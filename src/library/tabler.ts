@@ -16,7 +16,7 @@ const TABLER_LIBRARY: IconLibrary = {
 const GITHUB_ICONS_CONTENTS_API =
   "https://api.github.com/repos/tabler/tabler-icons/contents/icons";
 // GitHub Git Trees API — fetches a flat directory tree without the 1000-item Contents API limit
-const GITHUB_TREE_API = (sha: string) =>
+const GITHUB_TREE_API = (sha: string): string =>
   `https://api.github.com/repos/tabler/tabler-icons/git/trees/${sha}`;
 const RAW_BASE =
   "https://raw.githubusercontent.com/tabler/tabler-icons/main/icons";
@@ -129,7 +129,7 @@ export const parseTablerURL = (
     const match = url.match(
       /raw\.githubusercontent\.com\/tabler\/tabler-icons\/[^/]+\/icons\/(outline|filled)\/([^/]+)\.svg/
     );
-    if (!match) return null;
+    if (!match) {return null;}
 
     const style = match[1] as TablerStyle;
     const iconName = match[2];

@@ -23,15 +23,15 @@ export const insertHeaderComment = (content: string, comment: string): string =>
   // JS/TS block comment: ends with "*/\n\n"
   const jsEnd = content.indexOf("*/\n\n");
   if (jsEnd !== -1) {
-    return content.slice(0, jsEnd + 4) + comment + "\n\n" + content.slice(jsEnd + 4);
+    return `${content.slice(0, jsEnd + 4) + comment  }\n\n${  content.slice(jsEnd + 4)}`;
   }
 
   // Vue/Svelte HTML comment: ends with "-->\n"
   const htmlEnd = content.indexOf("-->\n");
   if (htmlEnd !== -1) {
-    return content.slice(0, htmlEnd + 4) + comment + "\n\n" + content.slice(htmlEnd + 4);
+    return `${content.slice(0, htmlEnd + 4) + comment  }\n\n${  content.slice(htmlEnd + 4)}`;
   }
 
   // Fallback: prepend
-  return comment + "\n\n" + content;
+  return `${comment  }\n\n${  content}`;
 };

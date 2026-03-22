@@ -1,8 +1,5 @@
 import type { Config } from "@/config/schema";
 
-const toKebab = (name: string): string =>
-  name.replace(/([A-Z])/g, (_, c, i) => (i === 0 ? c.toLowerCase() : `-${c.toLowerCase()}`));
-
 export const generateStudioHTML = (config: Config): string => {
   const activeFrameworks = config.frameworks ?? [config.framework];
   const iconsPath = `@/${config.baseDir}/${config.iconsFolder}`;

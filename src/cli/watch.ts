@@ -40,9 +40,9 @@ export const runWatch = async (options: WatchOptions): Promise<void> => {
   // Pending debounce timers per file
   const timers = new Map<string, ReturnType<typeof setTimeout>>();
 
-  const schedule = (svgPath: string, event: "add" | "change" | "unlink") => {
+  const schedule = (svgPath: string, event: "add" | "change" | "unlink"): void => {
     const existing = timers.get(svgPath);
-    if (existing) clearTimeout(existing);
+    if (existing) {clearTimeout(existing);}
 
     timers.set(
       svgPath,
@@ -53,7 +53,7 @@ export const runWatch = async (options: WatchOptions): Promise<void> => {
     );
   };
 
-  const handle = async (svgPath: string, event: "add" | "change" | "unlink") => {
+  const handle = async (svgPath: string, event: "add" | "change" | "unlink"): Promise<void> => {
     const rel = path.relative(resolvedDir, svgPath);
 
     if (event === "unlink") {
@@ -79,19 +79,19 @@ export const runWatch = async (options: WatchOptions): Promise<void> => {
     },
     ignored: /(^|[/\\])\../,  // ignore dot-files
   }).on("add", (p) => {
-    if (p.endsWith(".svg")) schedule(p, "add");
+    if (p.endsWith(".svg")) {schedule(p, "add");}
   }).on("change", (p) => {
-    if (p.endsWith(".svg")) schedule(p, "change");
+    if (p.endsWith(".svg")) {schedule(p, "change");}
   }).on("unlink", (p) => {
-    if (p.endsWith(".svg")) schedule(p, "unlink");
+    if (p.endsWith(".svg")) {schedule(p, "unlink");}
   }).on("error", (err) => {
     logger.error(`Watcher error: ${String(err)}`);
   });
 
-  const shutdown = async () => {
+  const shutdown = async (): Promise<void> => {
     logger.newline();
     logger.info("Stopping watcher...");
-    for (const t of timers.values()) clearTimeout(t);
+    for (const t of timers.values()) {clearTimeout(t);}
     await watcher.close();
     logger.success("Done.");
     process.exit(0);

@@ -95,8 +95,8 @@ const countProject = async (projectRoot: string, config: Config): Promise<void> 
       const filePath = path.join(iconsDir, filename);
       const relPath = path.relative(projectRoot, filePath);
       const meta: string[] = [];
-      if (entry.library) meta.push(entry.library);
-      if (entry.iconSize) meta.push(`${entry.iconSize}px`);
+      if (entry.library) {meta.push(entry.library);}
+      if (entry.iconSize) {meta.push(`${entry.iconSize}px`);}
       const metaStr = meta.length > 0 ? ` (${meta.join(", ")})` : "";
       logger.print(`    ${relPath}${metaStr}`);
     }

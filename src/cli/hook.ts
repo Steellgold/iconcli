@@ -175,21 +175,21 @@ export const runHook = async (options: HookOptions): Promise<void> => {
       await rebuildLockFile(projectRoot, iconsDir);
       lock = await readLockFile(projectRoot);
     }
-    if (Object.keys(lock).length === 0) process.exit(0);
+    if (Object.keys(lock).length === 0) {process.exit(0);}
   }
 
   const stagedIconFiles = getStagedIconFiles(projectRoot, config);
-  if (stagedIconFiles.length === 0) process.exit(0);
+  if (stagedIconFiles.length === 0) {process.exit(0);}
 
   const drifted: string[] = [];
 
   for (const relPath of stagedIconFiles) {
     const filename = path.basename(relPath);
     const entry = lock[filename];
-    if (!entry) continue;
+    if (!entry) {continue;}
 
     const stagedContent = getStagedContent(projectRoot, relPath);
-    if (stagedContent === null) continue;
+    if (stagedContent === null) {continue;}
 
     const processed = await optimizeSVG(entry.svgContent, config.optimize);
     const generated = await generateComponent({
@@ -204,7 +204,7 @@ export const runHook = async (options: HookOptions): Promise<void> => {
     }
   }
 
-  if (drifted.length === 0) process.exit(0);
+  if (drifted.length === 0) {process.exit(0);}
 
   process.stderr.write(`\nmkicon: ${drifted.length} icon component(s) have been manually edited:\n`);
   for (const f of drifted) {
@@ -218,7 +218,7 @@ export const runHook = async (options: HookOptions): Promise<void> => {
 
     for (const filename of drifted) {
       const entry = lock[filename];
-      if (!entry) continue;
+      if (!entry) {continue;}
 
       const processed = await optimizeSVG(entry.svgContent, config.optimize);
       const generated = await generateComponent({

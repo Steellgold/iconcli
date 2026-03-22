@@ -81,7 +81,7 @@ export const fetchHeroicon = async (
  * Only size 24 has the outline variant.
  */
 export const getAvailableStyles = (size: HeroiconSize): HeroiconStyle[] => {
-  if (size === 24) return ["solid", "outline"];
+  if (size === 24) {return ["solid", "outline"];}
   return ["solid"];
 };
 
@@ -104,13 +104,13 @@ export const parseHeroiconURL = (
     const match = url.match(
       /raw\.githubusercontent\.com\/tailwindlabs\/heroicons\/[^/]+\/src\/(\d+)\/(solid|outline)\/([^/]+)\.svg/
     );
-    if (!match) return null;
+    if (!match) {return null;}
 
     const size = parseInt(match[1], 10) as HeroiconSize;
-    if (![16, 20, 24].includes(size)) return null;
+    if (![16, 20, 24].includes(size)) {return null;}
 
     const style = match[2] as HeroiconStyle;
-    if (style === "outline" && size !== 24) return null;
+    if (style === "outline" && size !== 24) {return null;}
 
     return { iconName: match[3], size, style };
   } catch {

@@ -117,7 +117,7 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
 
       let svgContent: string;
       let suggestedName: string | null = null;
-      let copyrightHeader: string | null = null;
+      const copyrightHeader: string | null = null;
       let currentLibraryMode: "search" | "urls" | null = null;
       let svgSourcePath = "source:paste";
       let iconLibrary: string | undefined;
@@ -375,8 +375,8 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
             icons = await fetchTablerIconList(tablerBulkStyle);
             fetchSpinner.succeed(`Loaded ${icons.length} ${tablerBulkStyle} icons from Tabler Icons`);
             logger.newline();
-            if (tablerBulkStyle === "filled") cachedTablerFilled = icons;
-            else cachedTablerOutline = icons;
+            if (tablerBulkStyle === "filled") {cachedTablerFilled = icons;}
+            else {cachedTablerOutline = icons;}
           }
         } else {
           if (cachedLucideIcons) {
@@ -455,7 +455,7 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
           });
 
           const picked = (await ac.run()) as string;
-          if (picked === "__done__") break;
+          if (picked === "__done__") {break;}
           selectedIconNames.push(picked);
         }
 
@@ -464,7 +464,7 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
           createAnother = await promptCreateAnother();
           previousSource = null;
           previousLibraryMode = null;
-          if (createAnother) logger.newline();
+          if (createAnother) {logger.newline();}
           continue;
         }
 
@@ -560,7 +560,7 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
               }
             );
 
-            if (!extensionForIndex) extensionForIndex = component.extension;
+            if (!extensionForIndex) {extensionForIndex = component.extension;}
             successCount += 1;
           } catch (error) {
             const reason = error instanceof Error ? error.message : "Unknown error";
@@ -600,7 +600,7 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
           cachedHeroicons = null;
         cachedTablerOutline = null; cachedTablerFilled = null;
         }
-        if (createAnother) logger.newline();
+        if (createAnother) {logger.newline();}
         continue;
       } else if (source === "paste") {
         svgContent = await promptSVGContent();

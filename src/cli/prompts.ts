@@ -24,7 +24,7 @@ export const promptSetupConfig = async (): Promise<Partial<Config>> => {
       message:
         'Where do you want to create your icons?\n  (An "icons" subfolder will be created automatically)\n  \n  Examples:\n  • src/components  → src/components/icons/\n  • app/ui          → app/ui/icons/\n  • lib             → lib/icons/\n  \n  Path:',
       initial: "src/components",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       hint: "[TAB to complete]",
     } as any,
     {
@@ -139,13 +139,13 @@ export const promptFilePath = async (): Promise<string> => {
     hint: "e.g. ./icons/arrow.svg",
     validate: (input: string) => {
       const trimmed = input.trim();
-      if (!trimmed) return "Path cannot be empty";
+      if (!trimmed) {return "Path cannot be empty";}
 
       const abs = path.isAbsolute(trimmed) ? trimmed : path.resolve(process.cwd(), trimmed);
-      if (!existsSync(abs)) return `File not found: ${trimmed}`;
+      if (!existsSync(abs)) {return `File not found: ${trimmed}`;}
 
       const ext = path.extname(abs).toLowerCase();
-      if (ext !== ".svg") return `Expected an .svg file, got: ${ext || "(no extension)"}`;
+      if (ext !== ".svg") {return `Expected an .svg file, got: ${ext || "(no extension)"}`;}
 
       return true;
     },
@@ -264,7 +264,7 @@ export const promptHeroiconSize = async (): Promise<HeroiconSize> => {
  * If size is 16 or 20, only "solid" is available and returned immediately.
  */
 export const promptHeroiconStyle = async (size: HeroiconSize): Promise<HeroiconStyle> => {
-  if (size !== 24) return "solid";
+  if (size !== 24) {return "solid";}
 
   const answer = await prompt<{ style: HeroiconStyle }>({
     type: "select",
@@ -333,7 +333,7 @@ export const promptIconSize = async (): Promise<number | null> => {
     ],
   });
 
-  if (answer.size === "skip") return null;
+  if (answer.size === "skip") {return null;}
   if (answer.size === "custom") {
     const customAnswer = await prompt<{ customSize: string }>({
       type: "input",
@@ -341,7 +341,7 @@ export const promptIconSize = async (): Promise<number | null> => {
       message: "Enter icon size (px):",
       validate: (input: string) => {
         const n = parseInt(input, 10);
-        if (isNaN(n) || n <= 0) return "Please enter a valid positive number";
+        if (isNaN(n) || n <= 0) {return "Please enter a valid positive number";}
         return true;
       },
     });

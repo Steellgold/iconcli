@@ -19,10 +19,10 @@ const normaliseArgv = (argv: string[]): string[] =>
   argv.map((arg) => {
     if (arg.startsWith("--") && !arg.startsWith("---")) {
       const rest = arg.slice(2);
-      if (rest.length === 1) return `-${rest}`;
+      if (rest.length === 1) {return `-${rest}`;}
     } else if (arg.startsWith("-") && !arg.startsWith("--")) {
       const rest = arg.slice(1);
-      if (rest.length > 1 && !rest.startsWith("-")) return `--${rest}`;
+      if (rest.length > 1 && !rest.startsWith("-")) {return `--${rest}`;}
     }
     return arg;
   });
@@ -39,7 +39,7 @@ const buildContext = (projectRoot: string): CommandContext => {
       ? (loadConfig(projectRoot, customConfigPath) ?? undefined)
       : undefined;
 
-  const requireConfig = () => {
+  const requireConfig = (): NonNullable<typeof config> => {
     if (!config) {
       logger.error("No configuration found. Please run `mkicon` first to set up the project.");
       process.exit(1);
@@ -89,7 +89,7 @@ const main = async (): Promise<void> => {
 
     // ── CLI flags / interactive mode (Commander) ────────────────────────────
     const program = createProgram();
-    if (process.argv.length > 2) program.parse(process.argv);
+    if (process.argv.length > 2) {program.parse(process.argv);}
     const options = program.opts();
 
     const ctx = buildContext(projectRoot);
