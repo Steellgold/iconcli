@@ -1570,3 +1570,118 @@ pre.raw-svg {
   color: #0d0d0d;
   cursor: pointer;
 }
+
+/* ── Drop zone ─────────────────────────────────────────── */
+.drop-zone {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+}
+.drop-zone.active {
+  display: flex;
+}
+.drop-zone-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  padding: 32px 20px;
+  transition: border-color .15s, background .15s;
+  min-height: 140px;
+}
+.drop-zone.dragging .drop-zone-inner {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+.drop-icon {
+  color: var(--text-muted);
+  opacity: .5;
+}
+.drop-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+}
+.drop-browse-btn {
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.drop-browse-btn:hover { opacity: .8; }
+
+.drop-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+.drop-file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: var(--surface2);
+  font-size: 12px;
+}
+.drop-file-name {
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.drop-file-remove {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 2px;
+  flex-shrink: 0;
+}
+.drop-file-remove:hover { color: #f87171; }
+
+/* ── Batch progress bar ─────────────────────────────────── */
+.batch-progress {
+  padding: 6px 20px 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.batch-progress-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  overflow: hidden;
+}
+.batch-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width .2s;
+}
+.batch-progress-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ── Bulk URL hint ──────────────────────────────────────── */
+.bulk-url-hint {
+  font-size: 11px;
+  color: var(--accent);
+  padding: 4px 2px;
+}

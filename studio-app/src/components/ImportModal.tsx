@@ -1,6 +1,18 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type { ImportTab, Library, DirectiveSlots, DirectionKey } from '../types';
 import { fetchLibrary, fetchLibrarySVG } from '../api';
+
+interface DroppedFile { name: string; svgContent: string; }
+interface BatchProgress { done: number; total: number; failed: number; }
+
+const fileToIconName = (filename: string): string =>
+  filename
+    .replace(/\.svg$/i, '')
+    .replace(/[-_]/g, ' ')
+    .split(' ')
+    .filter(Boolean)
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join('') + 'Icon';
 
 const DIRS: DirectionKey[] = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'];
 
@@ -87,6 +99,10 @@ export default function ImportModal({
   const [urlValue, setUrlValue] = useState('');
   const [status, setStatus] = useState<{ msg: string; ok: boolean } | null>(null);
   const [importing, setImporting] = useState(false);
+  const [droppedFiles, setDroppedFiles] = useState<DroppedFile[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [batchProgress, setBatchProgress] = useState<BatchProgress | null>(null);
+  const dropRef = useRef<HTMLDivElement>(null);
   const [directivesOpen, setDirectivesOpen] = useState(false);
   const [activeSlot, setActiveSlot] = useState<DirectionKey | null>(null);
   const [slots, setSlots] = useState<DirectiveSlots>(emptySlots());
@@ -186,6 +202,12 @@ export default function ImportModal({
     }
   };
 
+  // Valid URLs from multi-line URL textarea
+  const parsedUrls = useMemo(() =>
+    urlValue.split('\n').map(l => l.trim()).filter(l => l.startsWith('http')),
+    [urlValue]);
+
+  const isBulkUrls = tab === 'url' && parsedUrls.length > 1;
   const isBulk = tab === 'library' && selectedNames.length > 1;
   const isDirective = tab === 'library' && directivesOpen;
   const filledSlots = DIRS.filter(d => slots[d] !== null);
@@ -204,9 +226,81 @@ export default function ImportModal({
     setSlots(prev => ({ ...prev, [dir]: null }));
   };
 
+  const readSvgFiles = useCallback((files: FileList | File[]) => {
+    const arr = Array.from(files).filter(f => f.name.endsWith('.svg'));
+    const readers = arr.map(f => new Promise<DroppedFile>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve({ name: f.name, svgContent: reader.result as string });
+      reader.onerror = reject;
+      reader.readAsText(f);
+    }));
+    Promise.all(readers).then(results => setDroppedFiles(prev => {
+      const existing = new Set(prev.map(p => p.name));
+      return [...prev, ...results.filter(r => !existing.has(r.name))];
+    }));
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    readSvgFiles(e.dataTransfer.files);
+  }, [readSvgFiles]);
+
   const handleImport = async () => {
     setImporting(true);
     setStatus(null);
+    setBatchProgress(null);
+
+    // ── Drop batch import ──
+    if (tab === 'drop') {
+      if (droppedFiles.length === 0) { setStatus({ msg: 'Drop some SVG files first.', ok: false }); setImporting(false); return; }
+      const total = droppedFiles.length;
+      let done = 0, failed = 0;
+      setBatchProgress({ done: 0, total, failed: 0 });
+      for (const file of droppedFiles) {
+        try {
+          const componentName = fileToIconName(file.name);
+          const res = await fetch('/api/import', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ componentName, source: 'paste', svgContent: file.svgContent }) });
+          const data = await res.json() as { error?: string };
+          if (!res.ok || data.error) throw new Error(data.error);
+          done++;
+        } catch { failed++; }
+        setBatchProgress({ done: done + failed, total, failed });
+      }
+      onImportComplete();
+      setStatus({ msg: failed > 0 ? `✓ ${done} imported, ${failed} failed.` : `✓ ${done} SVG file${done > 1 ? 's' : ''} imported!`, ok: failed === 0 });
+      setDroppedFiles([]);
+      setBatchProgress(null);
+      setImporting(false);
+      if (failed === 0) setTimeout(() => { onClose(); }, 1400);
+      return;
+    }
+
+    // ── Bulk URL import ──
+    if (isBulkUrls) {
+      const total = parsedUrls.length;
+      let done = 0, failed = 0;
+      setBatchProgress({ done: 0, total, failed: 0 });
+      for (const url of parsedUrls) {
+        const name = url.split('/').pop()?.replace(/\.svg$/i, '') ?? 'icon';
+        const componentName = fileToIconName(name + '.svg');
+        try {
+          const res = await fetch('/api/import', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ componentName, source: 'url', svgUrl: url }) });
+          const data = await res.json() as { error?: string };
+          if (!res.ok || data.error) throw new Error(data.error);
+          done++;
+        } catch { failed++; }
+        setBatchProgress({ done: done + failed, total, failed });
+      }
+      onImportComplete();
+      setStatus({ msg: failed > 0 ? `✓ ${done} imported, ${failed} failed.` : `✓ ${done} icons imported!`, ok: failed === 0 });
+      setBatchProgress(null);
+      setImporting(false);
+      if (failed === 0) setTimeout(() => { onClose(); }, 1400);
+      return;
+    }
 
     // ── Bulk library import ──
     if (isBulk) {
@@ -302,7 +396,9 @@ export default function ImportModal({
   };
 
   const importBtnLabel = (() => {
-    if (importing) return isBulk ? `Importing…` : isDirective ? 'Generating…' : 'Importing…';
+    if (importing) return 'Importing…';
+    if (tab === 'drop') return droppedFiles.length > 0 ? `Import ${droppedFiles.length} file${droppedFiles.length > 1 ? 's' : ''}` : 'Import';
+    if (isBulkUrls) return `Import ${parsedUrls.length} URLs`;
     if (isBulk) return `Import ${selectedNames.length} icons`;
     if (isDirective && filledSlots.length > 0) return `Import ${filledSlots.length} directive${filledSlots.length > 1 ? 's' : ''}`;
     return 'Import';
@@ -319,13 +415,13 @@ export default function ImportModal({
 
         {/* Tabs */}
         <div className="import-tabs">
-          {(['library', 'paste', 'url'] as ImportTab[]).map(t => (
+          {(['library', 'paste', 'url', 'drop'] as ImportTab[]).map(t => (
             <button
               key={t}
               className={`import-tab${tab === t ? ' active' : ''}`}
               onClick={() => setTab(t)}
             >
-              {t === 'library' ? 'Library' : t === 'paste' ? 'Paste SVG' : 'From URL'}
+              {t === 'library' ? 'Library' : t === 'paste' ? 'Paste SVG' : t === 'url' ? 'From URL' : 'Drop files'}
             </button>
           ))}
         </div>
@@ -423,13 +519,52 @@ export default function ImportModal({
 
           {/* URL panel */}
           <div className={`import-panel${tab === 'url' ? ' active' : ''}`}>
-            <input
-              className="import-input"
-              type="text"
-              placeholder="https://example.com/icon.svg"
+            <textarea
+              className="import-textarea"
+              placeholder={"https://example.com/icon.svg\nhttps://example.com/arrow.svg\n\nPaste one URL per line for bulk import."}
               value={urlValue}
               onChange={e => setUrlValue(e.target.value)}
             />
+            {isBulkUrls && (
+              <div className="bulk-url-hint">{parsedUrls.length} URLs detected — will import all</div>
+            )}
+          </div>
+
+          {/* Drop panel */}
+          <div
+            ref={dropRef}
+            className={`import-panel drop-zone${tab === 'drop' ? ' active' : ''}${isDragging ? ' dragging' : ''}`}
+            onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleDrop}
+          >
+            <div className="drop-zone-inner">
+              <svg className="drop-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><polyline points="16 12 12 16 8 12"/><line x1="12" y1="16" x2="12" y2="4"/></svg>
+              <p className="drop-label">{isDragging ? 'Release to add files' : 'Drag & drop SVG files here'}</p>
+              <label className="drop-browse-btn">
+                Browse files
+                <input
+                  type="file"
+                  accept=".svg"
+                  multiple
+                  style={{ display: 'none' }}
+                  onChange={e => e.target.files && readSvgFiles(e.target.files)}
+                />
+              </label>
+            </div>
+            {droppedFiles.length > 0 && (
+              <div className="drop-file-list">
+                {droppedFiles.map(f => (
+                  <div key={f.name} className="drop-file-item">
+                    <span className="drop-file-name">{f.name}</span>
+                    <button
+                      className="drop-file-remove"
+                      onClick={() => setDroppedFiles(prev => prev.filter(p => p.name !== f.name))}
+                    >×</button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -458,6 +593,22 @@ export default function ImportModal({
           </div>
         )}
 
+        {/* Batch progress bar */}
+        {batchProgress && (
+          <div className="batch-progress">
+            <div className="batch-progress-bar">
+              <div
+                className="batch-progress-fill"
+                style={{ width: `${Math.round((batchProgress.done / batchProgress.total) * 100)}%` }}
+              />
+            </div>
+            <span className="batch-progress-label">
+              {batchProgress.done} / {batchProgress.total}
+              {batchProgress.failed > 0 && ` (${batchProgress.failed} failed)`}
+            </span>
+          </div>
+        )}
+
         {/* Footer */}
         <div className="import-footer">
           {status && (
@@ -466,7 +617,7 @@ export default function ImportModal({
             </span>
           )}
 
-          {!isBulk ? (
+          {tab === 'drop' || isBulkUrls ? null : !isBulk ? (
             <div className="import-name">
               <label>Component name</label>
               <input

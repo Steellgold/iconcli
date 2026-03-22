@@ -29,7 +29,7 @@ export interface Prefs {
   library: string;
 }
 
-export type ImportTab = 'library' | 'paste' | 'url';
+export type ImportTab = 'library' | 'paste' | 'url' | 'drop';
 
 export type Library = 'lucide' | 'heroicons' | 'tabler';
 
