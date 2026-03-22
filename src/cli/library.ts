@@ -24,6 +24,7 @@ import { insertHeaderComment } from "@/utils/header";
 import enquirer from "enquirer";
 import path from "path";
 import { promptHeroiconSize, promptHeroiconStyle, promptMultipleURLs, promptTablerStroke, promptTablerStyle } from "./prompts";
+import { rankIcons } from "@/utils/search";
 
 type EnquirerExt = {
   prompt: <T>(options: Record<string, unknown> | Record<string, unknown>[]) => Promise<T>;
@@ -608,16 +609,9 @@ const promptIconSearchAndSelect = async (icons: IconMetadata[]): Promise<string 
       suggest(input: string, choices: Record<string, unknown>[]) {
         if (!input) {return choices.slice(0, 15);}
 
-        const lowerInput = input.toLowerCase();
-
-        const matchingIcons = icons.filter((icon) => {
-          if (icon.name.toLowerCase().includes(lowerInput)) {return true;}
-          return icon.tags.some((tag: string) => tag.toLowerCase().includes(lowerInput));
-        });
-
-        return matchingIcons.slice(0, 15).map((icon) => ({
+        return rankIcons(icons, input).slice(0, 15).map((icon) => ({
           name: icon.name,
-          message: `${icon.name} ${icon.tags.length > 0 ? `(${icon.tags.slice(0, 3).join(", ")})` : ""}`,
+          message: `${icon.name}${icon.tags.length > 0 ? ` (${icon.tags.slice(0, 3).join(", ")})` : ""}`,
           value: icon.name,
         }));
       },

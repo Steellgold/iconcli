@@ -50,6 +50,7 @@ import {
 } from "./prompts";
 import { runFigmaImport } from "./figma";
 import { detectIconNameFromSvg } from "@/utils/svg-detector";
+import { rankIcons } from "@/utils/search";
 
 type EnquirerExt = {
   prompt: <T>(options: Record<string, unknown> | Record<string, unknown>[]) => Promise<T>;
@@ -438,13 +439,10 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
               if (!input) {
                 return [doneChoice, ...choices.filter((c) => (c as C).name !== "__done__").slice(0, 14)];
               }
-              const lowerInput = input.toLowerCase();
-              const matches = icons
-                .filter((icon) => !selectedIconNames.includes(icon.name))
-                .filter((icon) => {
-                  if (icon.name.toLowerCase().includes(lowerInput)) return true;
-                  return icon.tags.some((tag: string) => tag.toLowerCase().includes(lowerInput));
-                });
+              const matches = rankIcons(
+                icons.filter((icon) => !selectedIconNames.includes(icon.name)),
+                input,
+              );
               return [
                 doneChoice,
                 ...matches.slice(0, 14).map((icon) => ({
