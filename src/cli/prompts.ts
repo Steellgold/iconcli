@@ -89,6 +89,8 @@ export const promptSetupConfig = async (): Promise<Partial<Config>> => {
       className: answers.props.includes("className"),
       style: answers.props.includes("style"),
       strokeWidth: answers.props.includes("strokeWidth"),
+      accessibility: false,
+      forwardRef: false,
     },
     naming: {
       suffix: "Icon",
@@ -103,9 +105,9 @@ export const promptSetupConfig = async (): Promise<Partial<Config>> => {
  * Prompt for SVG source
  */
 export const promptSVGSource = async (): Promise<{
-  source: "paste" | "url" | "file" | "library";
+  source: "paste" | "url" | "file" | "library" | "figma";
 }> => {
-  const answer = await prompt<{ source: "paste" | "url" | "file" | "library" }>({
+  const answer = await prompt<{ source: "paste" | "url" | "file" | "library" | "figma" }>({
     type: "select",
     name: "source",
     message: "How do you want to provide the SVG?",
@@ -114,6 +116,7 @@ export const promptSVGSource = async (): Promise<{
       { name: "url", message: "From URL" },
       { name: "library", message: "From a library" },
       { name: "file", message: "From local file" },
+      { name: "figma", message: "From Figma" },
     ],
   });
 

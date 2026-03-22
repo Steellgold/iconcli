@@ -18,6 +18,10 @@ import { runDiff } from "@/cli/diff";
 import { runSvgExport } from "@/cli/svg-export";
 import { runPreview } from "@/cli/preview";
 import { runConfigMenu, showConfig } from "@/config/commands";
+import { runDelete } from "@/cli/delete";
+import { runList } from "@/cli/list";
+import { runFigmaImport } from "@/cli/figma";
+import { runStudio } from "@/cli/studio";
 import path from "path";
 import { configExists, loadConfig } from "@/config/manager";
 import type { Config } from "@/config/schema";
@@ -33,13 +37,13 @@ const SEMI_INTERACTIVE_MODES: Record<string, "paste" | "url" | "file"> = {
   f: "file",
 };
 
-const requireConfig = (projectRoot: string): Config => {
-  if (!configExists(projectRoot)) {
+const requireConfig = (projectRoot: string, configPath?: string): Config => {
+  if (!configExists(projectRoot, configPath)) {
     logger.error("No configuration found. Please run `mkicon` first to set up the project.");
     process.exit(1);
   }
 
-  const config = loadConfig(projectRoot);
+  const config = loadConfig(projectRoot, configPath);
   if (!config) {
     logger.error("Failed to load configuration");
     process.exit(1);
@@ -83,6 +87,13 @@ const main = async (): Promise<void> => {
       process.exit(1);
     }
 
+    // Resolve custom config path for monorepo support (--config <path>)
+    const configFlagIdx = process.argv.indexOf("--config");
+    const customConfigPath =
+      configFlagIdx !== -1 && process.argv[configFlagIdx + 1] && subcommand !== "init"
+        ? path.resolve(process.argv[configFlagIdx + 1])
+        : undefined;
+
     // Subcommands that don't need config
     if (subcommand === "init") {
       if (configExists(projectRoot)) {
@@ -90,13 +101,15 @@ const main = async (): Promise<void> => {
         logger.info("Use `mkicon config` to modify settings");
         process.exit(1);
       }
-      await runInit(projectRoot);
+      const presetIdx = process.argv.indexOf("--preset");
+      const preset = presetIdx !== -1 ? process.argv[presetIdx + 1] : undefined;
+      await runInit(projectRoot, preset);
       return;
     }
 
     if (subcommand === "config") {
       if (process.argv.includes("--show")) {
-        showConfig(requireConfig(projectRoot));
+        showConfig(requireConfig(projectRoot, customConfigPath));
       } else {
         await runConfigMenu(projectRoot);
       }
@@ -108,19 +121,41 @@ const main = async (): Promise<void> => {
       return;
     }
 
+    if (subcommand === "studio") {
+      await runStudio({ projectRoot, config: requireConfig(projectRoot, customConfigPath) });
+      return;
+    }
+
+    if (subcommand === "list" || subcommand === "ls") {
+      await runList({ projectRoot, config: requireConfig(projectRoot, customConfigPath) });
+      return;
+    }
+
+    if (subcommand === "delete" || subcommand === "remove" || subcommand === "rm") {
+      const nameArg = process.argv[3] && !process.argv[3].startsWith("-") ? process.argv[3] : undefined;
+      await runDelete({ projectRoot, config: requireConfig(projectRoot, customConfigPath), componentName: nameArg });
+      return;
+    }
+
+    if (subcommand === "figma") {
+      const urlArg = process.argv[3] && !process.argv[3].startsWith("-") ? process.argv[3] : undefined;
+      await runFigmaImport({ projectRoot, config: requireConfig(projectRoot, customConfigPath), url: urlArg });
+      return;
+    }
+
     // Subcommands that need config
     if (subcommand === "library" || subcommand === "browse") {
-      await runLibraryBrowser({ projectRoot, config: requireConfig(projectRoot) });
+      await runLibraryBrowser({ projectRoot, config: requireConfig(projectRoot, customConfigPath) });
       return;
     }
 
     if (subcommand === "spinner" || subcommand === "spin") {
-      await runSpinner({ projectRoot, config: requireConfig(projectRoot) });
+      await runSpinner({ projectRoot, config: requireConfig(projectRoot, customConfigPath) });
       return;
     }
 
     if (subcommand === "batch") {
-      const config = requireConfig(projectRoot);
+      const config = requireConfig(projectRoot, customConfigPath);
       const isRefresh = process.argv.includes("--refresh") || process.argv.includes("-r");
 
       if (isRefresh) {
@@ -163,26 +198,26 @@ const main = async (): Promise<void> => {
       if (isAvailable) {
         await runCount({ projectRoot, mode: "available" });
       } else {
-        await runCount({ projectRoot, config: requireConfig(projectRoot), mode: "project" });
+        await runCount({ projectRoot, config: requireConfig(projectRoot, customConfigPath), mode: "project" });
       }
       return;
     }
 
     if (subcommand === "diff") {
-      await runDiff({ projectRoot, config: requireConfig(projectRoot) });
+      await runDiff({ projectRoot, config: requireConfig(projectRoot, customConfigPath) });
       return;
     }
 
     if (subcommand === "preview") {
       const componentName = process.argv[3] as string | undefined;
-      const previewConfig = configExists(projectRoot) ? loadConfig(projectRoot) ?? undefined : undefined;
+      const previewConfig = configExists(projectRoot, customConfigPath) ? loadConfig(projectRoot, customConfigPath) ?? undefined : undefined;
       await runPreview({ projectRoot, componentName, config: previewConfig });
       return;
     }
 
     const semiMode = SEMI_INTERACTIVE_MODES[subcommand];
     if (semiMode) {
-      await runSemiInteractive({ projectRoot, config: requireConfig(projectRoot), mode: semiMode });
+      await runSemiInteractive({ projectRoot, config: requireConfig(projectRoot, customConfigPath), mode: semiMode });
       return;
     }
 
@@ -203,14 +238,14 @@ const main = async (): Promise<void> => {
     }
 
     let config: Config;
-    if (!configExists(projectRoot)) {
+    if (!configExists(projectRoot, customConfigPath)) {
       if (hasCliArgs) {
         logger.error("No configuration found. Please run `mkicon` first to set up the project.");
         process.exit(1);
       }
       config = await runSetup(projectRoot);
     } else {
-      config = requireConfig(projectRoot);
+      config = requireConfig(projectRoot, customConfigPath);
       if (!hasCliArgs) {
         logger.title("🎨 mkicon");
         logger.success("Configuration loaded: .mkicon.json");

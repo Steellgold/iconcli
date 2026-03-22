@@ -136,6 +136,24 @@ export const createProgram = (): Command => {
     .action(() => {});
 
   program
+    .command("studio")
+    .description("Launch a local web UI to browse your project icons")
+    .action(() => {});
+
+  program
+    .command("delete [component]")
+    .alias("remove")
+    .alias("rm")
+    .description("Delete a tracked icon component")
+    .action(() => {});
+
+  program
+    .command("list")
+    .alias("ls")
+    .description("List all tracked icon components")
+    .action(() => {});
+
+  program
     .command("diff")
     .description("Check tracked components for SVG source changes")
     .action(() => {});
