@@ -83,7 +83,9 @@ export const fetchTablerIcon = async (
   style: TablerStyle,
   stroke: TablerStroke = 2
 ): Promise<FetchIconResult> => {
-  const url = `${RAW_BASE}/${style}/${iconName}.svg`;
+  // Tabler filled icons are stored as "{name}-filled.svg" in the filled/ folder
+  const filename = style === "filled" ? `${iconName}-filled` : iconName;
+  const url = `${RAW_BASE}/${style}/${filename}.svg`;
 
   const response = await fetch(url);
 
