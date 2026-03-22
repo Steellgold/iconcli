@@ -1,0 +1,60 @@
+import { PackageTabs } from '../components/PackageTabs'
+
+# Installation
+
+## Requirements
+
+- **Node.js** ≥ 18.0.0
+- npm, pnpm, yarn, or bun
+
+## Global install (recommended)
+
+Install once, use in any project:
+
+<PackageTabs
+  npm="npm install -g @steellgold/mkicon"
+  pnpm="pnpm add -g @steellgold/mkicon"
+  yarn="yarn global add @steellgold/mkicon"
+  bun="bun add -g @steellgold/mkicon"
+/>
+
+Verify:
+
+```bash
+mkicon --version
+```
+
+## Project setup
+
+After installing globally, run `init` inside your project to generate the config:
+
+```bash
+cd my-project
+mkicon init
+```
+
+This creates a `.mkicon.json` with sensible defaults:
+
+```json
+{
+  "$schema": "https://unpkg.com/@steellgold/mkicon/schema.json",
+  "version": "1.0.0",
+  "baseDir": "src/components",
+  "iconsFolder": "icons",
+  "framework": "react",
+  "typescript": true,
+  "optimize": true,
+  "maintainIndex": true
+}
+```
+
+Commit this file — it's the shared config for your whole team.
+
+## Updating
+
+<PackageTabs
+  npm="npm update -g @steellgold/mkicon"
+  pnpm="pnpm update -g @steellgold/mkicon"
+  yarn="yarn global upgrade @steellgold/mkicon"
+  bun="bun update -g @steellgold/mkicon"
+/>

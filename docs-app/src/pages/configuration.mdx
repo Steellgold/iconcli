@@ -1,0 +1,107 @@
+# Configuration Reference
+
+mkicon is configured via a `.mkicon.json` file in your project root.
+
+```bash
+# Interactive config editor
+mkicon config
+
+# Show current config
+mkicon config --show
+```
+
+## Full config example
+
+```json
+{
+  "$schema": "https://unpkg.com/@steellgold/mkicon/schema.json",
+  "version": "1.0.0",
+  "baseDir": "src/components",
+  "iconsFolder": "icons",
+  "framework": "react",
+  "typescript": true,
+  "optimize": true,
+  "maintainIndex": true,
+  "adaptToProject": true,
+  "props": {
+    "size": true,
+    "color": true,
+    "className": true,
+    "strokeWidth": false,
+    "style": false
+  },
+  "naming": {
+    "suffix": "Icon",
+    "suffixEnabled": true,
+    "componentCase": "PascalCase",
+    "fileCase": "PascalCase"
+  }
+}
+```
+
+## Options
+
+### Core
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `baseDir` | `string` | — | Base directory for icons (e.g. `src/components`) |
+| `iconsFolder` | `string` | `"icons"` | Subfolder name inside `baseDir` |
+| `framework` | `"react" \| "react-native" \| "vue" \| "svelte"` | `"react"` | Target framework |
+| `typescript` | `boolean` | `true` | Generate `.tsx`/`.ts` files |
+| `optimize` | `boolean` | `true` | Optimize SVG with SVGO before generating |
+| `maintainIndex` | `boolean` | `true` | Keep `index.ts` up to date |
+| `adaptToProject` | `boolean` | `true` | Auto-detect and apply project formatting |
+
+### Props
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `props.size` | `boolean` | `true` | Include `size` prop |
+| `props.color` | `boolean` | `true` | Include `color` prop |
+| `props.className` | `boolean` | `true` | Include `className` prop (React) |
+| `props.strokeWidth` | `boolean` | `false` | Include `strokeWidth` prop |
+| `props.style` | `boolean` | `false` | Include `style` prop |
+
+### Naming
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `naming.suffix` | `string` | `"Icon"` | Suffix appended to component names |
+| `naming.suffixEnabled` | `boolean` | `true` | Add suffix to component names |
+| `naming.componentCase` | `"PascalCase" \| "camelCase"` | `"PascalCase"` | Component name format |
+| `naming.fileCase` | `"PascalCase" \| "kebab-case" \| "camelCase"` | `"PascalCase"` | File name format |
+
+## Naming conventions
+
+mkicon is smart about casing:
+
+```bash
+# Input → Output (with suffix enabled)
+"ClosedCaption"   → ClosedCaptionIcon   (preserves existing PascalCase)
+"closed-caption"  → ClosedCaptionIcon   (converts kebab-case)
+"userPlus"        → UserPlusIcon        (converts camelCase)
+```
+
+## Disable suffix
+
+To generate `User.tsx` instead of `UserIcon.tsx`:
+
+```bash
+mkicon config
+# → Naming configuration → Disable suffix
+```
+
+Or directly in `.mkicon.json`:
+
+```json
+{
+  "naming": {
+    "suffixEnabled": false
+  }
+}
+```
+
+## JSON Schema
+
+The `$schema` field enables editor autocompletion and validation in VS Code and other editors.

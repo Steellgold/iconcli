@@ -1,0 +1,85 @@
+# Auto Formatting
+
+mkicon automatically adapts generated code to match your project's formatting rules. No extra setup needed.
+
+## How it works
+
+On every run, mkicon scans your project for formatter config files and extracts the relevant rules. The detected settings are applied to all generated components.
+
+### Detection priority
+
+1. **Prettier** — `.prettierrc`, `prettier.config.js`, `prettier` in `package.json`
+2. **Biome** — `biome.json`, `biome.jsonc`
+3. **ESLint** — `.eslintrc.*`, `eslint.config.*`
+4. **EditorConfig** — `.editorconfig`
+5. **mkicon defaults** — fallback when nothing is found
+
+### Detected settings
+
+- Quote style (single / double)
+- Indentation (spaces / tabs, width)
+- Semicolons (required / omit)
+- Trailing commas (none / es5 / all)
+- Bracket spacing
+- Arrow function parentheses
+- Line endings (LF / CRLF)
+
+## Example
+
+Prettier config:
+
+```json
+{
+  "semi": false,
+  "singleQuote": true,
+  "trailingComma": "all"
+}
+```
+
+Generated component (auto-adapted):
+
+```tsx
+import type { SVGProps } from 'react'
+
+export interface UserIconProps extends SVGProps<SVGSVGElement> {
+  size?: number | string
+  color?: string
+}
+
+export const UserIcon = ({
+  size = 24,
+  color = 'currentColor',
+  className,
+  ...props
+}: UserIconProps) => {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...props}>
+      {/* paths */}
+    </svg>
+  )
+}
+```
+
+## Inspect what was detected
+
+```bash
+mkicon inspect-config
+```
+
+Shows exactly which formatter was found and what settings will be applied.
+
+## Disable adaptation
+
+### One-time
+
+```bash
+mkicon --no-adapt
+```
+
+### Permanent
+
+```json
+{
+  "adaptToProject": false
+}
+```

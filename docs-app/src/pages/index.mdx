@@ -1,0 +1,59 @@
+import { PackageTabs } from '../components/PackageTabs'
+
+# mkicon
+
+Transform SVG icons into beautiful **React**, **React Native**, **Vue 3**, or **Svelte** components — with zero config.
+
+## What is mkicon?
+
+mkicon is a CLI tool that takes SVG icons from any source (paste, URL, file, or icon library) and generates properly typed, framework-specific components. It handles SVG optimization, naming conventions, code formatting, and keeps an `index.ts` up to date automatically.
+
+## Features
+
+- **Zero config** — get started with `mkicon init` in seconds
+- **Multi-framework** — React, React Native, Vue 3, Svelte
+- **Icon libraries** — browse Lucide Icons (1700+) and Tabler Icons (5500+) directly from the CLI
+- **Batch processing** — convert entire folders of SVG files at once
+- **AI generation** — describe an icon and let Claude or GPT generate the SVG
+- **SVG optimization** — built-in SVGO integration
+- **Auto formatting** — adapts to your project's Prettier / Biome / ESLint / EditorConfig config
+- **Auto index** — maintains `index.ts` for clean barrel imports
+- **PNG export** — export components to PNG at any size or scale
+- **Studio** — visual web UI for managing your icon set
+
+## Quick example
+
+Install globally:
+
+<PackageTabs
+  npm="npm install -g @steellgold/mkicon"
+  pnpm="pnpm add -g @steellgold/mkicon"
+  yarn="yarn global add @steellgold/mkicon"
+  bun="bun add -g @steellgold/mkicon"
+/>
+
+Then in your project:
+
+```bash
+mkicon init
+```
+
+Import an icon from a library:
+
+```bash
+mkicon library
+```
+
+Or paste an SVG directly:
+
+```bash
+mkicon paste
+```
+
+A `.mkicon.json` config file is created on first run — commit it to your repo so the whole team shares the same settings.
+
+## Links
+
+- [GitHub](https://github.com/Steellgold/mkicon)
+- [NPM Package](https://www.npmjs.com/package/@steellgold/mkicon)
+- [Report an issue](https://github.com/Steellgold/mkicon/issues)

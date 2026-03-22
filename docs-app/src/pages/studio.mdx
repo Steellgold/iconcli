@@ -1,0 +1,55 @@
+# Studio
+
+mkicon Studio is a visual web UI for managing your project's icon set. It runs locally and connects to your project's icons folder.
+
+```bash
+mkicon studio
+```
+
+This starts a local server and opens the Studio in your browser.
+
+## Features
+
+### Icon grid
+
+Browse all generated icons in a searchable grid. Click any icon to open its detail panel with:
+
+- SVG source code
+- Component name and file path
+- Generated component code (React, Vue, Svelte)
+- Copy buttons for SVG and component code
+
+### Import modal
+
+Add new icons without leaving the browser:
+
+- **Paste SVG** — paste SVG code directly
+- **From URL** — enter one or multiple SVG URLs for bulk import
+- **From library** — browse and import from Lucide or Tabler
+- **Drop files** — drag and drop `.svg` files from your file system
+
+### SVG Editor
+
+Edit the raw SVG of any icon inline with a CodeMirror editor:
+
+- Syntax highlighting
+- Live preview
+- Save changes back to the component file
+
+### Palette Builder
+
+Create a color palette for your icon set:
+
+- 7 preset palettes (Tailwind, Material, Emerald, Rose, Monochrome…)
+- Custom primary / secondary / accent colors
+- Live preview on your first 8 icons
+- Export as CSS variables or JSON
+
+### Sort & filter
+
+- Sort by name or recently added
+- Search by component name
+
+## How Studio connects to your project
+
+Studio reads from and writes to the same icons folder configured in `.mkicon.json`. All imports and edits go through the same generation pipeline as the CLI — same formatting, same optimization, same `index.ts` updates.

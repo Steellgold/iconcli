@@ -1,0 +1,79 @@
+# Multi-Variant Icons
+
+Instead of creating separate components for each direction or style, mkicon can generate a single component controlled by props.
+
+## Directional variants
+
+```bash
+mkicon --name Arrow --directive
+```
+
+1. Select which directions to include
+2. Paste the SVG for each direction
+3. mkicon generates a component with a `direction` prop
+
+```tsx
+<ArrowIcon direction="up" />
+<ArrowIcon direction="down" />
+<ArrowIcon direction="left" />
+<ArrowIcon direction="right" />
+```
+
+### Supported directions
+
+| Category | Values |
+|---|---|
+| Basic | `up`, `down`, `left`, `right` |
+| Diagonal | `up-right`, `up-left`, `down-right`, `down-left` |
+| Circle | `up-circle`, `down-circle`, `left-circle`, `right-circle` |
+| Tray / Square | `up-tray`, `down-tray`, `up-on-square`, `down-on-square` |
+| Combined | `up-down`, `left-right` |
+
+## Style variants
+
+```bash
+mkicon --name User --variant
+```
+
+1. Select which styles to include
+2. Paste the SVG for each style
+3. mkicon generates a component with `variant` and/or `filled` props
+
+```tsx
+<UserIcon filled />
+<UserIcon variant="outline" />
+<UserIcon variant="solid" />
+```
+
+### Supported styles
+
+| Category | Values |
+|---|---|
+| Basic | `outline`, `solid`, `filled` |
+| Sizes | `mini`, `micro` |
+| Weights | `thin`, `light`, `regular`, `bold` |
+| Special | `duotone`, `sharp` |
+
+## Combined variants
+
+Use both flags at once for a component with two prop dimensions:
+
+```bash
+mkicon --name Arrow --directive --variant
+```
+
+```tsx
+<ArrowIcon direction="up" variant="solid" />
+<ArrowIcon direction="down" filled />
+```
+
+## Auto-detection in batch mode
+
+When running `mkicon batch ./icons`, mkicon automatically detects variant groups from file names:
+
+```
+ArrowUp.svg, ArrowDown.svg → ArrowIcon direction="up|down"
+UserOutline.svg, UserSolid.svg → UserIcon variant="outline|solid"
+```
+
+You'll be prompted to confirm before grouping into a multi-variant component.

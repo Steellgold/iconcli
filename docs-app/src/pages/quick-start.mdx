@@ -1,0 +1,92 @@
+import { PackageTabs } from '../components/PackageTabs'
+
+# Quick Start
+
+## Option 1 — `mkicon init` (recommended)
+
+Initialize your project with best-practice defaults in one command:
+
+```bash
+mkicon init
+```
+
+This creates `.mkicon.json` configured for:
+
+- **Framework**: React (TypeScript)
+- **Output folder**: `src/components/icons/`
+- **Optimization**: enabled (SVGO)
+- **Props**: size, color, className
+- **Auto-index**: enabled
+
+Edit with `mkicon config` if you need to change anything later.
+
+## Option 2 — First interactive run
+
+If you skip `init`, mkicon will guide you through setup on the first run:
+
+```bash
+mkicon
+```
+
+You'll be prompted to:
+
+1. Choose where to create icons
+2. Select a framework
+3. Configure optimization and props
+
+The resulting `.mkicon.json` is identical — commit it to your repo.
+
+## Create your first icon
+
+### From the library
+
+```bash
+mkicon library
+```
+
+Browse and search 1700+ Lucide Icons or 5500+ Tabler Icons, select one, and it's imported directly.
+
+### From a URL
+
+```bash
+mkicon url
+```
+
+Paste any SVG URL — mkicon will auto-detect the icon name from the URL.
+
+### From an SVG paste
+
+```bash
+mkicon paste
+```
+
+Paste SVG code, enter a name, done.
+
+### From a file
+
+```bash
+mkicon file
+```
+
+Enter the path to a local `.svg` file.
+
+After any of these, mkicon will:
+
+1. Optimize the SVG with SVGO
+2. Generate the component file in your icons folder
+3. Update `index.ts` automatically
+
+Your first component is ready to import:
+
+```tsx
+import { UserIcon } from "@/components/icons";
+```
+
+## Don't have mkicon yet?
+
+<PackageTabs
+  npm="npm install -g @steellgold/mkicon"
+  pnpm="pnpm add -g @steellgold/mkicon"
+  yarn="yarn global add @steellgold/mkicon"
+  bun="bun add -g @steellgold/mkicon"
+/>

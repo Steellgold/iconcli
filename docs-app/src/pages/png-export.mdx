@@ -1,0 +1,58 @@
+# PNG Export
+
+Export any generated icon component to PNG at arbitrary sizes and scales.
+
+## Single icon
+
+```bash
+mkicon png UserIcon
+mkicon png src/components/icons/UserIcon.tsx
+```
+
+## All icons
+
+```bash
+mkicon png --all
+```
+
+Exports every component in your configured icons folder to `./exports/`.
+
+## Options
+
+| Flag | Shorthand | Default | Description |
+|---|---|---|---|
+| `--size` | `-s` | `24` | Output size in px |
+| `--sizes` | | | Comma-separated list: `24,48,96` |
+| `--scale` | `-r` | `1` | Pixel density multiplier (e.g. `2` → @2x) |
+| `--background` | | transparent | Background color (hex or named) |
+| `--color` | `-c` | `#000000` | Replaces `currentColor` in the SVG |
+| `--output` | `-o` | next to source | Output directory |
+
+## Examples
+
+```bash
+# 48px PNG, black icon, white background
+mkicon png UserIcon --size 48 --background "#ffffff"
+
+# Multiple sizes
+mkicon png UserIcon --sizes 16,24,32,48
+
+# 2× retina scale
+mkicon png UserIcon --size 24 --scale 2
+# → UserIcon@2x.png (48px)
+
+# Custom color
+mkicon png UserIcon --color "#6366f1"
+
+# Export all icons at 32px to a specific folder
+mkicon png --all --size 32 --output ./assets/icons/png
+```
+
+## Output naming
+
+| Scenario | Filename |
+|---|---|
+| Single size | `UserIcon.png` |
+| Multiple sizes | `UserIcon-24.png`, `UserIcon-48.png` |
+| With scale | `UserIcon@2x.png` |
+| Both | `UserIcon-24@2x.png` |

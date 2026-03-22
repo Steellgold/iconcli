@@ -1,0 +1,72 @@
+# Icon Libraries
+
+mkicon lets you browse and import icons directly from popular libraries without leaving your terminal.
+
+```bash
+mkicon library
+# or shorthand:
+mkicon browse
+```
+
+## Lucide Icons
+
+**1700+ icons** — MIT licensed, clean and consistent stroke-based design.
+
+- Website: [lucide.dev](https://lucide.dev)
+- Style: outline (stroke)
+- Search: name + tags
+
+### Import flow
+
+1. Run `mkicon library`
+2. Select **Lucide Icons**
+3. Search by name or tag (`user`, `arrow`, `settings`…)
+4. Select an icon
+5. Confirm the component name
+6. Component is generated and `index.ts` updated
+
+## Tabler Icons
+
+**5500+ icons** — MIT licensed, available in outline and filled variants.
+
+- Website: [tabler.io/icons](https://tabler.io/icons)
+- Styles: `outline` or `filled` (independent sets)
+- Stroke widths (outline): 1, 1.25, 1.5, 1.75, 2
+
+### Import flow
+
+1. Run `mkicon library`
+2. Select **Tabler Icons**
+3. Choose style: `outline` or `filled`
+4. (If outline) Choose stroke width
+5. Search by name
+6. Select and confirm
+
+> **Note:** The `outline` and `filled` sets are independent — not every outline icon has a filled variant. The search always shows only icons available in the selected style.
+
+## Bulk import
+
+You can also import multiple icons at once:
+
+```bash
+mkicon library
+# → select a library → search → press Space to multi-select → Enter to import all
+```
+
+## URL import
+
+If you have a direct SVG URL from any source (Heroicons, Phosphor, etc.), use:
+
+```bash
+mkicon url
+# → paste the URL
+```
+
+mkicon will auto-detect the icon name from the URL and pre-fill the component name field.
+
+### Heroicons example
+
+```bash
+mkicon --name ChevronRight \
+  --url https://raw.githubusercontent.com/tailwindlabs/heroicons/master/optimized/24/outline/chevron-right.svg
+```

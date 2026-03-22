@@ -1,0 +1,158 @@
+# Changelog
+
+All notable changes to mkicon are listed here, newest first.
+
+---
+
+## v0.6.0
+
+> Tracking, terminal preview, and drift detection — full lockfile-based workflow.
+
+### New commands
+
+**`mkicon diff`** — Compares every tracked component against the SVG mkicon would generate today. If a file was manually edited or is out of sync, you get a line-by-line diff and three options: skip, view full diff, or revert to the generated version. Great for catching accidental edits in code review.
+
+**`mkicon preview <component>`** — Renders any icon directly in your terminal with a high-resolution side-by-side layout: the icon on the left, metadata (component name, source URL, viewBox, element count, generation date) on the right. Supports fuzzy matching — `mkicon preview ban` finds `BananaIcon`.
+
+**`mkicon svg <path>`** — Converts a generated component file back to a plain `.svg` file. Uses the original pre-optimization SVG from the lockfile when available, otherwise extracts it directly from the component source.
+
+**`mkicon batch --refresh`** — Rebuilds `.mkicon.lock.json` from existing component files without regenerating anything. Runs automatically when `diff` or `preview` detects a missing lockfile after a fresh clone.
+
+### Features
+
+- **Auto-detection of icon name from SVG** — mkicon scans pasted SVGs for Lucide class patterns, `data-lucide`, `aria-label`, and `<title>` tags to pre-fill the component name.
+- **`strokeWidth` prop** — All framework templates (React, Vue, Svelte, React Native) now support a `strokeWidth` prop for runtime control over icon stroke weight.
+- **File header** — Every generated component now starts with a `Generated with mkicon vX.X.X` comment, making it easy to identify mkicon-managed files.
+- **Lockfile auto-gitignore** — `.mkicon.lock.json` is automatically added to `.gitignore` on first creation. The lockfile is always rebuildable, so there's no reason to commit it.
+- **Flag normalization** — `-flag` and `--flag` are now interchangeable for all options. No more "flag not found" errors from a missing dash.
+
+### Fixes
+
+- Lucide copyright comment now correctly appears after the mkicon file header instead of overwriting it.
+- `mkicon batch <dir>` no longer throws "too many arguments" — all subcommands are now properly registered with Commander.js.
+
+---
+
+## v0.5.0
+
+> React Native support and the spinner generator.
+
+### New commands
+
+**`mkicon spinner`** (alias `mkicon spin`) — Generates an animated loading spinner component. A wizard asks for the component name, target framework, and animation library. The result is a fully working animated component ready to drop into your project.
+
+### React Native
+
+mkicon now targets React Native as a first-class framework. Generated components use `react-native-svg` primitives (`Svg`, `Path`, `Circle`, etc.) with proper prop types from `SvgProps`. The framework selector in `mkicon init` and `mkicon config` includes React Native, and auto-detection of existing `react-native-svg` imports works out of the box.
+
+### Spinner templates
+
+Each framework has dedicated spinner templates:
+
+| Framework | Animation options |
+|---|---|
+| React | Framer Motion, Motion One, CSS |
+| Vue | Vue Transitions, CSS |
+| Svelte | Svelte transitions, CSS |
+| React Native | Reanimated, CSS |
+
+The correct animation library is auto-detected from your project's dependencies.
+
+### Improvements
+
+- Width-aware code generation respects ESLint `max-len` rules when wrapping JSX attributes.
+- Refactored variant prompts for a simpler, faster flow.
+- Replaced all `console.log` calls with the unified `logger` utility for consistent terminal output.
+- Async `generateComponent` is now properly awaited across all CLI commands, preventing race conditions on slower machines.
+
+### Fixes
+
+- React Native framework selector was missing from the config and init prompts — now included.
+
+---
+
+## v0.4.1
+
+> Automatic code style adaptation — generated components now match your project's formatting.
+
+### Auto formatting adaptation
+
+mkicon scans your project for formatter config files and applies the detected rules to all generated code. No configuration needed — it just works.
+
+**Detection priority:**
+
+1. Prettier (`.prettierrc`, `prettier.config.js`, `prettier` in `package.json`)
+2. Biome (`biome.json`, `biome.jsonc`)
+3. ESLint (`.eslintrc.*`, `eslint.config.*`)
+4. EditorConfig (`.editorconfig`)
+5. mkicon defaults
+
+**Detected settings:** quote style, semicolons, trailing commas, indentation (spaces/tabs + size), bracket spacing, arrow function parens, line endings.
+
+### New command options
+
+**`mkicon inspect-config`** — Shows exactly which formatter was detected and what rules will be applied. Useful for debugging unexpected formatting.
+
+**`--no-adapt`** flag — Disables formatting adaptation for a single run. Useful when you want mkicon's defaults regardless of project config.
+
+### Fixes
+
+- Trailing commas after TypeScript interface properties are now correctly omitted — they're invalid syntax and broke some type checkers.
+
+---
+
+## v0.3.0
+
+> Multi-variant icons and the icon library browser.
+
+### Multi-variant icons
+
+Single components with multiple visual states, controlled by props:
+
+```tsx
+// Directional: --directive flag
+<ArrowIcon direction="up" />
+<ArrowIcon direction="down-left" />
+
+// Style variants: --variant flag
+<UserIcon variant="filled" />
+<UserIcon filled />
+
+// Combined
+<ArrowIcon direction="right" variant="solid" />
+```
+
+mkicon detects variant groups automatically in batch mode: if it finds `ArrowUp.svg`, `ArrowDown.svg`, `ArrowLeft.svg` in the same folder, it suggests merging them into a single `<ArrowIcon direction="..." />` component.
+
+### Icon library browser
+
+`mkicon library` opens an interactive search over icon collections. Select an icon, confirm the component name, and the component is generated directly. No copy-pasting SVG code.
+
+### Improvements
+
+- Vue template rewritten with correct `withDefaults(defineProps<...>())` pattern — removed duplicate `defineProps` that caused Vue warnings.
+- ESLint and Prettier added to the mkicon project itself for consistent internal code style.
+- pnpm lockfile added for reproducible dependency installs.
+
+---
+
+## v0.2.2
+
+> Batch processing and framework override fixes.
+
+### Fixes
+
+- **`mkicon batch` was showing help instead of running** — Commander.js was intercepting the `-b`/`--batch` flag before the default action handler. Fixed by properly registering the default action.
+- **`--framework` flag was ignored** — CLI options now correctly override config file settings. `mkicon -n MyIcon --svg "<svg>..." --framework vue` generates a Vue component even when `.mkicon.json` has `"framework": "react"`.
+
+---
+
+## v0.2.1
+
+> Lucide SVG compatibility fix for React and Next.js.
+
+### Fix
+
+Lucide Icons SVGs (`lucide-static`) include HTML comments (`<!-- ... -->`) inside the SVG markup. When embedded in JSX, these comments break React's parser and cause build errors in Next.js projects.
+
+mkicon now strips all HTML comments from SVG content before generating the component. The Lucide license comment is preserved — it moves to the file header as a JSDoc block instead of sitting inside the `<svg>` element.

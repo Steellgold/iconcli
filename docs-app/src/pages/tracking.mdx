@@ -1,0 +1,58 @@
+# Tracking & Diff
+
+mkicon tracks all generated components in `.mkicon.lock.json` (automatically added to `.gitignore`). This enables drift detection, terminal preview, and SVG re-export.
+
+## Diff — detect component drift
+
+```bash
+mkicon diff
+```
+
+Compares each component file against what mkicon would generate from the original SVG. For every file that has drifted, it shows a line-by-line diff and lets you choose:
+
+- **Skip** — leave it for now
+- **Show full diff** — view the complete file difference
+- **Revert** — restore the file to the mkicon-generated version
+
+This is useful when components are manually edited and you want to catch unintended changes.
+
+## Preview — render icon in terminal
+
+Render any component inline in the terminal with a side-by-side info panel:
+
+```bash
+# Interactive fuzzy search
+mkicon preview
+
+# Jump directly to a component
+mkicon preview BananaIcon
+
+# Fuzzy match
+mkicon preview banana
+```
+
+The info panel shows: component name, SVG source, viewBox, path count, and generation date.
+
+## Export back to SVG
+
+Convert a generated component file back to a plain `.svg` file:
+
+```bash
+mkicon svg src/components/icons/BananaIcon.tsx
+
+# Custom output path
+mkicon svg src/components/icons/BananaIcon.tsx -o exports/banana.svg
+```
+
+Uses the original SVG from the lock file when available; otherwise extracts it directly from the component source.
+
+## Lock file details
+
+`.mkicon.lock.json` stores per-component metadata:
+
+- Original SVG content (before optimization)
+- Component name and file path
+- Generation timestamp
+- SVG source URL (when imported via URL or library)
+
+The file is gitignored because it can always be rebuilt with `mkicon batch --refresh`.

@@ -1,0 +1,78 @@
+# Interactive & CLI Modes
+
+mkicon supports three levels of interactivity — from fully guided to fully automated.
+
+## Interactive mode (default)
+
+```bash
+mkicon
+```
+
+Guides you through every step:
+
+1. Choose SVG source (paste / URL / file / library)
+2. Provide the SVG
+3. Enter a component name
+4. Done
+
+## Semi-interactive mode
+
+Skip the source selection and jump straight to input. This is the fastest way to create a single icon.
+
+```bash
+# Paste mode — prompts for SVG code then component name
+mkicon paste
+
+# URL mode — prompts for URL then component name
+mkicon url
+
+# File mode — prompts for file path then component name
+mkicon file
+```
+
+## CLI mode (non-interactive)
+
+Provide everything as flags for scripting or CI:
+
+```bash
+# From SVG string
+mkicon -n UserPlus -p '<svg>...</svg>'
+
+# From URL
+mkicon -n Arrow -u https://example.com/icon.svg
+
+# From file
+mkicon -n Home -f ./icons/home.svg
+```
+
+### CLI flags
+
+| Flag | Shorthand | Description |
+|---|---|---|
+| `--name` | `-n` | Component name |
+| `--svg` | `-p` | SVG string (paste) |
+| `--url` | `-u` | SVG URL |
+| `--file` | `-f` | Local SVG file path |
+| `--no-adapt` | | Disable project formatting adaptation for this run |
+| `--directive` | | Create directional variant component |
+| `--variant` | | Create style variant component |
+
+## Subcommands overview
+
+| Command | Description |
+|---|---|
+| `mkicon init` | Initialize project config |
+| `mkicon paste` | Semi-interactive paste mode |
+| `mkicon url` | Semi-interactive URL mode |
+| `mkicon file` | Semi-interactive file mode |
+| `mkicon library` / `browse` | Browse icon libraries |
+| `mkicon batch <dir>` | Batch-process a folder of SVGs |
+| `mkicon spinner` / `spin` | Generate a spinner component |
+| `mkicon ai` | Generate an icon with AI |
+| `mkicon png` | Export icons to PNG |
+| `mkicon diff` | Detect component drift |
+| `mkicon preview` | Render icon in terminal |
+| `mkicon svg` | Export component back to SVG |
+| `mkicon config` | Edit configuration interactively |
+| `mkicon inspect-config` | Show detected project formatting |
+| `mkicon studio` | Launch the web Studio |

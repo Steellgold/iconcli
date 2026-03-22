@@ -1,0 +1,77 @@
+# AI Generation
+
+Describe an icon in plain language and let an AI model generate the SVG for you.
+
+```bash
+mkicon ai "a minimalist house icon with a chimney"
+```
+
+## Providers & models
+
+mkicon supports both **Anthropic (Claude)** and **OpenAI** models.
+
+### Claude models
+
+| Alias | Model | Best for |
+|---|---|---|
+| `sonnet` | claude-sonnet-4-6 | Balanced quality & speed (default) |
+| `opus` | claude-opus-4-6 | Highest quality |
+| `haiku` | claude-haiku-4-5 | Fastest |
+
+### OpenAI models
+
+| Alias | Model | Best for |
+|---|---|---|
+| `gpt-5` | gpt-4o | Balanced |
+| `o3` | o3 | Reasoning |
+| `gpt-5-mini` | gpt-4o-mini | Fast & cheap |
+| `o4-mini` | o4-mini | Fast reasoning |
+
+## Setup
+
+On first use, mkicon will ask for your API key and save it to `~/.mkicon/credentials`:
+
+```bash
+mkicon ai --setup
+```
+
+## Usage
+
+```bash
+# Basic — uses default provider and model
+mkicon ai "a rounded settings gear"
+
+# Specify provider
+mkicon ai --provider openai "a rounded settings gear"
+
+# Specify model
+mkicon ai --model opus "a rounded settings gear"
+
+# Specify style hint
+mkicon ai --style filled "a rounded settings gear"
+```
+
+## How it works
+
+The generation happens in two steps:
+
+1. **Concept expansion** — the AI turns your short description into a detailed visual specification (shape, proportions, style)
+2. **SVG generation** — a second prompt uses that spec to generate a clean, viewBox="0 0 24 24" SVG
+
+After generation, mkicon renders a terminal preview and offers four choices:
+
+- **Accept** — save as a component
+- **Refine** — add more instructions (keeps message history)
+- **Restart** — start over with a new concept
+- **Exit** — discard
+
+The AI also suggests a component name based on the description. You can accept or override it.
+
+## Flags
+
+| Flag | Shorthand | Description |
+|---|---|---|
+| `--provider` | `-p` | `claude` or `openai` |
+| `--model` | `-m` | Model alias (see tables above) |
+| `--style` | `-s` | Style hint passed to the AI |
+| `--setup` | | Configure API keys |

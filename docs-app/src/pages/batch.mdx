@@ -1,0 +1,50 @@
+# Batch Mode
+
+Convert an entire folder of SVG files into components in one go.
+
+## Basic usage
+
+```bash
+mkicon batch ./svg-icons
+```
+
+mkicon will:
+
+1. Scan the folder for all `.svg` files
+2. Show a preview list of found files
+3. Ask for confirmation
+4. Generate all components
+5. Update `index.ts`
+6. Track components in `.mkicon.lock.json`
+
+## Automatic variant detection
+
+When mkicon detects consistent naming patterns in the folder, it offers to group them into multi-variant components.
+
+If it finds `ArrowUp.svg`, `ArrowDown.svg`, `ArrowLeft.svg`, `ArrowRight.svg` in the same folder, it suggests merging them into a single `<ArrowIcon direction="up | down | left | right" />` component.
+
+Same for style variants: `UserOutline.svg` + `UserSolid.svg` → `<UserIcon variant="outline | solid" />`.
+
+You'll be prompted to confirm before any grouping happens.
+
+## Rebuild lock file
+
+The `.mkicon.lock.json` file is gitignored by default. After a fresh clone, rebuild it from existing components without regenerating anything:
+
+```bash
+mkicon batch --refresh
+# or shorthand:
+mkicon batch -r
+```
+
+This also runs automatically when `mkicon diff` or `mkicon preview` detects a missing lock file.
+
+## Processing from Figma
+
+Export icons from Figma as individual SVG files, drop them in a folder, then:
+
+```bash
+mkicon batch ./figma-export
+```
+
+mkicon will pick up file names and convert them to PascalCase component names (or your configured naming convention).
