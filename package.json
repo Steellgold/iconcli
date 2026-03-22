@@ -46,7 +46,7 @@
     "dev": "tsup --watch",
     "build:cli": "tsup && tsc-alias",
     "build:studio": "cd studio-app && pnpm install --frozen-lockfile && pnpm build",
-    "build:docs": "cd docs-app && pnpm install --frozen-lockfile && pnpm build",
+    "build:docs": "cd docs && pnpm install --frozen-lockfile && pnpm build",
     "build": "pnpm build:cli && pnpm build:studio",
     "test": "vitest",
     "test:ci": "vitest run --coverage",

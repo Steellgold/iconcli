@@ -6,7 +6,7 @@ const flatPages = NAV.flatMap((g) => g.items);
 
 function getEditUrl(pathname: string): string {
   const file = pathname === "/" ? "index" : pathname.replace(/^\//, "");
-  return `https://github.com/Steellgold/mkicon/blob/stable/docs-app/src/pages/${file}.mdx`;
+  return `https://github.com/Steellgold/mkicon/blob/stable/docs/src/pages/${file}.mdx`;
 }
 
 export default function PageNav() {

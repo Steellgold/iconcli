@@ -5,7 +5,7 @@ on:
     branches:
       - stable
     paths:
-      - "docs-app/**"
+      - "docs/**"
 
 permissions:
   contents: write
@@ -21,16 +21,16 @@ jobs:
           version: latest
 
       - name: Install dependencies
-        working-directory: docs-app
+        working-directory: docs
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        working-directory: docs-app
+        working-directory: docs
         run: pnpm build
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs-app/dist
+          publish_dir: ./docs/dist
           cname: ""
