@@ -33,6 +33,7 @@ export const generateStudioHTML = (config: Config): string => {
     --sidebar-w: 220px;
     --icon-size: 48px;
     --icon-color: #e4e4e7;
+    --icon-stroke: 1.25;
   }
 
   html, body { height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 13px; line-height: 1.5; overflow: hidden; }
@@ -176,7 +177,7 @@ export const generateStudioHTML = (config: Config): string => {
     width: var(--icon-size); height: var(--icon-size);
     color: var(--icon-color); transition: width .15s, height .15s;
   }
-  .card-svg svg { width: 100%; height: 100%; }
+  .card-svg svg { width: 100%; height: 100%; stroke-width: var(--icon-stroke); }
 
   .card-name {
     font-size: 10px; color: var(--text-muted); text-align: center;
@@ -204,7 +205,7 @@ export const generateStudioHTML = (config: Config): string => {
     display: flex; align-items: center; justify-content: center;
     color: var(--icon-color); transition: color .2s;
   }
-  .bp-svg-wrap svg { width: 100%; height: 100%; }
+  .bp-svg-wrap svg { width: 100%; height: 100%; stroke-width: var(--icon-stroke); }
   .bp-name { font-size: 11px; font-weight: 600; font-family: var(--mono); color: var(--accent); text-align: center; }
   .bp-meta { font-size: 10px; color: var(--text-muted); text-align: center; }
 
@@ -577,6 +578,20 @@ export const generateStudioHTML = (config: Config): string => {
     </div>
 
     <div class="sidebar-section">
+      <div class="sidebar-label">Stroke Width</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:11px;color:var(--text-muted);">Width</span>
+        <span class="size-value" id="stroke-value">2</span>
+      </div>
+      <div class="size-row">
+        <input type="range" id="stroke-slider" min="1" max="2" step="0.25" value="1.25">
+      </div>
+      <div class="size-ticks">
+        <span>1</span><span>1.25</span><span>1.5</span><span>1.75</span><span>2</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
       <div class="sidebar-label">Style</div>
       <div class="style-btns">
         <button class="style-btn active" data-style="auto">Auto</button>
@@ -675,10 +690,10 @@ export const generateStudioHTML = (config: Config): string => {
           </select>
           <select id="tabler-stroke">
             <option value="1">Stroke 1</option>
-            <option value="1.25">Stroke 1.25</option>
+            <option value="1.25" selected>Stroke 1.25 (default)</option>
             <option value="1.5">Stroke 1.5</option>
             <option value="1.75">Stroke 1.75</option>
-            <option value="2" selected>Stroke 2 (default)</option>
+            <option value="2">Stroke 2</option>
           </select>
         </div>
         <div class="import-search-wrap">
@@ -797,6 +812,7 @@ export const generateStudioHTML = (config: Config): string => {
   // Restore prefs
   const prefs = loadPrefs();
   const initSize = prefs.size ?? 48;
+  const initStroke = prefs.stroke ?? 1.25;
   const initStyle = prefs.style ?? 'auto';
   const initColor = prefs.color ?? '#e4e4e7';
   const initLibrary = prefs.library ?? '';
@@ -806,6 +822,12 @@ export const generateStudioHTML = (config: Config): string => {
     document.documentElement.style.setProperty('--icon-size', px + 'px');
     document.getElementById('size-value').textContent = px + 'px';
     document.getElementById('size-slider').value = px;
+  }
+
+  function applyStroke(val) {
+    document.documentElement.style.setProperty('--icon-stroke', val);
+    document.getElementById('stroke-value').textContent = val;
+    document.getElementById('stroke-slider').value = val;
   }
 
   // Detect whether an SVG is inherently filled or outline based on its markup.
@@ -842,6 +864,14 @@ export const generateStudioHTML = (config: Config): string => {
     savePrefs({ size: +slider.value });
   });
   applySize(initSize);
+
+  // Stroke slider
+  const strokeSlider = document.getElementById('stroke-slider');
+  strokeSlider.addEventListener('input', () => {
+    applyStroke(+strokeSlider.value);
+    savePrefs({ stroke: +strokeSlider.value });
+  });
+  applyStroke(initStroke);
 
   // Style buttons
   document.querySelectorAll('.style-btn').forEach(btn => {
@@ -1277,6 +1307,10 @@ export const generateStudioHTML = (config: Config): string => {
       document.querySelectorAll('.lib-btn').forEach(b => b.classList.toggle('active', b.dataset.lib === iLib));
       document.getElementById('hero-opts').style.display = iLib === 'heroicons' ? 'flex' : 'none';
       document.getElementById('tabler-opts').style.display = iLib === 'tabler' ? 'flex' : 'none';
+      if (iLib === 'tabler') {
+        const tablerStyleEl = document.getElementById('tabler-style');
+        document.getElementById('tabler-stroke').style.display = tablerStyleEl.value === 'filled' ? 'none' : '';
+      }
       iSelectedIcons = [];
       document.getElementById('import-name').value = '';
       updateLibFooter();
@@ -1299,6 +1333,7 @@ export const generateStudioHTML = (config: Config): string => {
     if (iLibCache[iLib]) renderLibGrid(iLibCache[iLib], document.getElementById('lib-search').value);
   });
   document.getElementById('tabler-style').addEventListener('change', function() {
+    document.getElementById('tabler-stroke').style.display = this.value === 'filled' ? 'none' : '';
     iSelectedIcons = [];
     updateLibFooter();
     if (iLibCache[iLib]) renderLibGrid(iLibCache[iLib], document.getElementById('lib-search').value);
