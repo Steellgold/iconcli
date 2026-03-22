@@ -39,16 +39,27 @@ export const generateVueComponent = (options: VueTemplateOptions): string => {
     defaultValues.strokeWidth = 2;
   }
 
+  if (props.accessibility) {
+    propsFields.push("  title?: string;");
+  }
+
+  const hasProps = props.size || props.color || props.strokeWidth || props.accessibility;
+  const jsPropsArray = ['size', 'color'];
+  if (props.strokeWidth) {jsPropsArray.push('strokeWidth');}
+  if (props.accessibility) {jsPropsArray.push('title');}
+
   const propsCode =
-    typescript && (props.size || props.color || props.strokeWidth)
-      ? `withDefaults(defineProps<{\n${propsFields.join("\n")}\n}>(), {\n${Object.entries(
-          defaultValues
-        )
-          .map(([key, val]) => `  ${key}: ${val}`)
-          .join(",\n")}\n})`
+    typescript && hasProps
+      ? Object.keys(defaultValues).length > 0
+        ? `withDefaults(defineProps<{\n${propsFields.join("\n")}\n}>(), {\n${Object.entries(
+            defaultValues
+          )
+            .map(([key, val]) => `  ${key}: ${val}`)
+            .join(",\n")}\n})`
+        : `defineProps<{\n${propsFields.join("\n")}\n}>()`
       : typescript
         ? `defineProps<{\n${propsFields.join("\n")}\n}>()`
-        : `defineProps(['size', 'color'${props.strokeWidth ? ", 'strokeWidth'" : ""}])`;
+        : `defineProps([${jsPropsArray.map((p) => `'${p}'`).join(', ')}])`;
 
   // Build SVG attributes
   const svgAttrs: string[] = ['xmlns="http://www.w3.org/2000/svg"'];
@@ -69,12 +80,19 @@ export const generateVueComponent = (options: VueTemplateOptions): string => {
     svgAttrs.push(':stroke-width="strokeWidth"');
   }
 
+  if (props.accessibility) {
+    svgAttrs.push(':aria-hidden="!title"');
+    svgAttrs.push(':role="title ? \'img\' : undefined"');
+  }
+
   svgAttrs.push('v-bind="$attrs"');
+
+  const titleElement = props.accessibility ? `\n    <title v-if="title">{{ title }}</title>` : "";
 
   return `${header}<template>
   <svg
     ${svgAttrs.join("\n    ")}
-  >
+  >${titleElement}
     ${svgInnerContent}
   </svg>
 </template>

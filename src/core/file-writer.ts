@@ -2,6 +2,7 @@ import enquirer from "enquirer";
 import { existsSync } from "fs";
 import fs from "fs/promises";
 import path from "path";
+import { ensureDir } from "@/utils/paths";
 
 const { prompt } = enquirer;
 
@@ -57,4 +58,34 @@ export const writeComponentFile = async (options: WriteFileOptions): Promise<str
   // Write file
   await fs.writeFile(fullPath, content, "utf-8");
   return fullPath;
+};
+
+export interface MultiFrameworkWriteResult {
+  framework: string;
+  filePath: string;
+}
+
+/**
+ * Write components generated for multiple frameworks.
+ * Each framework gets its own subdirectory: <iconsDir>/<framework>/<filename>
+ */
+export const writeMultiFrameworkComponents = async (
+  components: Array<{ framework: string; filename: string; content: string }>,
+  options: Omit<WriteFileOptions, "filename" | "content">
+): Promise<MultiFrameworkWriteResult[]> => {
+  const { projectRoot, baseDir, iconsFolder } = options;
+  const baseIconsDir = path.join(projectRoot, baseDir, iconsFolder);
+
+  const results: MultiFrameworkWriteResult[] = [];
+
+  for (const component of components) {
+    const frameworkDir = path.join(baseIconsDir, component.framework);
+    await ensureDir(frameworkDir);
+
+    const fullPath = path.join(frameworkDir, component.filename);
+    await fs.writeFile(fullPath, component.content, "utf-8");
+    results.push({ framework: component.framework, filePath: fullPath });
+  }
+
+  return results;
 };

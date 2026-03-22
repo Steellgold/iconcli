@@ -97,7 +97,14 @@ ${customProps.join("\n")}
   const viewBox = variants[0]?.viewBox || "0 0 24 24";
 
   // Template final
-  const imports = typescript ? "import type { SVGProps } from 'react';" : "";
+  const useForwardRef = props.forwardRef;
+  const imports = typescript
+    ? useForwardRef
+      ? "import { forwardRef } from 'react';\nimport type { SVGProps } from 'react';"
+      : "import type { SVGProps } from 'react';"
+    : useForwardRef
+      ? "import { forwardRef } from 'react';"
+      : "";
 
   // Build SVG attributes
 
@@ -126,7 +133,35 @@ ${customProps.join("\n")}
     svgAttrs.push("{...(style && { style })}");
   }
 
+  if (useForwardRef) {
+    svgAttrs.push("ref={ref}");
+  }
+
   svgAttrs.push("{...props}");
+
+  if (useForwardRef) {
+    const refType = typescript ? `<SVGSVGElement, ${componentName}Props>` : "";
+    return `${header}${imports}
+
+${propsInterface}export const ${componentName} = forwardRef${refType}(
+  (${propsDestructure}, ref) => {
+    ${hasStyles ? generateStyleResolver(config.styles!) : ""}
+    const renderContent = () => {
+      ${variantSwitch}
+    };
+
+    return (
+      <svg
+        ${svgAttrs.join("\n        ")}
+      >
+        {renderContent()}
+      </svg>
+    );
+  }
+);
+${componentName}.displayName = '${componentName}';
+`;
+  }
 
   return `${header}${imports}
 
@@ -137,7 +172,7 @@ ${propsInterface}export const ${componentName} = (${propsDestructure}) => {
   };
 
   return (
-    <svg 
+    <svg
       ${svgAttrs.join("\n      ")}
     >
       {renderContent()}

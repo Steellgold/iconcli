@@ -86,3 +86,30 @@ describe("getVueFileExtension", () => {
     expect(getVueFileExtension()).toBe(".vue");
   });
 });
+
+describe("accessibility support", () => {
+  it("adds aria-hidden and title prop when accessibility enabled (TS)", () => {
+    const out = generateVueComponent({
+      componentName: "ArrowIcon",
+      svgContent: "<svg></svg>",
+      viewBox: "0 0 24 24",
+      typescript: true,
+      props: { ...defaultProps, accessibility: true },
+    });
+    expect(out).toContain("title?: string");
+    expect(out).toContain(":aria-hidden");
+    expect(out).toContain('<title v-if="title">');
+  });
+
+  it("adds title prop in JS mode when accessibility enabled", () => {
+    const out = generateVueComponent({
+      componentName: "ArrowIcon",
+      svgContent: "<svg></svg>",
+      viewBox: "0 0 24 24",
+      typescript: false,
+      props: { ...defaultProps, accessibility: true },
+    });
+    expect(out).toContain("'title'");
+    expect(out).toContain(":aria-hidden");
+  });
+});

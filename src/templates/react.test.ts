@@ -113,3 +113,71 @@ describe("getReactFileExtension", () => {
     expect(getReactFileExtension(false)).toBe(".jsx");
   });
 });
+
+describe("forwardRef support", () => {
+  it("wraps component with forwardRef when enabled", () => {
+    const out = generateReactComponent({
+      componentName: "ArrowIcon",
+      svgContent: "<svg></svg>",
+      viewBox: "0 0 24 24",
+      typescript: true,
+      props: { ...defaultProps, forwardRef: true },
+    });
+    expect(out).toContain("forwardRef");
+    expect(out).toContain("import { forwardRef }");
+    expect(out).toContain("ArrowIcon.displayName = 'ArrowIcon'");
+    expect(out).toContain("ref={ref}");
+  });
+
+  it("wraps component with forwardRef in JS mode", () => {
+    const out = generateReactComponent({
+      componentName: "ArrowIcon",
+      svgContent: "<svg></svg>",
+      viewBox: "0 0 24 24",
+      typescript: false,
+      props: { ...defaultProps, forwardRef: true },
+    });
+    expect(out).toContain("forwardRef");
+    expect(out).toContain("ArrowIcon.displayName");
+    expect(out).not.toContain("import type { SVGProps }");
+  });
+
+  it("does not use forwardRef when disabled", () => {
+    const out = generateReactComponent({
+      componentName: "ArrowIcon",
+      svgContent: "<svg></svg>",
+      viewBox: "0 0 24 24",
+      typescript: true,
+      props: { ...defaultProps, forwardRef: false },
+    });
+    expect(out).not.toContain("forwardRef");
+    expect(out).not.toContain("displayName");
+  });
+});
+
+describe("accessibility support", () => {
+  it("adds aria-hidden and title prop when accessibility enabled (TS)", () => {
+    const out = generateReactComponent({
+      componentName: "ArrowIcon",
+      svgContent: "<svg></svg>",
+      viewBox: "0 0 24 24",
+      typescript: true,
+      props: { ...defaultProps, accessibility: true },
+    });
+    expect(out).toContain("title?: string");
+    expect(out).toContain("aria-hidden");
+    expect(out).toContain("{title && <title>");
+  });
+
+  it("adds title prop in JS mode when accessibility enabled", () => {
+    const out = generateReactComponent({
+      componentName: "ArrowIcon",
+      svgContent: "<svg></svg>",
+      viewBox: "0 0 24 24",
+      typescript: false,
+      props: { ...defaultProps, accessibility: true },
+    });
+    expect(out).toContain("title");
+    expect(out).toContain("aria-hidden");
+  });
+});

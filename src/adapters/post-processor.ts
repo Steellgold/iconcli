@@ -7,7 +7,7 @@ import type { DetectedFormatConfig } from "./types";
 export const applyFormatting = (
   code: string,
   formatConfig: DetectedFormatConfig,
-  framework: "react" | "react-native" | "vue" | "svelte"
+  framework: string
 ): string => {
   let formatted = code;
 

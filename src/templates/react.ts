@@ -18,7 +18,14 @@ export const generateReactComponent = (options: ReactTemplateOptions): string =>
     .replace(/<\/svg>/, "")
     .trim();
 
-  const typeImport = typescript ? "import type { SVGProps } from 'react';\n\n" : "";
+  const useForwardRef = props.forwardRef;
+  const typeImport = typescript
+    ? useForwardRef
+      ? "import { forwardRef } from 'react';\nimport type { SVGProps } from 'react';\n\n"
+      : "import type { SVGProps } from 'react';\n\n"
+    : useForwardRef
+      ? "import { forwardRef } from 'react';\n\n"
+      : "";
 
   // Build props interface/type
   let propsInterface = "";
@@ -43,9 +50,14 @@ export const generateReactComponent = (options: ReactTemplateOptions): string =>
       defaultProps.push("  strokeWidth = 2");
     }
 
+    if (props.accessibility) {
+      propsFields.push("  title?: string;");
+    }
+
     propsInterface = `export interface ${componentName}Props extends SVGProps<SVGSVGElement> {\n${propsFields.join("\n")}\n}\n\n`;
 
     const tsxProps: string[] = [...defaultProps];
+    if (props.accessibility) {tsxProps.push("title");}
     if (props.className) {tsxProps.push("className");}
     if (props.style) {tsxProps.push("style");}
     tsxProps.push("...props");
@@ -62,6 +74,7 @@ export const generateReactComponent = (options: ReactTemplateOptions): string =>
     if (props.size) {destructuredProps.push("size");}
     if (props.color) {destructuredProps.push("color");}
     if (props.strokeWidth) {destructuredProps.push("strokeWidth");}
+    if (props.accessibility) {destructuredProps.push("title");}
     if (props.className) {destructuredProps.push("className");}
     if (props.style) {destructuredProps.push("style");}
     destructuredProps.push("...props");
@@ -95,13 +108,38 @@ export const generateReactComponent = (options: ReactTemplateOptions): string =>
     svgAttrs.push("{...(style && { style })}");
   }
 
+  if (props.accessibility) {
+    svgAttrs.push("{...(title ? { role: 'img' } : { 'aria-hidden': true })}");
+  }
+
+  if (useForwardRef) {
+    svgAttrs.push("ref={ref}");
+  }
+
   svgAttrs.push("{...props}");
+
+  const titleElement = props.accessibility ? `\n      {title && <title>{title}</title>}` : "";
+
+  if (useForwardRef) {
+    const refType = typescript ? `<SVGSVGElement, ${componentName}Props>` : "";
+    return `${header}${typeImport}${propsInterface}export const ${componentName} = forwardRef${refType}(
+  (${propsSignature}, ref) => (
+    <svg
+      ${svgAttrs.join("\n      ")}
+    >${titleElement}
+      ${svgInnerContent}
+    </svg>
+  )
+);
+${componentName}.displayName = '${componentName}';
+`;
+  }
 
   return `${header}${typeImport}${propsInterface}export const ${componentName} = (${propsSignature}) => {
   return (
     <svg
       ${svgAttrs.join("\n      ")}
-    >
+    >${titleElement}
       ${svgInnerContent}
     </svg>
   );

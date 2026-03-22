@@ -35,6 +35,14 @@ export const generateSvelteComponent = (options: SvelteTemplateOptions): string 
     propsExports.push("  export let strokeWidth: number = 2;");
   }
 
+  if (props.accessibility) {
+    if (typescript) {
+      propsExports.push("  export let title: string | undefined = undefined;");
+    } else {
+      propsExports.push("  export let title = undefined;");
+    }
+  }
+
   // Build SVG attributes
   const svgAttrs: string[] = ['xmlns="http://www.w3.org/2000/svg"'];
 
@@ -54,6 +62,11 @@ export const generateSvelteComponent = (options: SvelteTemplateOptions): string 
     svgAttrs.push("stroke-width={strokeWidth}");
   }
 
+  if (props.accessibility) {
+    svgAttrs.push("aria-hidden={!title}");
+    svgAttrs.push("role={title ? 'img' : undefined}");
+  }
+
   svgAttrs.push("{...$$restProps}");
 
   const scriptSection =
@@ -65,9 +78,11 @@ ${propsExports.join("\n")}
 `
       : "";
 
+  const titleElement = props.accessibility ? `\n  {#if title}<title>{title}</title>{/if}` : "";
+
   return `${header}${scriptSection}<svg
   ${svgAttrs.join("\n  ")}
->
+>${titleElement}
   ${svgInnerContent}
 </svg>
 `;

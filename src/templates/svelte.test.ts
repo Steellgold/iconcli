@@ -85,3 +85,30 @@ describe("getSvelteFileExtension", () => {
     expect(getSvelteFileExtension()).toBe(".svelte");
   });
 });
+
+describe("accessibility support", () => {
+  it("adds aria-hidden and title export when accessibility enabled (TS)", () => {
+    const out = generateSvelteComponent({
+      componentName: "ArrowIcon",
+      svgContent: "<svg></svg>",
+      viewBox: "0 0 24 24",
+      typescript: true,
+      props: { ...defaultProps, accessibility: true },
+    });
+    expect(out).toContain("export let title: string | undefined");
+    expect(out).toContain("aria-hidden={!title}");
+    expect(out).toContain("{#if title}<title>");
+  });
+
+  it("adds title in JS mode when accessibility enabled", () => {
+    const out = generateSvelteComponent({
+      componentName: "ArrowIcon",
+      svgContent: "<svg></svg>",
+      viewBox: "0 0 24 24",
+      typescript: false,
+      props: { ...defaultProps, accessibility: true },
+    });
+    expect(out).toContain("export let title = undefined");
+    expect(out).toContain("aria-hidden={!title}");
+  });
+});

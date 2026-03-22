@@ -3,6 +3,7 @@ import type { Config } from "@/config/schema";
 import { applyFormatting, resolveFormatConfig } from "@/adapters/index";
 import { generateMkiconHeader } from "@/utils/header";
 import { logger } from "@/utils/logger";
+import { generateAngularComponent, getAngularFileExtension } from "@/templates/angular";
 import { generateReactComponent, getReactFileExtension } from "@/templates/react";
 import {
   generateReactNativeComponent,
@@ -10,6 +11,7 @@ import {
 } from "@/templates/react-native";
 import { generateSvelteComponent, getSvelteFileExtension } from "@/templates/svelte";
 import { generateVueComponent, getVueFileExtension } from "@/templates/vue";
+import { generateWebComponentsComponent, getWebComponentsFileExtension } from "@/templates/webcomponents";
 
 import { cleanSVGAttributes } from "./svg-processor";
 
@@ -92,6 +94,28 @@ export const generateComponent = async (
       extension = getSvelteFileExtension();
       break;
 
+    case "angular":
+      content = generateAngularComponent({
+        componentName,
+        svgContent: cleanedSVG,
+        viewBox,
+        props: config.props,
+        header,
+      });
+      extension = getAngularFileExtension();
+      break;
+
+    case "webcomponents":
+      content = generateWebComponentsComponent({
+        componentName,
+        svgContent: cleanedSVG,
+        viewBox,
+        props: config.props,
+        header,
+      });
+      extension = getWebComponentsFileExtension();
+      break;
+
     default:
       throw new Error(`Unsupported framework: ${config.framework}`);
   }
@@ -129,6 +153,27 @@ export const generateComponent = async (
     filename,
     extension,
   };
+};
+
+/**
+ * Generate components for multiple frameworks (when config.frameworks is set).
+ * Returns one GeneratedComponent per framework, each tagged with its framework name.
+ */
+export const generateComponents = async (
+  options: GenerateComponentOptions
+): Promise<Array<GeneratedComponent & { framework: string }>> => {
+  const { config } = options;
+  const targets = config.frameworks ?? [config.framework];
+
+  const results = await Promise.all(
+    targets.map(async (framework) => {
+      const overriddenConfig = { ...config, framework };
+      const result = await generateComponent({ ...options, config: overriddenConfig });
+      return { ...result, framework };
+    })
+  );
+
+  return results;
 };
 
 /**
