@@ -23,6 +23,7 @@ import { runList } from "@/cli/list";
 import { runFigmaImport } from "@/cli/figma";
 import { runStudio } from "@/cli/studio";
 import { runPngExport } from "@/cli/png-export";
+import { runHook } from "@/cli/hook";
 import path from "path";
 import { configExists, loadConfig } from "@/config/manager";
 import type { Config } from "@/config/schema";
@@ -174,6 +175,28 @@ const main = async (): Promise<void> => {
         process.exit(1);
       }
       await processBatchFromArgs(batchDir, config, projectRoot);
+      return;
+    }
+
+    if (subcommand === "hook") {
+      const hookSub = process.argv[3] as "install" | "uninstall" | "status" | "run" | undefined;
+      if (!hookSub || !["install", "uninstall", "status", "run"].includes(hookSub)) {
+        logger.error("Usage: mkicon hook <install|uninstall|status|run>");
+        process.exit(1);
+      }
+
+      const config = configExists(projectRoot, customConfigPath)
+        ? loadConfig(projectRoot, customConfigPath) ?? undefined
+        : undefined;
+
+      await runHook({
+        projectRoot,
+        config,
+        subcommand: hookSub,
+        husky: process.argv.includes("--husky"),
+        warn: process.argv.includes("--warn"),
+        fix: process.argv.includes("--fix"),
+      });
       return;
     }
 
