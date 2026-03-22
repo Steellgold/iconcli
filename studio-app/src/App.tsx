@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import type { IconEntry, StudioConfig, CtxMenuState } from './types';
 import { fetchConfig, fetchIcons } from './api';
 import { usePrefs } from './hooks/usePrefs';
+import { useSearch, useSearchHistory } from './hooks/useSearch';
+import type { SortMode } from './hooks/useSearch';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
 import IconGrid from './components/IconGrid';
@@ -16,6 +18,8 @@ export default function App() {
   const [config, setConfig] = useState<StudioConfig>({ activeFrameworks: ['react'], iconsPath: '@/src/icons' });
   const [icons, setIcons] = useState<IconEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortMode, setSortMode] = useState<SortMode>('recent');
+  const { history: searchHistory, push: pushHistory } = useSearchHistory();
   const [selectedFilenames, setSelectedFilenames] = useState<Set<string>>(new Set());
   const [selectedIcon, setSelectedIcon] = useState<IconEntry | null>(null);
   const [showImport, setShowImport] = useState(false);
@@ -133,8 +137,15 @@ export default function App() {
     }
   }, [selectedIcon]);
 
+  const handleSearchChange = useCallback((q: string) => {
+    setSearchQuery(q);
+    if (q.trim()) pushHistory(q.trim());
+  }, [pushHistory]);
+
   // Compute library options from icons
   const libraryOptions = [...new Set(icons.map(i => i.library).filter(Boolean))] as string[];
+
+  const filteredIcons = useSearch(icons, searchQuery, prefs.style, prefs.library, sortMode);
 
   return (
     <div
@@ -149,18 +160,17 @@ export default function App() {
         prefs={prefs}
         setPrefs={setPrefs}
         libraryOptions={libraryOptions}
-        displayCount={icons.filter(icon => {
-          if (searchQuery && !icon.componentName.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-          if (prefs.library && icon.library !== prefs.library) return false;
-          if (prefs.style !== 'auto' && icon.detectedStyle !== 'unknown' && icon.detectedStyle !== prefs.style) return false;
-          return true;
-        }).length}
+        displayCount={filteredIcons.length}
       />
       <div className="main">
         <TopBar
           searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
+          onSearchChange={handleSearchChange}
           onNewIcon={() => setShowImport(true)}
+          searchHistory={searchHistory}
+          sortMode={sortMode}
+          onSortChange={setSortMode}
+          resultCount={filteredIcons.length}
         />
         <div className="grid-wrap">
           <IconGrid
@@ -168,6 +178,7 @@ export default function App() {
             searchQuery={searchQuery}
             styleFilter={prefs.style}
             libraryFilter={prefs.library}
+            sortMode={sortMode}
             selectedFilenames={selectedFilenames}
             onCardClick={handleCardClick}
             onToggleSelect={handleToggleSelect}

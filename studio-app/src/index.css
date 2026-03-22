@@ -249,6 +249,44 @@ select:focus {
   z-index: 5;
   display: flex;
   align-items: center;
+  gap: 10px;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.result-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.sort-toggle {
+  display: flex;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.sort-toggle button {
+  padding: 4px 9px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 11px;
+  cursor: pointer;
+  transition: color .15s, background .15s;
+}
+
+.sort-toggle button:hover { color: var(--text); }
+.sort-toggle button.active {
+  background: var(--surface3);
+  color: var(--text);
 }
 
 .search-wrap {
@@ -256,18 +294,65 @@ select:focus {
   flex: 1;
 }
 
-.search-wrap svg {
+.search-wrap > svg:first-child {
   position: absolute;
   left: 10px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-muted);
   pointer-events: none;
+  z-index: 1;
 }
+
+.search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  transition: color .15s;
+}
+.search-clear:hover { color: var(--text); }
+
+.search-history {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  list-style: none;
+  overflow: hidden;
+  z-index: 20;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+
+.search-history li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background .1s, color .1s;
+}
+.search-history li:hover {
+  background: var(--surface3);
+  color: var(--text);
+}
+.search-history li svg { flex-shrink: 0; }
 
 .search-input {
   width: 100%;
-  padding: 8px 12px 8px 34px;
+  padding: 8px 30px 8px 34px;
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: 8px;

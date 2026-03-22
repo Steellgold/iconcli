@@ -1,4 +1,6 @@
 import type { IconEntry } from '../types';
+import type { SortMode } from '../hooks/useSearch';
+import { useSearch } from '../hooks/useSearch';
 import IconCard from './IconCard';
 
 interface IconGridProps {
@@ -6,6 +8,7 @@ interface IconGridProps {
   searchQuery: string;
   styleFilter: 'auto' | 'filled' | 'outline';
   libraryFilter: string;
+  sortMode: SortMode;
   selectedFilenames: Set<string>;
   onCardClick: (icon: IconEntry, ctrl: boolean) => void;
   onToggleSelect: (filename: string) => void;
@@ -17,22 +20,20 @@ export default function IconGrid({
   searchQuery,
   styleFilter,
   libraryFilter,
+  sortMode,
   selectedFilenames,
   onCardClick,
   onToggleSelect,
   onContextMenu,
 }: IconGridProps) {
-  const filtered = icons.filter(icon => {
-    if (searchQuery && !icon.componentName.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-    if (libraryFilter && icon.library !== libraryFilter) return false;
-    if (styleFilter !== 'auto' && icon.detectedStyle !== 'unknown' && icon.detectedStyle !== styleFilter) return false;
-    return true;
-  });
+  const filtered = useSearch(icons, searchQuery, styleFilter, libraryFilter, sortMode);
 
   if (filtered.length === 0) {
     return (
       <div className="icon-grid">
-        <div className="empty">No icons found.</div>
+        <div className="empty">
+          {searchQuery ? `No icons matching "${searchQuery}".` : 'No icons found.'}
+        </div>
       </div>
     );
   }
