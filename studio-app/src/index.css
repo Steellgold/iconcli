@@ -495,7 +495,7 @@ select:focus {
 
 /* ── Bottom panel ── */
 .bottom-panel {
-  height: 240px;
+  height: 360px;
   flex-shrink: 0;
   display: flex;
   border-top: 1px solid var(--border);
@@ -505,7 +505,7 @@ select:focus {
 
 @keyframes slideUpPanel {
   from { height: 0; opacity: 0; }
-  to { height: 240px; opacity: 1; }
+  to { height: 360px; opacity: 1; }
 }
 
 .bp-left {
