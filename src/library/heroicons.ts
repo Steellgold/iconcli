@@ -58,7 +58,14 @@ export const fetchHeroicon = async (
     );
   }
 
-  const svgContent = await response.text();
+  const raw = await response.text();
+
+  // Heroicons ship with hardcoded colors (e.g. stroke="#0F172A").
+  // Replace any hex color in stroke/fill with currentColor so the icon
+  // inherits its color from CSS like every other icon.
+  const svgContent = raw
+    .replace(/\bstroke="#[0-9a-fA-F]{3,8}"/gi, 'stroke="currentColor"')
+    .replace(/\bfill="#[0-9a-fA-F]{3,8}"/gi, 'fill="currentColor"');
 
   return {
     svgContent,
