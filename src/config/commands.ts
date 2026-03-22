@@ -207,6 +207,8 @@ const modifyProps = async (projectRoot: string, config: Config): Promise<void> =
       strokeWidth: props.includes("strokeWidth"),
       className: props.includes("className"),
       style: props.includes("style"),
+      accessibility: config.props.accessibility,
+      forwardRef: config.props.forwardRef,
     },
   });
   logger.success("Props updated!");

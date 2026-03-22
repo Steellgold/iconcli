@@ -5,7 +5,7 @@ const REPO = "https://github.com/Steellgold/mkicon";
  * Generate the mkicon file header comment.
  * Uses HTML comments for Vue/Svelte, JS block comments for React/React Native.
  */
-export const generateMkiconHeader = (framework: "react" | "react-native" | "vue" | "svelte"): string => {
+export const generateMkiconHeader = (framework: string): string => {
   if (framework === "vue" || framework === "svelte") {
     return `<!-- Generated with mkicon v${VERSION} — ${REPO} -->\n`;
   }

@@ -4,7 +4,10 @@ export const ConfigSchema = z.object({
   version: z.string().default("1.0.0"),
   baseDir: z.string(),
   iconsFolder: z.string().default("icons"),
-  framework: z.enum(["react", "react-native", "vue", "svelte"]),
+  framework: z.enum(["react", "react-native", "vue", "svelte", "angular", "webcomponents"]),
+  frameworks: z
+    .array(z.enum(["react", "react-native", "vue", "svelte", "angular", "webcomponents"]))
+    .optional(),
   typescript: z.boolean().default(true),
   optimize: z.boolean().default(true),
   maintainIndex: z.boolean().default(true),
@@ -15,6 +18,8 @@ export const ConfigSchema = z.object({
       className: z.boolean().default(true),
       style: z.boolean().default(false),
       strokeWidth: z.boolean().default(false),
+      accessibility: z.boolean().default(false),
+      forwardRef: z.boolean().default(false),
     })
     .default({
       size: true,
@@ -22,6 +27,8 @@ export const ConfigSchema = z.object({
       className: true,
       style: false,
       strokeWidth: false,
+      accessibility: false,
+      forwardRef: false,
     }),
   naming: z
     .object({

@@ -24,6 +24,8 @@ describe("ConfigSchema", () => {
       className: true,
       style: false,
       strokeWidth: false,
+      accessibility: false,
+      forwardRef: false,
     });
   });
 
@@ -44,7 +46,7 @@ describe("ConfigSchema", () => {
   });
 
   it("rejects invalid framework", () => {
-    expect(() => ConfigSchema.parse({ baseDir: ".", framework: "angular" })).toThrow();
+    expect(() => ConfigSchema.parse({ baseDir: ".", framework: "ember" })).toThrow();
   });
 
   it("accepts valid naming.fileCase", () => {

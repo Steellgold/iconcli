@@ -8,12 +8,12 @@ const explorer = cosmiconfigSync("mkicon");
 const CONFIG_FILENAME = ".mkicon.json";
 
 /**
- * Load configuration from project root
+ * Load configuration from project root (or a custom path for monorepo support)
  */
-export const loadConfig = (projectRoot: string): Config | null => {
+export const loadConfig = (projectRoot: string, configPath?: string): Config | null => {
   try {
-    const configPath = path.join(projectRoot, CONFIG_FILENAME);
-    const result = explorer.load(configPath);
+    const resolvedPath = configPath ?? path.join(projectRoot, CONFIG_FILENAME);
+    const result = explorer.load(resolvedPath);
 
     if (!result || !result.config) {
       return null;
@@ -90,12 +90,12 @@ export const updateConfig = async (
 };
 
 /**
- * Check if config file exists
+ * Check if config file exists (or a custom path for monorepo support)
  */
-export const configExists = (projectRoot: string): boolean => {
+export const configExists = (projectRoot: string, configPath?: string): boolean => {
   try {
-    const configPath = path.join(projectRoot, CONFIG_FILENAME);
-    const result = explorer.load(configPath);
+    const resolvedPath = configPath ?? path.join(projectRoot, CONFIG_FILENAME);
+    const result = explorer.load(resolvedPath);
     return result !== null;
   } catch {
     return false;
