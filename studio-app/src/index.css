@@ -718,6 +718,15 @@ select:focus {
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: .5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.svg-label-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .snippet-code-wrap {
@@ -1907,16 +1916,7 @@ pre.raw-svg {
 }
 .svg-editor-save:disabled { opacity: .4; cursor: not-allowed; }
 
-/* Edit SVG button in raw-svg-wrap */
-.raw-svg-wrap { position: relative; }
-.raw-svg-actions {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+/* Edit SVG button */
 .edit-svg-btn {
   height: 26px;
   padding: 0 10px;
@@ -1936,3 +1936,24 @@ pre.raw-svg {
   padding: 1px 6px;
   border-radius: 4px;
 }
+
+/* ── Edit icon button in BottomPanel header ─────────────── */
+.bp-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.edit-icon-btn {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.edit-icon-btn:hover { color: var(--text); border-color: var(--accent); }
+.edit-icon-btn.active { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }

@@ -55,9 +55,10 @@ interface SvgEditorProps {
   initialSvg: string;
   onSave: (svg: string) => void;
   onCancel: () => void;
+  hideCancel?: boolean;
 }
 
-export default function SvgEditor({ initialSvg, onSave, onCancel }: SvgEditorProps) {
+export default function SvgEditor({ initialSvg, onSave, onCancel, hideCancel }: SvgEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const [previewSvg, setPreviewSvg] = useState(initialSvg);
@@ -158,7 +159,9 @@ export default function SvgEditor({ initialSvg, onSave, onCancel }: SvgEditorPro
         </div>
       </div>
       <div className="svg-editor-footer">
-        <button className="svg-editor-cancel" onClick={onCancel}>Cancel</button>
+        {!hideCancel && (
+          <button className="svg-editor-cancel" onClick={onCancel}>Cancel</button>
+        )}
         <button className="svg-editor-save" onClick={handleSave} disabled={parseError}>
           Save changes
         </button>

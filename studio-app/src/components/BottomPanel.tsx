@@ -170,7 +170,16 @@ export default function BottomPanel({ icon, config, onClose }: BottomPanelProps)
               SVG
             </button>
           </div>
-          <button className="close-btn bp-close-btn" onClick={onClose}>✕</button>
+          <div className="bp-header-actions">
+            <button
+              className={`edit-icon-btn${editMode ? ' active' : ''}`}
+              onClick={() => { setEditMode(m => !m); setActiveTab('__svg__'); }}
+              title="Edit SVG"
+            >
+              {editMode ? 'Cancel edit' : 'Edit icon'}
+            </button>
+            <button className="close-btn bp-close-btn" onClick={onClose}>✕</button>
+          </div>
         </div>
         <div className="tab-content">
           {config.activeFrameworks.map(fw => {
@@ -193,22 +202,24 @@ export default function BottomPanel({ icon, config, onClose }: BottomPanelProps)
                 initialSvg={baseSvg}
                 onSave={svg => { setEditedSvg(svg); setEditMode(false); }}
                 onCancel={() => setEditMode(false)}
+                hideCancel
               />
             ) : (
               <div className="snippet-section">
                 <div className="snippet-label">
-                  Raw SVG
-                  {editedSvg && <span className="svg-edited-badge">edited</span>}
-                </div>
-                <div className="raw-svg-wrap">
-                  <pre className="raw-svg">{currentSvg}</pre>
-                  <div className="raw-svg-actions">
-                    <button className="edit-svg-btn" onClick={() => setEditMode(true)}>Edit</button>
+                  <span>
+                    Raw SVG
+                    {editedSvg && <span className="svg-edited-badge">edited</span>}
+                  </span>
+                  <div className="svg-label-actions">
                     {editedSvg && (
                       <button className="edit-svg-btn" onClick={() => setEditedSvg(null)}>Reset</button>
                     )}
                     <CopyButton text={currentSvg} />
                   </div>
+                </div>
+                <div className="raw-svg-wrap">
+                  <pre className="raw-svg">{currentSvg}</pre>
                 </div>
               </div>
             )}
