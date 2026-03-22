@@ -1,6 +1,7 @@
 import type { Config } from "@/config/schema";
-import { generateComponent } from "@/core/component-generator";
-import { writeComponentFile } from "@/core/file-writer";
+import { generateComponent, generateComponents } from "@/core/component-generator";
+import { trackGeneratedComponent } from "@/core/diff-checker";
+import { writeComponentFile, writeMultiFrameworkComponents } from "@/core/file-writer";
 import { updateIndexFile } from "@/core/index-maintainer";
 import { optimizeSVG } from "@/core/svg-processor";
 import { fetchSVGFromURL } from "@/core/url-fetcher";
@@ -34,6 +35,7 @@ export const runSemiInteractive = async (options: SemiInteractiveOptions): Promi
     // Get SVG content based on mode
     let svgContent: string;
     let suggestedName: string | null = null;
+    let svgSourcePath = "source:paste";
 
     if (mode === "paste") {
       if (value) {
@@ -47,6 +49,7 @@ export const runSemiInteractive = async (options: SemiInteractiveOptions): Promi
 
       // Extract suggested name from URL
       suggestedName = extractIconNameFromURL(url);
+      svgSourcePath = url;
 
       const loadSpinner = spinner.start("Fetching SVG from URL...");
 
@@ -61,6 +64,7 @@ export const runSemiInteractive = async (options: SemiInteractiveOptions): Promi
       // file mode
       const filePath = value || (await promptSVGContent()); // TODO: Add file prompt
       svgContent = await fs.readFile(filePath, "utf-8");
+      svgSourcePath = filePath;
     }
 
     // Validate SVG
@@ -106,46 +110,103 @@ export const runSemiInteractive = async (options: SemiInteractiveOptions): Promi
       },
     ]);
 
-    // Generate component
+    // Generate component(s)
     logger.newline();
     const genSpinner = spinner.start("Generating component...");
-    const component = await generateComponent({
-      componentName,
-      svgContent: processed.content,
-      viewBox: processed.viewBox,
-      config,
-    });
-    genSpinner.succeed(`${component.filename} generated`);
+    const isMultiFramework = config.frameworks && config.frameworks.length > 1;
 
-    // Write file
-    const iconsDir = path.join(projectRoot, config.baseDir, config.iconsFolder);
-    const filePath = await writeComponentFile({
-      projectRoot,
-      baseDir: config.baseDir,
-      iconsFolder: config.iconsFolder,
-      filename: component.filename,
-      content: component.content,
-    });
+    if (isMultiFramework) {
+      const components = await generateComponents({
+        componentName,
+        svgContent: processed.content,
+        viewBox: processed.viewBox,
+        config,
+      });
+      genSpinner.succeed(`${components.length} components generated`);
 
-    logger.success(`${component.filename} created`);
+      const results = await writeMultiFrameworkComponents(components, {
+        projectRoot,
+        baseDir: config.baseDir,
+        iconsFolder: config.iconsFolder,
+      });
 
-    // Update index
-    if (config.maintainIndex) {
-      await updateIndexFile(iconsDir, component.extension);
-      logger.success("index.ts updated");
+      for (const result of results) {
+        logger.success(`${result.framework}: ${path.relative(projectRoot, result.filePath)}`);
+      }
+
+      for (const comp of components) {
+        await trackGeneratedComponent(
+          projectRoot,
+          comp.filename,
+          componentName,
+          svgSourcePath,
+          processed.content,
+        );
+      }
+
+      // Update index per framework subdirectory
+      if (config.maintainIndex) {
+        for (const comp of components) {
+          const frameworkDir = path.join(projectRoot, config.baseDir, config.iconsFolder, comp.framework);
+          await updateIndexFile(frameworkDir, comp.extension);
+        }
+        logger.success("index.ts files updated");
+      }
+
+      logger.separator();
+      logger.newline();
+      logger.title("Icons created successfully! 🎉");
+      logger.newline();
+      for (const result of results) {
+        logger.print(`📁 ${path.relative(projectRoot, result.filePath)}`);
+      }
+    } else {
+      const component = await generateComponent({
+        componentName,
+        svgContent: processed.content,
+        viewBox: processed.viewBox,
+        config,
+      });
+      genSpinner.succeed(`${component.filename} generated`);
+
+      // Write file
+      const iconsDir = path.join(projectRoot, config.baseDir, config.iconsFolder);
+      const filePath = await writeComponentFile({
+        projectRoot,
+        baseDir: config.baseDir,
+        iconsFolder: config.iconsFolder,
+        filename: component.filename,
+        content: component.content,
+      });
+
+      await trackGeneratedComponent(
+        projectRoot,
+        component.filename,
+        componentName,
+        svgSourcePath,
+        processed.content,
+      );
+
+      logger.success(`${component.filename} created`);
+
+      // Update index
+      if (config.maintainIndex) {
+        await updateIndexFile(iconsDir, component.extension);
+        logger.success("index.ts updated");
+      }
+
+      logger.separator();
+      logger.newline();
+      logger.title("Icon created successfully! 🎉");
+      logger.newline();
+      logger.print(`📁 ${path.relative(projectRoot, filePath)}`);
+      logger.newline();
+      logger.print("Import:");
+      logger.print(`  import { ${componentName} } from '@/components/icons';`);
+      logger.newline();
+      logger.print("Usage:");
+      logger.print(`  <${componentName} size={24} color="blue" />`);
     }
-
-    logger.separator();
-    logger.newline();
-    logger.title("Icon created successfully! 🎉");
-    logger.newline();
-    logger.print(`📁 ${path.relative(projectRoot, filePath)}`);
-    logger.newline();
-    logger.print("Import:");
-    logger.print(`  import { ${componentName} } from '@/components/icons';`);
-    logger.newline();
-    logger.print("Usage:");
-    logger.print(`  <${componentName} size={24} color="blue" />`);
     logger.separator();
     logger.newline();
   } catch (error) {

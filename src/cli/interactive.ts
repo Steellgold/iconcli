@@ -2,6 +2,7 @@ import { updateConfig } from "@/config/manager";
 import type { Config } from "@/config/schema";
 import { validateConfigPath } from "@/config/validator";
 import { generateComponent } from "@/core/component-generator";
+import { trackGeneratedComponent } from "@/core/diff-checker";
 import { writeComponentFile } from "@/core/file-writer";
 import { updateIndexFile } from "@/core/index-maintainer";
 import { optimizeSVG } from "@/core/svg-processor";
@@ -36,6 +37,7 @@ import {
   promptSVGSource,
   promptSVGURL,
 } from "./prompts";
+import { runFigmaImport } from "./figma";
 import { detectIconNameFromSvg } from "@/utils/svg-detector";
 
 type EnquirerExt = {
@@ -78,7 +80,7 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
   while (createAnother) {
     try {
       // Resume directly in library search flow when user chose "create another"
-      let source: "paste" | "url" | "file" | "library";
+      let source: "paste" | "url" | "file" | "library" | "figma";
       const shouldResumeLibrarySearch =
         previousSource === "library" &&
         previousLibraryMode === "search" &&
@@ -91,10 +93,22 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
         source = sourceAnswer.source;
       }
 
+      // Figma: delegate entirely to the figma flow then loop back
+      if (source === "figma") {
+        await runFigmaImport({ projectRoot, config });
+        createAnother = await promptCreateAnother();
+        previousSource = null;
+        continue;
+      }
+
       let svgContent: string;
       let suggestedName: string | null = null;
       let copyrightHeader: string | null = null;
       let currentLibraryMode: "search" | "urls" | null = null;
+      let svgSourcePath = "source:paste";
+      let iconLibrary: string | undefined;
+      let iconLibraryName: string | undefined;
+      let libraryIconSize: number | undefined;
 
       // Get SVG content based on source
       if (source === "library") {
@@ -239,6 +253,19 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
                 content: contentWithCopyright,
               });
 
+              await trackGeneratedComponent(
+                projectRoot,
+                component.filename,
+                componentName,
+                url,
+                processed.content,
+                {
+                  library: heroiconParsed ? "heroicons" : "lucide",
+                  libraryIconName: heroiconParsed ? heroiconParsed.iconName : lucideIconName!,
+                  ...(heroiconParsed ? { iconSize: heroiconParsed.size } : {}),
+                }
+              );
+
               if (!extensionForIndex) {
                 extensionForIndex = component.extension;
               }
@@ -284,6 +311,7 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
           continue;
         }
 
+        // ── Load icon list ──────────────────────────────────────────────────
         let icons: IconMetadata[];
         if (selectedLibrary === "heroicons") {
           if (cachedHeroicons) {
@@ -307,54 +335,208 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
           }
         }
 
-        const iconChoices = icons.map((icon) => ({
-          name: icon.name,
-          message: `${icon.name} ${icon.tags.length > 0 ? `(${icon.tags.slice(0, 3).join(", ")})` : ""}`,
-          value: icon.name,
-        }));
+        // ── For Heroicons, ask size/style once for the whole batch ──────────
+        let heroiconBulkSize: number | undefined;
+        let heroiconBulkStyle: string | undefined;
+        if (selectedLibrary === "heroicons") {
+          heroiconBulkSize = await promptHeroiconSize();
+          heroiconBulkStyle = await promptHeroiconStyle(heroiconBulkSize as Parameters<typeof promptHeroiconStyle>[0]);
+          logger.newline();
+        }
 
-        const autocomplete = new AutoComplete({
-          name: "icon",
-          message: "Search for an icon:",
-          limit: 15,
-          choices: iconChoices,
-          suggest(input: string, choices: Record<string, unknown>[]) {
-            if (!input) {return choices.slice(0, 15);}
+        // ── Multi-select loop ────────────────────────────────────────────────
+        const selectedIconNames: string[] = [];
 
-            const lowerInput = input.toLowerCase();
-            const matchingIcons = icons.filter((icon) => {
-              if (icon.name.toLowerCase().includes(lowerInput)) {return true;}
-              return icon.tags.some((tag: string) => tag.toLowerCase().includes(lowerInput));
-            });
+        while (true) {
+          const doneLabel =
+            selectedIconNames.length > 0
+              ? `✓  Done  (${selectedIconNames.length} selected)`
+              : "✓  Done — skip";
 
-            return matchingIcons.slice(0, 15).map((icon) => ({
+          const availableChoices = icons
+            .filter((icon) => !selectedIconNames.includes(icon.name))
+            .map((icon) => ({
               name: icon.name,
-              message: `${icon.name} ${icon.tags.length > 0 ? `(${icon.tags.slice(0, 3).join(", ")})` : ""}`,
+              message: `${icon.name}${icon.tags.length > 0 ? `  (${icon.tags.slice(0, 3).join(", ")})` : ""}`,
               value: icon.name,
             }));
-          },
-        });
 
-        const selectedIcon = (await autocomplete.run()) as string;
+          const allChoices = [
+            { name: "__done__", message: doneLabel, value: "__done__" },
+            ...availableChoices,
+          ];
 
+          const ac = new AutoComplete({
+            name: "icon",
+            message:
+              selectedIconNames.length > 0
+                ? `Search icons  [${selectedIconNames.length} selected — add more or choose Done]:`
+                : "Search for an icon:",
+            limit: 15,
+            choices: allChoices,
+            suggest(input: string, choices: Record<string, unknown>[]) {
+              type C = { name: string; message: string; value: string };
+              const doneChoice = choices.find((c) => (c as C).name === "__done__") as C | undefined;
+              if (!input) {
+                return [doneChoice, ...choices.filter((c) => (c as C).name !== "__done__").slice(0, 14)];
+              }
+              const lowerInput = input.toLowerCase();
+              const matches = icons
+                .filter((icon) => !selectedIconNames.includes(icon.name))
+                .filter((icon) => {
+                  if (icon.name.toLowerCase().includes(lowerInput)) return true;
+                  return icon.tags.some((tag: string) => tag.toLowerCase().includes(lowerInput));
+                });
+              return [
+                doneChoice,
+                ...matches.slice(0, 14).map((icon) => ({
+                  name: icon.name,
+                  message: `${icon.name}${icon.tags.length > 0 ? `  (${icon.tags.slice(0, 3).join(", ")})` : ""}`,
+                  value: icon.name,
+                })),
+              ];
+            },
+          });
+
+          const picked = (await ac.run()) as string;
+          if (picked === "__done__") break;
+          selectedIconNames.push(picked);
+        }
+
+        if (selectedIconNames.length === 0) {
+          logger.info("No icons selected.");
+          createAnother = await promptCreateAnother();
+          previousSource = null;
+          previousLibraryMode = null;
+          if (createAnother) logger.newline();
+          continue;
+        }
+
+        // ── Fetch, process, write all selected icons ─────────────────────────
+        const iconsDir = path.join(projectRoot, config.baseDir, config.iconsFolder);
+        const failures: Array<{ name: string; reason: string }> = [];
+        let successCount = 0;
+        let extensionForIndex: string | null = null;
+
+        for (let i = 0; i < selectedIconNames.length; i += 1) {
+          const iconName = selectedIconNames[i];
+          const prefix = `[${i + 1}/${selectedIconNames.length}]`;
+
+          try {
+            let libSvg: string;
+            let iconDisplayName: string;
+            let copyright: string;
+            let iconNameForComponent: string;
+            let iconSizeForEntry: number | undefined;
+
+            if (selectedLibrary === "heroicons") {
+              const fetchSpinner = spinner.start(`${prefix} Fetching ${iconName}...`);
+              const result = await fetchHeroicon(
+                iconName,
+                heroiconBulkSize as Parameters<typeof fetchHeroicon>[1],
+                heroiconBulkStyle as Parameters<typeof fetchHeroicon>[2]
+              );
+              libSvg = result.svgContent;
+              iconDisplayName = `${iconName}-${heroiconBulkSize}`;
+              copyright = generateHeroiconsCopyright(iconName);
+              iconNameForComponent = iconDisplayName;
+              iconSizeForEntry = heroiconBulkSize;
+              fetchSpinner.succeed(`${prefix} Fetched ${iconDisplayName}`);
+            } else {
+              const fetchSpinner = spinner.start(`${prefix} Fetching ${iconName}...`);
+              const result = await fetchLucideIcon(iconName);
+              libSvg = result.svgContent;
+              iconDisplayName = iconName;
+              copyright = generateLucideCopyright(result.metadata.iconName);
+              iconNameForComponent = iconName;
+              fetchSpinner.succeed(`${prefix} Fetched ${iconDisplayName}`);
+            }
+
+            const componentName = generateIconName(
+              iconNameForComponent,
+              config.naming.suffix,
+              config.naming.componentCase
+            );
+
+            const processSpinner = spinner.start(`${prefix} Processing ${iconDisplayName}...`);
+            const processed = await optimizeSVG(libSvg, config.optimize);
+            processSpinner.succeed(`${prefix} Processed ${iconDisplayName}`);
+
+            const component = await generateComponent({
+              componentName,
+              svgContent: processed.content,
+              viewBox: processed.viewBox,
+              config,
+            });
+
+            const contentWithCopyright = insertHeaderComment(component.content, copyright);
+
+            await writeComponentFile({
+              projectRoot,
+              baseDir: config.baseDir,
+              iconsFolder: config.iconsFolder,
+              filename: component.filename,
+              content: contentWithCopyright,
+            });
+
+            await trackGeneratedComponent(
+              projectRoot,
+              component.filename,
+              componentName,
+              `library:${selectedLibrary}/${iconName}`,
+              processed.content,
+              {
+                library: selectedLibrary,
+                libraryIconName: iconName,
+                ...(iconSizeForEntry !== undefined ? { iconSize: iconSizeForEntry } : {}),
+              }
+            );
+
+            if (!extensionForIndex) extensionForIndex = component.extension;
+            successCount += 1;
+          } catch (error) {
+            const reason = error instanceof Error ? error.message : "Unknown error";
+            failures.push({ name: iconName, reason });
+            logger.error(`${prefix} Failed: ${iconName} (${reason})`);
+          }
+        }
+
+        if (config.maintainIndex && extensionForIndex && successCount > 0) {
+          await updateIndexFile(iconsDir, extensionForIndex);
+          logger.success("index.ts updated");
+        }
+
+        logger.separator();
+        logger.newline();
+        if (successCount > 0) {
+          logger.title(`${successCount} icon${successCount !== 1 ? "s" : ""} imported successfully! 🎉`);
+          logger.newline();
+        }
+        if (failures.length > 0) {
+          logger.error(`${failures.length} failed:`);
+          for (const failure of failures) {
+            logger.print(`  ❌ ${failure.name}: ${failure.reason}`);
+          }
+          logger.newline();
+        }
+        logger.separator();
         logger.newline();
 
-        if (selectedLibrary === "heroicons") {
-          const size = await promptHeroiconSize();
-          const style = await promptHeroiconStyle(size);
-          const { svgContent: libSvg } = await fetchHeroicon(selectedIcon, size, style);
-          svgContent = libSvg;
-          suggestedName = `${selectedIcon}-${size}`;
-          copyrightHeader = generateHeroiconsCopyright(selectedIcon);
-        } else {
-          const { svgContent: libSvg, metadata } = await fetchLucideIcon(selectedIcon);
-          svgContent = libSvg;
-          suggestedName = selectedIcon;
-          copyrightHeader = generateLucideCopyright(metadata.iconName);
+        previousSource = "library";
+        previousLibraryMode = "search";
+        createAnother = await promptCreateAnother();
+        if (!createAnother) {
+          previousSource = null;
+          previousLibraryMode = null;
+          cachedLucideIcons = null;
+          cachedHeroicons = null;
         }
+        if (createAnother) logger.newline();
+        continue;
       } else if (source === "paste") {
         svgContent = await promptSVGContent();
         suggestedName = detectIconNameFromSvg(svgContent);
+        svgSourcePath = "source:paste";
         previousSource = null;
         previousLibraryMode = null;
         cachedLucideIcons = null;
@@ -363,6 +545,7 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
 
         // Extract suggested name from URL
         suggestedName = extractIconNameFromURL(url);
+        svgSourcePath = url;
 
         const loadSpinner = spinner.start("Fetching SVG from URL...");
 
@@ -380,6 +563,7 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
         // file source
         const filePath = await promptSVGContent(); // TODO: Use file prompt
         svgContent = await fs.readFile(filePath, "utf-8");
+        svgSourcePath = filePath;
         previousSource = null;
         previousLibraryMode = null;
         cachedLucideIcons = null;
@@ -460,6 +644,19 @@ export const runInteractive = async (options: InteractiveOptions): Promise<void>
         filename: component.filename,
         content: finalContent,
       });
+
+      await trackGeneratedComponent(
+        projectRoot,
+        component.filename,
+        componentName,
+        svgSourcePath,
+        processed.content,
+        {
+          ...(iconSizeMeta !== null ? { iconSize: iconSizeMeta } : libraryIconSize !== undefined ? { iconSize: libraryIconSize } : {}),
+          ...(iconLibrary ? { library: iconLibrary } : {}),
+          ...(iconLibraryName ? { libraryIconName: iconLibraryName } : {}),
+        }
+      );
 
       logger.success(`${component.filename} created`);
 
