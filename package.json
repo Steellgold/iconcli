@@ -44,7 +44,8 @@
   ],
   "scripts": {
     "dev": "tsup --watch",
-    "build": "tsup && tsc-alias",
+    "build:studio": "cd studio-app && pnpm install --frozen-lockfile && pnpm build",
+    "build": "tsup && tsc-alias && pnpm build:studio",
     "test": "vitest",
     "test:ci": "vitest run --coverage",
     "typecheck": "tsc --noEmit",

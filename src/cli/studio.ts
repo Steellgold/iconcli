@@ -15,11 +15,11 @@ import { isValidSVG } from "@/utils/validation";
 import { insertHeaderComment } from "@/utils/header";
 import { logger } from "@/utils/logger";
 import type { DirectionVariant, VariantComponentData } from "@/types/variants";
-import { generateStudioHTML } from "./studio-html";
 import http from "node:http";
 import { exec } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 export interface StudioOptions {
   projectRoot: string;
@@ -60,8 +60,21 @@ let cachedLucideIcons: Awaited<ReturnType<typeof fetchLucideIcons>> | null = nul
 let cachedHeroicons: Awaited<ReturnType<typeof fetchHeroiconList>> | null = null;
 let cachedTablerIcons: Awaited<ReturnType<typeof fetchTablerIconList>> | null = null;
 
+const MIME_TYPES: Record<string, string> = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "application/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".ico": "image/x-icon",
+  ".png": "image/png",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2",
+};
+
 export const runStudio = async ({ projectRoot, config }: StudioOptions): Promise<void> => {
-  const html = generateStudioHTML(config);
+  const activeFrameworks = config.frameworks ?? [config.framework];
+  const iconsPath = `@/${config.baseDir}/${config.iconsFolder}`;
+  const studioDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "studio");
 
   const server = http.createServer(async (req, res) => {
     const base = `http://localhost:${PORT}`;
@@ -70,10 +83,9 @@ export const runStudio = async ({ projectRoot, config }: StudioOptions): Promise
     const method = req.method ?? "GET";
 
     try {
-      // ── Static ──────────────────────────────────────────────────────────
-      if (method === "GET" && pathname === "/") {
-        res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-        res.end(html);
+      // ── Config ──────────────────────────────────────────────────────────
+      if (method === "GET" && pathname === "/api/config") {
+        json(res, { activeFrameworks, iconsPath });
         return;
       }
 
@@ -381,6 +393,24 @@ export const runStudio = async ({ projectRoot, config }: StudioOptions): Promise
 
         json(res, { success: true, componentName: body.componentName, filename: component.filename });
         return;
+      }
+
+      // ── Static files (React build) ───────────────────────────────────────
+      if (method === "GET") {
+        const filePath = pathname === "/" ? "/index.html" : pathname;
+        const fullPath = path.join(studioDir, filePath);
+        // Security: ensure the resolved path stays within studioDir
+        if (fullPath.startsWith(studioDir)) {
+          try {
+            const content = await fs.readFile(fullPath);
+            const ext = path.extname(fullPath).toLowerCase();
+            res.writeHead(200, { "Content-Type": MIME_TYPES[ext] ?? "application/octet-stream" });
+            res.end(content);
+            return;
+          } catch {
+            // File not found — fall through to 404
+          }
+        }
       }
 
       res.writeHead(404).end("Not found");
